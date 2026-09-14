@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './auth';
+import { authGuard, superadminGuard } from './auth';
 
 export const routes: Routes = [
   // la landing: la primera pantalla de un comercio que todavía no es cliente
@@ -32,6 +32,12 @@ export const routes: Routes = [
       { path: 'equipo', loadComponent: () => import('./merchant/sections').then(m => m.Equipo) },
       { path: 'cobros', loadComponent: () => import('./merchant/sections').then(m => m.Cobros) },
     ],
+  },
+
+  // panel de la STARTUP — distinto del panel del comercio
+  {
+    path: 'admin', canActivate: [superadminGuard],
+    loadComponent: () => import('./admin/panel').then(m => m.AdminPanel),
   },
 
   // catch-all: la página pública del comercio, sin sesión. Va última a propósito.

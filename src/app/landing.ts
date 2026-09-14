@@ -4,9 +4,9 @@ import { Store } from './data';
 import { Wordmark } from './brand';
 
 const STEPS = [
-  { n: '1', title: 'Configurá tu marca', body: 'Tu logo, tu color, tu descripción y los montos que querés vender. Cinco pasos con vista previa en vivo.' },
+  { n: '1', title: 'Armá tu página', body: 'Tu logo, tu color, tu descripción y los productos que querés vender: montos fijos, monto abierto o un servicio con precio. Con vista previa en vivo mientras la armás.' },
   { n: '2', title: 'Compartí tu link', body: 'Te queda giftcards.bo/tu-negocio. Va al estado de WhatsApp, a la bio de Instagram, a donde quieras.' },
-  { n: '3', title: 'Cobrá y canjeá', body: 'Tu cliente paga por QR y le llega la gift card. Tu equipo la canjea desde el celular, con saldo parcial si hace falta.' },
+  { n: '3', title: 'Cobrá y canjeá', body: 'Tu cliente paga por QR y le llega la gift card por email. Tu equipo la canjea desde el celular, con saldo parcial si hace falta.' },
 ];
 
 const FEATURES = [
@@ -39,13 +39,14 @@ const FEATURES = [
           </p>
 
           <h1 class="mt-5 text-4xl font-semibold leading-[1.08] tracking-tight sm:text-6xl">
-            Vendé gift cards<br>de tu negocio,<br>
-            <span class="brand-text">sin programar nada</span>.
+            La página de tu negocio,<br>
+            <span class="brand-text">vendiendo gift cards</span><br>desde hoy.
           </h1>
 
           <p class="mt-6 max-w-lg text-lg text-base-content/70">
-            Armá tu página en diez minutos, compartí el link y cobrá por adelantado.
-            Nosotros ponemos la plataforma, el cobro y el canje.
+            Te armamos una página con tus productos y tu marca, en un link propio.
+            Tus clientes compran gift cards ahí mismo y vos cobrás por adelantado.
+            Nosotros ponemos la plataforma, el cobro, la entrega y el canje.
           </p>
 
           <div class="mt-8 flex flex-wrap gap-3">
@@ -87,6 +88,9 @@ const FEATURES = [
     <!-- ── cómo funciona ───────────────────────────────────── -->
     <section id="como" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 sm:py-24">
       <h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">Tres pasos y estás vendiendo</h2>
+      <p class="mt-3 max-w-2xl text-lg text-base-content/60">
+        No hace falta que tengas página web, ni pasarela de pagos, ni a nadie que programe.
+      </p>
       <div class="mt-10 grid gap-5 md:grid-cols-3">
         @for (s of steps; track s.n) {
           <div class="rounded-box border border-base-300 bg-base-100 p-6">
@@ -95,6 +99,22 @@ const FEATURES = [
             <p class="mt-2 text-base-content/65">{{ s.body }}</p>
           </div>
         }
+      </div>
+    </section>
+
+    <!-- ── para quién ──────────────────────────────────────── -->
+    <section class="border-t border-base-300 bg-base-100/40">
+      <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+        <h2 class="text-sm uppercase tracking-wider text-base-content/50">Para negocios como</h2>
+        <ul class="mt-5 flex flex-wrap gap-2">
+          @for (r of rubros; track r) {
+            <li class="rounded-full border border-base-300 px-4 py-2 text-sm text-base-content/75">{{ r }}</li>
+          }
+        </ul>
+        <p class="mt-6 max-w-2xl text-base-content/60">
+          Si cobrás por un servicio o un producto que se entrega después, una gift card
+          es plata que entra hoy por trabajo que hacés mañana.
+        </p>
       </div>
     </section>
 
@@ -150,7 +170,7 @@ const FEATURES = [
     </section>
 
     <!-- ── comercios reales del sistema ────────────────────── -->
-    @if (shops.value()?.length) {
+    @if (shops.hasValue() && shops.value().length) {
       <section class="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
         <h2 class="text-sm uppercase tracking-wider text-base-content/50">Ya venden con Detallito</h2>
         <ul class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -193,6 +213,10 @@ const FEATURES = [
   `,
 })
 export class Landing {
+  readonly rubros = [
+    'Spas y estética', 'Barberías y peluquerías', 'Restaurantes y cafés', 'Gimnasios',
+    'Tiendas de ropa', 'Ópticas', 'Fotografía', 'Veterinarias', 'Academias y cursos',
+  ];
   readonly steps = STEPS;
   readonly features = FEATURES;
   readonly shops = inject(Store).publishedTenants();

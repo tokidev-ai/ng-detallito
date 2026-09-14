@@ -153,11 +153,31 @@ neutra (`.storefront`) para que lo único que tiña sea el color del comercio. S
 pusiéramos el morado, todos los comercios se verían iguales y se cae la premisa del
 producto. El morado es de la plataforma y se queda del lado de adentro.
 
+### Los dos paneles
+
+Son **dos productos distintos** con dos puertas distintas, aunque el login sea el mismo:
+
+| | Panel del comercio | Panel de la startup |
+|---|---|---|
+| Ruta | `/app` → `/app/:tenant/…` | `/admin` |
+| Quién | el dueño y su equipo | nosotros |
+| Ve | solo SU comercio | todos los comercios y el dinero |
+| Acceso | cualquiera que entra con Google | un doc en `/superadmins/{uid}` |
+
+Superadmin se otorga con `npm run superadmin -- alguien@mail.com` (y `--quitar` revoca).
+Desde la app **nadie puede escribir `/superadmins`**: la regla lo prohíbe siempre, solo se
+puede desde el script con credenciales de gcloud. Cada uno lee únicamente su propio doc.
+
+Cuando sos superadmin aparece "Panel de la startup" en la barra y en el selector de
+comercios; `/admin` tiene el camino de vuelta a tu panel de comercio.
+
 ### Pantallas de venta
 
 `/` es la landing pública: hero, tres pasos, el argumento de deuda-vs-ingreso,
 precio y los comercios publicados traídos de Firestore en vivo. Es lo primero que ve
 alguien que todavía no es cliente.
 
-`/app` es la lista post-login. Con comercios muestra tarjetas; sin ninguno, una
-pantalla que empuja a crear el primero en vez de un vacío.
+`/app` es la puerta del comercio. **Con comercios entra directo al panel del primero** —
+el admin es el panel, no una lista intermedia; para cambiar de comercio o crear otro está
+el selector en la barra del panel. **Sin ninguno** muestra el pitch de qué hacemos y empuja
+a crear el primero, en vez de mandar de una al wizard.

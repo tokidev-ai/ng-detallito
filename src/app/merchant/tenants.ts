@@ -1,99 +1,97 @@
-import { Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, effect, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { Store } from '../data';
 import { AuthService } from '../auth';
 import { Wordmark } from '../brand';
-import { BsPipe } from '../ui';
 
-/** Punto de entrada multitenant: los comercios a los que entra esta persona. */
+const PITCH = [
+  {
+    title: 'Tu página de productos',
+    body: 'Armamos la página de tu negocio con tu logo, tu color y lo que vendés. Te queda un link propio — giftcards.bo/tu-negocio — listo para compartir.',
+  },
+  {
+    title: 'Gift cards que se venden solas',
+    body: 'Tus clientes eligen un monto o un servicio, pagan por QR y reciben la gift card por email. Vos cobrás por adelantado.',
+  },
+  {
+    title: 'Canje y control desde el celular',
+    body: 'Tu equipo canjea con el código, incluso por partes. Y vos ves en todo momento cuánto vendiste y cuánto todavía debés entregar.',
+  },
+];
+
+/** Panel del comercio. Con comercios, entra directo al primero; sin ninguno,
+ *  explica qué hacemos y empuja a crear el primero. */
 @Component({
   selector: 'app-tenants',
-  imports: [RouterLink, Wordmark, BsPipe],
+  imports: [RouterLink, Wordmark],
   template: `
   <div class="min-h-dvh bg-base-200">
     <header class="border-b border-base-300/60">
-      <nav class="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
+      <nav class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
         <a routerLink="/"><app-wordmark /></a>
-        <span class="ms-auto hidden text-sm text-base-content/50 sm:inline">{{ email() }}</span>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="auth.signOut()">Salir</button>
+        @if (auth.isSuperadmin()) {
+          <a routerLink="/admin" class="btn btn-ghost btn-sm ms-auto">Panel de la startup</a>
+        }
+        <span class="hidden text-sm text-base-content/50 sm:inline" [class.ms-auto]="!auth.isSuperadmin()">
+          {{ email() }}
+        </span>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="salir()">Salir</button>
       </nav>
     </header>
 
+    <!-- Solo se ve cuando todavía no hay ningún comercio: con uno, redirige. -->
     <div class="brand-glow">
-      <div class="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
-        <p class="text-sm text-base-content/50">Hola, {{ firstName() }}</p>
-        <div class="mt-1 flex flex-wrap items-end gap-4">
-          <h1 class="flex-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-            @if (s.tenants().length) { Tus comercios } @else { Empecemos }
-          </h1>
-          @if (s.tenants().length) {
-            <a class="btn btn-sm border-0 text-white brand-fill" routerLink="/onboarding">+ Crear comercio</a>
-          }
-        </div>
-
-        @if (s.tenants().length) {
-          <ul class="mt-8 grid gap-4 sm:grid-cols-2">
-            @for (t of s.tenants(); track t.id) {
-              <li class="min-w-0">
-                <a [routerLink]="['/app', t.id, 'resumen']"
-                   class="group flex h-full flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 transition hover:border-primary/50">
-                  <span class="h-1.5 w-full" [style.background-color]="t.business.color"></span>
-
-                  <span class="flex flex-1 flex-col p-5">
-                    <span class="flex items-start gap-3">
-                      <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full border border-base-300 text-[10px] text-base-content/40"
-                            [style.background-color]="t.business.color">
-                        @if (t.business.logoUrl) { <img [src]="t.business.logoUrl" alt="" class="size-full object-cover"> }
-                      </span>
-                      <span class="min-w-0 flex-1">
-                        <span class="block truncate font-medium">{{ t.business.name }}</span>
-                        <span class="block truncate text-sm text-base-content/50">/{{ t.business.slug }}</span>
-                      </span>
-                      <span class="badge badge-sm"
-                            [class.badge-success]="t.business.published"
-                            [class.badge-ghost]="!t.business.published">
-                        {{ t.business.published ? 'publicada' : 'borrador' }}
-                      </span>
-                    </span>
-
-                    <span class="mt-5 flex items-end gap-6 border-t border-base-300 pt-4">
-                      <span>
-                        <span class="block text-xs uppercase tracking-wider text-base-content/45">Vendido del mes</span>
-                        <span class="block text-xl font-semibold tabular-nums">{{ t.soldThisMonth | bs }}</span>
-                      </span>
-                      <span class="ms-auto text-sm text-base-content/40 transition group-hover:text-primary">Abrir →</span>
-                    </span>
-                  </span>
-                </a>
-              </li>
-            }
-          </ul>
+      <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        @if (loading()) {
+          <div class="grid place-items-center py-24"><span class="loading loading-spinner loading-lg"></span></div>
         } @else {
-          <!-- primera vez: la pantalla tiene que empujar a crear, no mostrar un vacío -->
-          <div class="mt-8 overflow-hidden rounded-box border border-base-300 bg-base-100">
-            <div class="grid gap-8 p-8 sm:p-12 lg:grid-cols-[1.2fr_1fr] lg:items-center">
-              <div>
-                <h2 class="text-2xl font-semibold tracking-tight">
-                  Creá tu primer comercio y <span class="brand-text">empezá a vender hoy</span>
-                </h2>
-                <p class="mt-4 text-base-content/70">
-                  Cinco pasos con vista previa en vivo: tu marca, tus montos, la vigencia,
-                  a qué cuenta te depositamos y publicar. Toma unos diez minutos.
-                </p>
-                <a class="btn mt-7 border-0 text-white brand-fill" routerLink="/onboarding">Crear mi comercio</a>
-              </div>
+          <p class="text-sm text-base-content/50">Hola{{ firstName() ? ', ' + firstName() : '' }}</p>
 
-              <ol class="space-y-3">
-                @for (s of steps; track s) {
-                  <li class="flex items-center gap-3 rounded-field border border-base-300 px-4 py-3">
-                    <span class="grid size-7 shrink-0 place-items-center rounded-full text-xs font-semibold text-white brand-fill">
-                      {{ $index + 1 }}
-                    </span>
-                    <span class="text-sm">{{ s }}</span>
-                  </li>
-                }
-              </ol>
+          <h1 class="mt-2 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+            Todavía no tenés un comercio.<br>
+            <span class="brand-text">Creemos el primero.</span>
+          </h1>
+
+          <p class="mt-5 max-w-2xl text-lg text-base-content/70">
+            Detallito le arma a tu negocio una página propia donde mostrás tus productos
+            y vendés gift cards. Nosotros ponemos el cobro, la entrega y el canje.
+          </p>
+
+          <div class="mt-8 flex flex-wrap items-center gap-4">
+            <a routerLink="/onboarding" class="btn btn-lg border-0 text-white brand-fill">Crear mi comercio</a>
+            <span class="text-sm text-base-content/50">Toma unos diez minutos · sin mensualidad</span>
+          </div>
+
+          <div class="mt-12 grid gap-4 md:grid-cols-3">
+            @for (p of pitch; track p.title; let i = $index) {
+              <div class="min-w-0 rounded-box border border-base-300 bg-base-100 p-6">
+                <span class="grid size-9 place-items-center rounded-full text-sm font-semibold text-white brand-fill">
+                  {{ i + 1 }}
+                </span>
+                <h2 class="mt-4 text-lg font-medium">{{ p.title }}</h2>
+                <p class="mt-2 text-base-content/65">{{ p.body }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="mt-10 rounded-box border border-base-300 bg-base-100 p-6 sm:p-8">
+            <div class="flex flex-wrap items-center gap-6">
+              <div class="min-w-0 flex-1">
+                <h2 class="text-xl font-medium">Lo que vas a configurar</h2>
+                <p class="mt-1 text-base-content/60">
+                  Cinco pasos, con la vista previa de tu página al lado mientras la armás.
+                </p>
+              </div>
+              <a routerLink="/onboarding" class="btn border-0 text-white brand-fill">Empezar</a>
             </div>
+            <ol class="mt-6 grid gap-2 sm:grid-cols-5">
+              @for (s of steps; track s; let i = $index) {
+                <li class="flex items-center gap-2 rounded-field border border-base-300 px-3 py-2.5">
+                  <span class="text-xs font-semibold text-base-content/40">{{ i + 1 }}</span>
+                  <span class="truncate text-sm">{{ s }}</span>
+                </li>
+              }
+            </ol>
           </div>
         }
       </div>
@@ -102,11 +100,32 @@ import { BsPipe } from '../ui';
   `,
 })
 export class Tenants {
+  private readonly router = inject(Router);
   readonly s = inject(Store);
   readonly auth = inject(AuthService);
 
-  readonly steps = ['Marca', 'Productos', 'Vigencia y términos', 'Datos bancarios', 'Publicar'];
+  readonly pitch = PITCH;
+  readonly steps = ['Marca', 'Productos', 'Vigencia', 'Datos bancarios', 'Publicar'];
+
   readonly email = computed(() => this.auth.user()?.email ?? '');
-  readonly firstName = computed(() =>
-    this.auth.user()?.displayName?.split(' ')[0] ?? this.email().split('@')[0] ?? '');
+  readonly firstName = computed(() => {
+    const u = this.auth.user();
+    return u?.displayName?.split(' ')[0] ?? (u?.email ?? '').split('@')[0] ?? '';
+  });
+
+  /** No mostrar el estado vacío mientras Firestore todavía no contestó. */
+  readonly loading = computed(() => this.auth.user() === undefined);
+
+  constructor() {
+    // Con comercios, el admin es el panel del comercio: entramos directo.
+    effect(() => {
+      const list = this.s.tenants();
+      if (list.length) this.router.navigate(['/app', list[0].id, 'resumen'], { replaceUrl: true });
+    });
+  }
+
+  async salir() {
+    await this.auth.signOut();
+    this.router.navigateByUrl('/');
+  }
 }

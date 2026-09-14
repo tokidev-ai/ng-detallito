@@ -20,15 +20,29 @@ service cloud.firestore {
       return signedIn() && request.auth.uid in tenant(tenantId).memberUids;
     }
 
+    // Superadmin = nosotros, la startup. Un doc por uid, otorgado a mano.
+    // ponytail: exists() sobre una ruta fija, no custom claims: cero Functions.
+    function isSuperadmin() {
+      return signedIn()
+             && exists(/databases/$(database)/documents/superadmins/$(request.auth.uid));
+    }
+
     function isOwner(tenantId) {
       return signedIn() && request.auth.uid == tenant(tenantId).ownerUid;
+    }
+
+    // Quién es superadmin: cada uno lee solo el suyo, nadie se lo puede dar.
+    match /superadmins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
     }
 
     match /tenants/{tenantId} {
       // Leer el propio doc del tenant no puede usar get(): en una query las reglas
       // se evalúan por documento y `resource` ya trae todo. get() acá rompe el list.
       allow get, list: if resource.data.business.published == true
-                       || (request.auth != null && request.auth.uid in resource.data.memberUids);
+                       || (request.auth != null && request.auth.uid in resource.data.memberUids)
+                       || isSuperadmin();
 
       // el alta la hace el propio dueño y se pone a sí mismo como único miembro
       allow create: if signedIn()

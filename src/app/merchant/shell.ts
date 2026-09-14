@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Store } from '../data';
+import { AuthService } from '../auth';
 
 interface Tab { path: string; label: string; short: string; icon: string }
 
@@ -24,11 +25,31 @@ const TABS: Tab[] = [
       <div class="overflow-hidden rounded-box border border-base-300 bg-base-100">
 
         <header class="flex flex-wrap items-center gap-3 p-4 sm:p-6">
-          <a routerLink="/app" class="btn btn-ghost btn-sm btn-square" aria-label="Todos mis comercios">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="size-5">
-              <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/>
-            </svg>
-          </a>
+          <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-square" aria-label="Cambiar de comercio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="size-5">
+                <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <ul tabindex="0" class="menu dropdown-content z-50 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
+              <li class="menu-title">Tus comercios</li>
+              @for (t of store.tenants(); track t.id) {
+                <li>
+                  <a [routerLink]="['/app', t.id, 'resumen']" [class.menu-active]="t.id === tenant()">
+                    <span class="size-3 rounded-full" [style.background-color]="t.business.color"></span>
+                    <span class="truncate">{{ t.business.name }}</span>
+                  </a>
+                </li>
+              }
+              <li class="mt-1 border-t border-base-300 pt-1">
+                <a routerLink="/onboarding">+ Crear otro comercio</a>
+              </li>
+              @if (auth.isSuperadmin()) {
+                <li><a routerLink="/admin">Panel de la startup</a></li>
+              }
+              <li><button type="button" (click)="salir()">Salir</button></li>
+            </ul>
+          </div>
           <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full border border-base-300 bg-base-200 text-[10px] text-base-content/40">
             @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> } @else { logo }
           </div>
@@ -98,7 +119,9 @@ const TABS: Tab[] = [
   `,
 })
 export class MerchantShell {
-  private readonly store = inject(Store);
+  readonly store = inject(Store);
+  readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   /** withComponentInputBinding() ata el :tenant de la ruta a este input. */
   readonly tenant = input<string>();
@@ -108,6 +131,11 @@ export class MerchantShell {
   readonly b = this.store.business;
   readonly ownerName = computed(() =>
     (this.store.staff().find(m => m.role === 'owner')?.email ?? '').split('@')[0] || '—');
+
+  async salir() {
+    await this.auth.signOut();
+    this.router.navigateByUrl('/');
+  }
 
   constructor() {
     effect(() => this.store.setCurrent(this.tenant() ?? null));
