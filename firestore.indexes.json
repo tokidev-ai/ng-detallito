@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "tenants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "business.slug", "order": "ASCENDING" },
+        { "fieldPath": "business.published", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

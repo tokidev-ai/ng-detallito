@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@plugin "daisyui" { themes: detallito --default; }
+
+/* ─────────────────────────────────────────────────────────────
+   PALETA — placeholder neutral (papel + tinta, como el wireframe).
+   Cambiar SOLO este bloque cuando llegue la paleta definitiva.
+   ───────────────────────────────────────────────────────────── */
+@plugin "daisyui/theme" {
+  name: "detallito";
+  default: true;
+  color-scheme: light;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f7f6f2;
+  --color-base-300: #e8e6de;
+  --color-base-content: #1c1b18;
+
+  --color-primary: #1c1b18;
+  --color-primary-content: #fbfaf7;
+  --color-secondary: #6b6960;
+  --color-secondary-content: #ffffff;
+  --color-accent: #3b7d6e;
+  --color-accent-content: #ffffff;
+  --color-neutral: #2b2a26;
+  --color-neutral-content: #f7f6f2;
+
+  --color-info: #3b6ea5;
+  --color-info-content: #ffffff;
+  --color-success: #3f7d4e;
+  --color-success-content: #ffffff;
+  --color-warning: #b07d22;
+  --color-warning-content: #ffffff;
+  --color-error: #a94434;
+  --color-error-content: #ffffff;
+
+  --radius-selector: 0.75rem;
+  --radius-field: 0.625rem;
+  --radius-box: 1rem;
+  --border: 1px;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body { @apply bg-base-200 text-base-content antialiased; }
+
+/* la bottom nav móvil es fija: que el contenido no quede debajo */
+.pb-safe { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }

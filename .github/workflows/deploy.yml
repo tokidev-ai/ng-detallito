@@ -1,0 +1,40 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write   # necesario para Workload Identity Federation
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://giftcards-bo.web.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+      - run: npm test -- --watch=false
+      - run: npm run build
+
+      # Sin claves en disco: GitHub se identifica por OIDC y Google le presta la service account.
+      - uses: google-github-actions/auth@v2
+        with:
+          project_id: giftcards-bo
+          workload_identity_provider: projects/410167250500/locations/global/workloadIdentityPools/github/providers/gh-oidc
+          service_account: ci-deploy@giftcards-bo.iam.gserviceaccount.com
+
+      - run: npx firebase-tools deploy --only hosting,firestore:rules,firestore:indexes --project giftcards-bo --non-interactive

@@ -1,0 +1,65 @@
+rules_version = '2';
+
+// Aislamiento multitenant. La UI oculta; esto es lo que manda.
+//
+// ponytail: la membresía vive en `memberUids` del propio doc del tenant, no en
+// custom claims. Evita una Cloud Function y un deploy por cada alta de empleado.
+// Si algún día hay cientos de empleados por comercio, esto pasa a claims.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function tenant(tenantId) {
+      return get(/databases/$(database)/documents/tenants/$(tenantId)).data;
+    }
+
+    function isMember(tenantId) {
+      return signedIn() && request.auth.uid in tenant(tenantId).memberUids;
+    }
+
+    function isOwner(tenantId) {
+      return signedIn() && request.auth.uid == tenant(tenantId).ownerUid;
+    }
+
+    match /tenants/{tenantId} {
+      // la página pública se lee sin sesión, pero solo si está publicada
+      allow get, list: if resource.data.business.published == true || isMember(tenantId);
+
+      // el alta la hace el propio dueño y se pone a sí mismo como único miembro
+      allow create: if signedIn()
+                    && request.resource.data.ownerUid == request.auth.uid
+                    && request.resource.data.memberUids == [request.auth.uid]
+                    && request.resource.data.business.slug == tenantId;
+
+      // nadie se agrega solo a un comercio ajeno: memberUids y ownerUid los toca el owner
+      allow update: if isMember(tenantId)
+                    && request.resource.data.ownerUid == resource.data.ownerUid
+                    && (request.resource.data.memberUids == resource.data.memberUids || isOwner(tenantId));
+
+      allow delete: if isOwner(tenantId);
+
+      // el catálogo es público: la página de compra lo necesita sin sesión
+      match /products/{productId} {
+        allow read: if true;
+        allow write: if isMember(tenantId);
+      }
+
+      // saldos, canjes y empleados nunca salen del comercio
+      match /cards/{code} {
+        allow read, write: if isMember(tenantId);
+      }
+      match /redemptions/{id} {
+        allow read: if isMember(tenantId);
+        allow create: if isMember(tenantId);
+        allow update, delete: if false;   // append-only: el saldo se recalcula
+      }
+      match /staff/{email} {
+        allow read: if isMember(tenantId);
+        allow write: if isOwner(tenantId);
+      }
+    }
+  }
+}
