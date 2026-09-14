@@ -141,6 +141,13 @@ naranja del símbolo `#E8694B`, y el gradiente `#E5794F → #C24A85 → #951FD2`
 Todo vive en un bloque al principio de `src/styles.css`, más `.brand-text`,
 `.brand-fill` y `.brand-glow`.
 
+Dos superficies claras, por motivos distintos:
+
+- `.surface-light` — el **onboarding**. Es un formulario largo y el comercio está mirando
+  al lado la vista previa de su página, que es clara; en oscuro cansa y desentona.
+  Conserva los colores de marca en primary / secondary / accent y el gradiente en los CTA.
+- `.storefront` — la **página del comercio**, neutra de verdad.
+
 **La página del comercio (`/:slug`) NO lleva nuestra marca.** Va sobre una superficie
 neutra (`.storefront`) para que lo único que tiña sea el color del comercio. Si le
 pusiéramos el morado, todos los comercios se verían iguales y se cae la premisa del
