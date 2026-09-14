@@ -117,3 +117,17 @@ salen del comercio. `redemptions` es append-only a nivel de regla: no hay update
 
 > `ponytail:` membresía por array en vez de claims. Si un comercio llega a cientos de empleados,
 > el array deja de escalar y esto pasa a custom claims + Cloud Function.
+
+### Correr y desplegar
+
+```
+npm start                    local en :4200, contra el Firestore real
+npm test -- --watch=false
+npm run seed                 siembra 2 comercios de demo con tu uid
+```
+
+Push a `main` → **CI** (test + build) y **Deploy** (hosting + rules + índices) en GitHub Actions.
+No hay claves: el workflow se identifica por OIDC y Google le presta la service account
+`ci-deploy@giftcards-bo` vía Workload Identity Federation.
+
+Producción: **https://giftcards-bo.web.app**
