@@ -8,7 +8,7 @@ import { Business, Product, Store } from './data';
   selector: 'app-storefront',
   imports: [BsPipe],
   template: `
-    <div class="flex h-full flex-col bg-base-100" [style.--brand]="b().color">
+    <div class="storefront flex h-full flex-col bg-base-100 text-base-content" [style.--brand]="b().color">
       <div class="aspect-[16/7] w-full bg-base-300/60 bg-[repeating-linear-gradient(45deg,transparent,transparent_6px,rgba(0,0,0,.05)_6px,rgba(0,0,0,.05)_12px)]"></div>
 
       <div class="flex-1 p-5">
@@ -75,8 +75,10 @@ export class Storefront {
     @if (page.isLoading()) {
       <div class="grid min-h-dvh place-items-center"><span class="loading loading-spinner"></span></div>
     } @else if (page.value(); as p) {
-      <div class="mx-auto min-h-dvh max-w-md bg-base-100 shadow-sm">
-        <app-storefront [business]="p.tenant.business" [productList]="p.products" />
+      <div class="storefront min-h-dvh bg-base-200">
+        <div class="mx-auto min-h-dvh max-w-md bg-base-100 shadow-sm">
+          <app-storefront [business]="p.tenant.business" [productList]="p.products" />
+        </div>
       </div>
     } @else {
       <div class="grid min-h-dvh place-items-center p-6 text-center">

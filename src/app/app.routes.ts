@@ -2,7 +2,8 @@ import { Routes } from '@angular/router';
 import { authGuard } from './auth';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'app' },
+  // la landing: la primera pantalla de un comercio que todavía no es cliente
+  { path: '', pathMatch: 'full', loadComponent: () => import('./landing').then(m => m.Landing) },
 
   { path: 'login', loadComponent: () => import('./login').then(m => m.Login) },
 

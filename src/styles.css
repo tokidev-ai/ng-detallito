@@ -2,35 +2,36 @@
 @plugin "daisyui" { themes: detallito --default; }
 
 /* ─────────────────────────────────────────────────────────────
-   PALETA — placeholder neutral (papel + tinta, como el wireframe).
-   Cambiar SOLO este bloque cuando llegue la paleta definitiva.
+   PALETA — tokidev. Extraída del arte de marca:
+   fondo #121134, violeta #2D1156→#361160, símbolo #E8694B,
+   gradiente #E5794F → #C24A85 → #951FD2.
    ───────────────────────────────────────────────────────────── */
 @plugin "daisyui/theme" {
   name: "detallito";
   default: true;
-  color-scheme: light;
+  color-scheme: dark;
 
-  --color-base-100: #ffffff;
-  --color-base-200: #f7f6f2;
-  --color-base-300: #e8e6de;
-  --color-base-content: #1c1b18;
+  --color-base-100: #181642;   /* tarjetas y superficies */
+  --color-base-200: #121134;   /* fondo */
+  --color-base-300: #2a2359;   /* bordes y separadores */
+  --color-base-content: #f2f0fb;
 
-  --color-primary: #1c1b18;
-  --color-primary-content: #fbfaf7;
-  --color-secondary: #6b6960;
+  --color-primary: #951fd2;
+  --color-primary-content: #ffffff;
+  --color-secondary: #c24a85;
   --color-secondary-content: #ffffff;
-  --color-accent: #3b7d6e;
-  --color-accent-content: #ffffff;
-  --color-neutral: #2b2a26;
-  --color-neutral-content: #f7f6f2;
+  --color-accent: #e8694b;
+  --color-accent-content: #1a0d08;
+  --color-neutral: #241f4f;
+  --color-neutral-content: #f2f0fb;
 
-  --color-info: #3b6ea5;
-  --color-info-content: #ffffff;
-  --color-success: #3f7d4e;
-  --color-success-content: #ffffff;
-  --color-warning: #b07d22;
-  --color-warning-content: #ffffff;
-  --color-error: #a94434;
+  --color-info: #4aa3e8;
+  --color-info-content: #06131f;
+  --color-success: #3fbd82;
+  --color-success-content: #04170e;
+  --color-warning: #e0a13a;
+  --color-warning-content: #1c1204;
+  --color-error: #e2504a;
   --color-error-content: #ffffff;
 
   --radius-selector: 0.75rem;
@@ -39,8 +40,42 @@
   --border: 1px;
 }
 
+@theme {
+  --color-brand-orange: #e5794f;
+  --color-brand-pink: #c24a85;
+  --color-brand-violet: #951fd2;
+  --color-brand-deep: #2d1156;
+}
+
 html { -webkit-text-size-adjust: 100%; }
 body { @apply bg-base-200 text-base-content antialiased; }
 
+/* El gradiente de marca, en texto y en relleno. */
+.brand-text {
+  background: linear-gradient(95deg, #e5794f 0%, #c24a85 48%, #951fd2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-fill { background: linear-gradient(95deg, #e5794f 0%, #c24a85 48%, #951fd2 100%); }
+
+/* El resplandor violeta de arriba, igual que el arte. */
+.brand-glow {
+  background:
+    radial-gradient(60rem 32rem at 50% -14rem, #3d1266 0%, transparent 70%),
+    radial-gradient(40rem 24rem at 88% 4rem, #2d1156 0%, transparent 65%);
+}
+
 /* la bottom nav móvil es fija: que el contenido no quede debajo */
 .pb-safe { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+
+/* La página del comercio es del comercio, no nuestra: superficie neutra para
+   que lo único que tiña sea SU color de marca. El morado es de la plataforma
+   y se queda del lado de adentro. */
+.storefront {
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f6f5f2;
+  --color-base-300: #e4e2db;
+  --color-base-content: #1c1b18;
+}

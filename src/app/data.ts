@@ -123,6 +123,18 @@ export class Store {
     });
   }
 
+  /** Comercios publicados, para mostrar en la landing. Sin sesión. */
+  publishedTenants() {
+    return resource({
+      loader: async () => {
+        const snap = await getDocs(query(
+          collection(this.db, 'tenants'),
+          where('business.published', '==', true)));
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Tenant);
+      },
+    });
+  }
+
   /** ¿Está libre ese link público? Consulta global, no solo mis comercios. */
   async slugTaken(slug: string, exceptId?: string) {
     if (!slug) return false;

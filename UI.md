@@ -131,3 +131,26 @@ No hay claves: el workflow se identifica por OIDC y Google le presta la service 
 `ci-deploy@giftcards-bo` vía Workload Identity Federation.
 
 Producción: **https://giftcards-bo.web.app**
+
+---
+
+## 4. Marca
+
+Paleta tomada del arte de tokidev: fondo `#121134`, violeta `#2D1156`→`#361160`,
+naranja del símbolo `#E8694B`, y el gradiente `#E5794F → #C24A85 → #951FD2`.
+Todo vive en un bloque al principio de `src/styles.css`, más `.brand-text`,
+`.brand-fill` y `.brand-glow`.
+
+**La página del comercio (`/:slug`) NO lleva nuestra marca.** Va sobre una superficie
+neutra (`.storefront`) para que lo único que tiña sea el color del comercio. Si le
+pusiéramos el morado, todos los comercios se verían iguales y se cae la premisa del
+producto. El morado es de la plataforma y se queda del lado de adentro.
+
+### Pantallas de venta
+
+`/` es la landing pública: hero, tres pasos, el argumento de deuda-vs-ingreso,
+precio y los comercios publicados traídos de Firestore en vivo. Es lo primero que ve
+alguien que todavía no es cliente.
+
+`/app` es la lista post-login. Con comercios muestra tarjetas; sin ninguno, una
+pantalla que empuja a crear el primero en vez de un vacío.
