@@ -30,7 +30,7 @@ export class Mark {
   template: `
     <span class="inline-flex items-center gap-2">
       <app-mark [size]="size()" />
-      <span class="text-lg font-semibold tracking-tight">Detallito</span>
+      <span class="text-lg font-semibold tracking-tight">GiftKBol</span>
     </span>
   `,
 })

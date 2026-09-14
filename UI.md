@@ -136,6 +136,16 @@ Producción: **https://giftcards-bo.web.app**
 
 ## 4. Marca
 
+La app se llama **GiftKBol**. Colores **planos** de la paleta, sin degradados:
+violeta `#951FD2` para los CTA, naranja `#E8694B` para acentos y texto destacado,
+magenta `#C24A85` de apoyo, fondo `#121134` / `#180F38`.
+
+La landing es un **one-pager** con animaciones de entrada (`reveal`, apagadas con
+`prefers-reduced-motion` y con timeout de respaldo: en una pestaña de fondo el
+IntersectionObserver no dispara y nadie puede quedarse con la página en blanco).
+Los nombres de comercios en la tira de logos son **inventados**: poner marcas
+reales como clientes sería un aval falso.
+
 Paleta tomada del arte de tokidev: fondo `#121134`, violeta `#2D1156`→`#361160`,
 naranja del símbolo `#E8694B`, y el gradiente `#E5794F → #C24A85 → #951FD2`.
 Todo vive en un bloque al principio de `src/styles.css`, más `.brand-text`,
@@ -159,7 +169,7 @@ Son **dos productos distintos** con dos puertas distintas, aunque el login sea e
 
 | | Panel del comercio | Panel de la startup |
 |---|---|---|
-| Ruta | `/app` → `/app/:tenant/…` | `/admin` |
+| Ruta | `/app` → `/app/:tenant/…` | `/gkb-interno-4f7a2` |
 | Quién | el dueño y su equipo | nosotros |
 | Ve | solo SU comercio | todos los comercios y el dinero |
 | Acceso | cualquiera que entra con Google | un doc en `/superadmins/{uid}` |
@@ -168,8 +178,9 @@ Superadmin se otorga con `npm run superadmin -- alguien@mail.com` (y `--quitar` 
 Desde la app **nadie puede escribir `/superadmins`**: la regla lo prohíbe siempre, solo se
 puede desde el script con credenciales de gcloud. Cada uno lee únicamente su propio doc.
 
-Cuando sos superadmin aparece "Panel de la startup" en la barra y en el selector de
-comercios; `/admin` tiene el camino de vuelta a tu panel de comercio.
+La ruta del panel interno **no está enlazada desde ningún lado**: se llega solo
+escribiendo la URL. Eso es comodidad, no seguridad — lo que realmente protege es el
+guard y la regla de Firestore. Un comercio que adivine la URL ve su propio panel.
 
 ### Pantallas de venta
 

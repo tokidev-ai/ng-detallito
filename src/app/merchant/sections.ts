@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CardStatus, Perm, Store } from '../data';
+import { CardStatus, Perm, ProductKind, Store } from '../data';
+import { Storefront } from '../storefront';
 import { BsPipe, Status } from '../ui';
 
 const STATES: (CardStatus | 'todas')[] = ['todas', 'activa', 'parcial', 'canjeada', 'vencida', 'pagada'];
@@ -95,7 +96,7 @@ export class Canjes { readonly s = inject(Store); }
 
 @Component({
   selector: 'app-productos',
-  imports: [BsPipe],
+  imports: [FormsModule, BsPipe],
   template: `
   <ul class="space-y-2">
     @for (p of s.products(); track p.id) {
@@ -105,52 +106,174 @@ export class Canjes { readonly s = inject(Store); }
         <span class="tabular-nums font-semibold">
           {{ p.kind === 'open' ? (p.min | bs) + ' – ' + (p.max | bs) : (p.amount | bs) }}
         </span>
+        <button type="button" class="btn btn-ghost btn-xs" (click)="s.removeProduct(p.id)">quitar</button>
+      </li>
+    } @empty {
+      <li class="rounded-box border border-dashed border-base-300 p-8 text-center text-base-content/55">
+        Sin productos tu página no puede vender nada.
       </li>
     }
   </ul>
+
+  <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4 sm:p-5">
+    <p class="text-xs uppercase tracking-wider text-base-content/50">Agregar</p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      @for (k of kinds; track k) {
+        <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
+                [class.btn-primary]="kind() === k" [class.btn-outline]="kind() !== k"
+                (click)="kind.set(k)">{{ label[k] }}</button>
+      }
+    </div>
+    <div class="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
+      <input class="input input-bordered w-full" [(ngModel)]="name" name="pname" placeholder="Nombre visible">
+      @if (kind() === 'open') {
+        <div class="join">
+          <input type="number" class="input input-bordered join-item w-24" [(ngModel)]="min" name="pmin" placeholder="min">
+          <input type="number" class="input input-bordered join-item w-24" [(ngModel)]="max" name="pmax" placeholder="max">
+        </div>
+      } @else {
+        <input type="number" class="input input-bordered w-32" [(ngModel)]="amount" name="pamount" placeholder="Bs">
+      }
+    </div>
+    <button type="button" class="btn btn-outline btn-sm mt-3" (click)="add()">+ Agregar</button>
+  </div>
   `,
 })
 export class Productos {
   readonly s = inject(Store);
   readonly label = { fixed: 'Monto fijo', open: 'Monto abierto', service: 'Servicio' } as const;
+  readonly kinds = ['fixed', 'open', 'service'] as const;
+
+  readonly kind = signal<ProductKind>('fixed');
+  name = '';
+  amount: number | null = null;
+  min: number | null = null;
+  max: number | null = null;
+
+  async add() {
+    const kind = this.kind();
+    if (kind === 'open' ? !(this.min && this.max) : !this.amount) return;
+    const name = this.name.trim() || (kind === 'open' ? 'Monto abierto' : `Gift card Bs ${this.amount}`);
+    await this.s.addProduct({
+      kind, name,
+      ...(kind === 'open' ? { min: this.min!, max: this.max! } : { amount: this.amount! }),
+    });
+    this.name = ''; this.amount = null; this.min = null; this.max = null;
+  }
 }
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule],
+  imports: [FormsModule, Storefront],
   template: `
-  <div class="grid gap-6 lg:grid-cols-2">
-    <div class="space-y-4">
-      <label class="form-control block">
-        <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Nombre</span>
-        <input class="input input-bordered w-full" [ngModel]="s.business().name"
-               (ngModelChange)="s.saveBusiness({ name: $event })" name="name">
-      </label>
-      <label class="form-control block">
-        <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Descripción</span>
-        <textarea class="textarea textarea-bordered h-24 w-full" [ngModel]="s.business().description"
-                  (ngModelChange)="s.saveBusiness({ description: $event })" name="desc"></textarea>
-      </label>
-      <label class="form-control block">
-        <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Color de marca</span>
-        <input type="color" class="h-12 w-24 rounded-field border border-base-300"
-               [ngModel]="s.business().color" (ngModelChange)="s.saveBusiness({ color: $event })" name="color">
-      </label>
+  <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+
+    <div class="space-y-6">
+      <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+        <h2 class="text-lg font-medium">Tu marca</h2>
+
+        <div class="mt-5 flex flex-col gap-5 sm:flex-row">
+          <label class="grid h-28 w-28 shrink-0 cursor-pointer place-items-center rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 hover:border-primary/50">
+            @if (b().logoUrl) {
+              <img [src]="b().logoUrl" alt="logo" class="size-full rounded-box object-cover">
+            } @else { <span>subí tu<br>logo</span> }
+            <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
+          </label>
+
+          <div class="flex-1 space-y-4">
+            <label class="form-control block">
+              <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Nombre</span>
+              <input class="input input-bordered w-full" [ngModel]="b().name" name="name"
+                     (ngModelChange)="s.saveBusiness({ name: $event })">
+            </label>
+
+            <label class="form-control block">
+              <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Descripción corta</span>
+              <textarea class="textarea textarea-bordered h-20 w-full" [ngModel]="b().description" name="desc"
+                        (ngModelChange)="s.saveBusiness({ description: $event })"></textarea>
+            </label>
+          </div>
+        </div>
+
+        <fieldset class="mt-5">
+          <legend class="mb-2 text-xs uppercase tracking-wider text-base-content/50">Color de marca</legend>
+          <div class="flex flex-wrap items-center gap-2">
+            @for (c of swatches; track c) {
+              <button type="button" (click)="s.saveBusiness({ color: c })" [style.background-color]="c"
+                      [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="b().color === c"
+                      class="size-10 rounded-field border-2"
+                      [class.border-primary]="b().color === c"
+                      [class.border-base-300]="b().color !== c"></button>
+            }
+            <label class="grid size-10 cursor-pointer place-items-center rounded-field border-2 border-dashed border-base-300 text-lg leading-none">
+              +<input type="color" class="sr-only" [ngModel]="b().color" name="color"
+                      (ngModelChange)="s.saveBusiness({ color: $event })">
+            </label>
+          </div>
+        </fieldset>
+      </section>
+
+      <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+        <h2 class="text-lg font-medium">Vigencia y términos</h2>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          @for (m of [6, 12, 18, 24]; track m) {
+            <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
+                    [class.btn-primary]="b().validityMonths === m" [class.btn-outline]="b().validityMonths !== m"
+                    (click)="s.saveBusiness({ validityMonths: m })">{{ m }} meses</button>
+          }
+        </div>
+        <p class="mt-2 text-sm text-base-content/55">Cuenta desde la emisión. Aparece al pie de cada gift card.</p>
+
+        <label class="form-control mt-5 block">
+          <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Términos del comercio</span>
+          <textarea class="textarea textarea-bordered h-28 w-full" [ngModel]="b().terms" name="terms"
+                    (ngModelChange)="s.saveBusiness({ terms: $event })"
+                    placeholder="Dónde vale, si se puede transferir, qué pasa si no alcanza el saldo…"></textarea>
+        </label>
+      </section>
+
+      <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-medium">{{ b().published ? 'Tu página está publicada' : 'Tu página está en borrador' }}</h2>
+            <p class="mt-1 break-all font-mono text-sm text-base-content/55">giftcards.bo/{{ b().slug }}</p>
+          </div>
+          <a class="btn btn-outline btn-sm" [href]="'/' + b().slug" target="_blank" rel="noopener">Ver mi página</a>
+          <button type="button" class="btn btn-sm"
+                  [class.btn-outline]="b().published" [class.btn-primary]="!b().published"
+                  (click)="s.saveBusiness({ published: !b().published })">
+            {{ b().published ? 'Despublicar' : 'Publicar' }}
+          </button>
+        </div>
+        <p class="mt-3 text-sm text-base-content/55">
+          Despublicada, el link deja de funcionar para tus clientes. Las gift cards ya vendidas se siguen canjeando.
+        </p>
+      </section>
     </div>
 
-    <div class="rounded-box border border-base-300 bg-base-200 p-4">
-      <p class="mb-3 text-xs uppercase tracking-wider text-base-content/50">Estado</p>
-      <p class="text-lg">{{ s.business().published ? 'Publicada' : 'Borrador' }}</p>
-      <p class="mt-1 break-all font-mono text-sm text-base-content/60">giftcards.bo/{{ s.business().slug }}</p>
-      <button type="button" class="btn btn-outline btn-sm mt-4"
-              (click)="s.saveBusiness({ published: !s.business().published })">
-        {{ s.business().published ? 'Despublicar' : 'Publicar' }}
-      </button>
-    </div>
+    <!-- lo que se está editando, en vivo -->
+    <aside class="lg:sticky lg:top-6 lg:self-start">
+      <p class="mb-3 text-xs uppercase tracking-wider text-base-content/50">Así se ve tu página</p>
+      <div class="mx-auto w-full max-w-[300px] overflow-hidden rounded-[2rem] border-4 border-base-300 bg-base-100">
+        <app-storefront />
+      </div>
+    </aside>
   </div>
   `,
 })
-export class Marca { readonly s = inject(Store); }
+export class Marca {
+  readonly s = inject(Store);
+  readonly b = this.s.business;
+  readonly swatches = ['#1c1b18', '#3b7d6e', '#a94434', '#3b6ea5', '#b07d22', '#951fd2'];
+
+  onLogo(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    // ponytail: objectURL, no Storage: se ve al instante y no sobrevive al reload.
+    // Cuando entre Firebase Storage se sube acá y se guarda la URL real.
+    if (file) this.s.saveBusiness({ logoUrl: URL.createObjectURL(file) });
+  }
+}
 
 const PERMS = [
   ['redeem', 'Canjear gift cards'],

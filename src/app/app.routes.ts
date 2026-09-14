@@ -34,9 +34,11 @@ export const routes: Routes = [
     ],
   },
 
-  // panel de la STARTUP — distinto del panel del comercio
+  // Panel de la STARTUP. Ruta no enlazada desde ningún lado: se llega solo
+  // escribiendo la URL, y aun así el guard exige el doc en /superadmins.
+  // ponytail: la URL es comodidad, no seguridad. Lo que protege es la regla.
   {
-    path: 'admin', canActivate: [superadminGuard],
+    path: 'gkb-interno-4f7a2', canActivate: [superadminGuard],
     loadComponent: () => import('./admin/panel').then(m => m.AdminPanel),
   },
 

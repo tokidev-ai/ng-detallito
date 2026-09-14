@@ -50,20 +50,31 @@
 html { -webkit-text-size-adjust: 100%; }
 body { @apply bg-base-200 text-base-content antialiased; }
 
-/* El gradiente de marca, en texto y en relleno. */
-.brand-text {
-  background: linear-gradient(95deg, #e5794f 0%, #c24a85 48%, #951fd2 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.brand-fill { background: linear-gradient(95deg, #e5794f 0%, #c24a85 48%, #951fd2 100%); }
+/* Colores planos de la paleta, sin degradados. */
+.brand-text { color: #e8694b; }
+.brand-fill { background-color: #951fd2; color: #fff; }
+.brand-fill:hover { background-color: #a62ce3; }
+.brand-fill:active { background-color: #8318bb; }
 
-/* El resplandor violeta de arriba, igual que el arte. */
-.brand-glow {
-  background:
-    radial-gradient(60rem 32rem at 50% -14rem, #3d1266 0%, transparent 70%),
-    radial-gradient(40rem 24rem at 88% 4rem, #2d1156 0%, transparent 65%);
+/* El fondo violeta profundo del arte, plano. */
+.brand-glow { background-color: #180f38; }
+
+/* ── movimiento ──────────────────────────────────────────────────────────────
+   Todo se apaga con prefers-reduced-motion; nada acá es información, solo
+   entrada. Si el navegador no ejecuta el observer, los elementos quedan
+   visibles: .reveal parte opaco y la clase solo lo anima. */
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+.reveal { animation: rise .7s cubic-bezier(.22,.8,.3,1) both; }
+.reveal-1 { animation-delay: .08s; }
+.reveal-2 { animation-delay: .16s; }
+.reveal-3 { animation-delay: .24s; }
+.reveal-4 { animation-delay: .32s; }
+.floaty { animation: floaty 7s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .floaty { animation: none !important; }
 }
 
 /* la bottom nav móvil es fija: que el contenido no quede debajo */

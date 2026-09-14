@@ -18,7 +18,7 @@ import { BsPipe } from '../ui';
         <a routerLink="/" class="flex items-center gap-2">
           <app-wordmark />
         </a>
-        <span class="badge badge-sm border-0 text-white brand-fill">startup</span>
+        <span class="badge badge-sm border-0 text-white" style="background-color:#e8694b">interno</span>
         <a routerLink="/app" class="btn btn-ghost btn-sm ms-auto">Mi panel de comercio</a>
         <button type="button" class="btn btn-ghost btn-sm" (click)="salir()">Salir</button>
       </nav>

@@ -44,9 +44,6 @@ const TABS: Tab[] = [
               <li class="mt-1 border-t border-base-300 pt-1">
                 <a routerLink="/onboarding">+ Crear otro comercio</a>
               </li>
-              @if (auth.isSuperadmin()) {
-                <li><a routerLink="/admin">Panel de la startup</a></li>
-              }
               <li><button type="button" (click)="salir()">Salir</button></li>
             </ul>
           </div>

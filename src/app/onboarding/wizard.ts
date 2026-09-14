@@ -39,7 +39,6 @@ export const slugify = (s: string) =>
                   class="btn btn-sm rounded-full font-normal normal-case"
                   [class.brand-fill]="i === step()"
                   [class.border-0]="i === step()"
-                  [class.text-white]="i === step()"
                   [class.btn-outline]="i !== step() && i <= furthest()"
                   [class.btn-ghost]="i > furthest()">
                   <span class="tabular-nums opacity-60">{{ i + 1 }}</span> {{ s }}
@@ -224,7 +223,7 @@ export const slugify = (s: string) =>
                 <p class="mt-1 break-all font-mono">giftcards.bo/{{ draft().slug || '…' }}</p>
               </div>
 
-              <button type="button" class="btn mt-5 w-full border-0 text-white brand-fill sm:w-auto"
+              <button type="button" class="btn mt-5 w-full border-0 brand-fill sm:w-auto"
                       [disabled]="!canPublish()" (click)="publish()">
                 @if (publishing()) { <span class="loading loading-spinner loading-sm"></span> }
                 Publicar mi página
@@ -240,7 +239,7 @@ export const slugify = (s: string) =>
           <div class="mt-8 flex justify-end gap-2">
             <button type="button" class="btn btn-ghost" [disabled]="step() === 0" (click)="back()">Atrás</button>
             @if (step() < steps.length - 1) {
-              <button type="button" class="btn border-0 text-white brand-fill" (click)="next()">Guardar y seguir</button>
+              <button type="button" class="btn border-0 brand-fill" (click)="next()">Guardar y seguir</button>
             }
           </div>
         </section>
