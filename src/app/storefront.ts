@@ -28,13 +28,14 @@ import { Wordmark } from './brand';
         </div>
       </header>
 
-      <!-- hero -->
-      <section class="relative flex-1 overflow-hidden">
+      <!-- hero: la sección centra el contenido verticalmente (mobile); en desktop
+           vuelve a bloque y el grid de dos columnas manda -->
+      <section class="relative flex flex-1 flex-col justify-center overflow-hidden lg:block">
         <div class="dotgrid pointer-events-none absolute inset-0" aria-hidden="true"></div>
         <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
              [style.background-color]="b().color" aria-hidden="true"></div>
 
-        <div class="relative mx-auto grid h-full max-w-6xl content-center gap-x-12 gap-y-8 px-5 py-8 text-center sm:px-8 sm:py-12 lg:h-auto lg:grid-cols-[1.05fr_1fr] lg:content-start lg:items-start lg:gap-y-8 lg:py-16 lg:text-left">
+        <div class="relative mx-auto grid w-full max-w-6xl gap-x-12 gap-y-8 px-5 py-8 text-center sm:px-8 sm:py-12 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:gap-y-8 lg:py-16 lg:text-left">
 
           <!-- 1 · título -->
           <h1 class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
