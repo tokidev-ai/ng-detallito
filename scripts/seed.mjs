@@ -53,17 +53,30 @@ function encode(v) {
 
 const token = sh('gcloud', ['auth', 'print-access-token']);
 
+const authHeaders = { Authorization: `Bearer ${token}`, 'x-goog-user-project': PROJECT };
+
 async function put(path, data) {
   const res = await fetch(`${BASE}/${path}`, {
     method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'x-goog-user-project': PROJECT,
-      'Content-Type': 'application/json',
-    },
+    headers: { ...authHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: encode(data).mapValue.fields }),
   });
   if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
+}
+
+/** Borra todos los docs de una subcolección. La REST no borra lo que no pisa,
+ *  así que las siembras viejas dejan basura si no se limpia a mano. */
+async function dropCollection(path) {
+  const res = await fetch(`${BASE}/${path}?pageSize=300`, { headers: authHeaders });
+  if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
+  const { documents = [] } = await res.json();
+  for (const d of documents) {
+    const del = await fetch(`https://firestore.googleapis.com/v1/${d.name}`, {
+      method: 'DELETE', headers: authHeaders,
+    });
+    if (!del.ok) throw new Error(`delete ${d.name}: ${del.status} ${await del.text()}`);
+  }
+  return documents.length;
 }
 
 // ── datos ──────────────────────────────────────────────────────────────────
@@ -143,6 +156,7 @@ for (const t of TENANTS) {
   await put(`tenants/${t.id}/staff/${owner.email}`,
     { email: owner.email, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS });
   for (const m of t.extraStaff) await put(`tenants/${t.id}/staff/${m.email}`, m);
+  await dropCollection(`tenants/${t.id}/products`);  // modelo viejo: ya no existe
   for (const c of t.cards) await put(`tenants/${t.id}/cards/${c.code}`, c);
   for (const [i, r] of t.redemptions.entries()) await put(`tenants/${t.id}/redemptions/r${i + 1}`, r);
 
