@@ -511,9 +511,6 @@ const CASHIER: Record<Perm, boolean> = {
     }
   </ul>
 
-  <p class="mt-4 text-sm text-base-content/60">Datos bancarios y liquidaciones no se delegan nunca.</p>
-  <p class="mt-1 text-sm text-warning">la UI oculta; las Firestore Rules son las que mandan.</p>
-
   <!-- quitar empleado: modal, no alert -->
   @if (removing(); as email) {
     <div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" (click)="removing.set(null)">
