@@ -8,24 +8,6 @@ import { Reveal } from './reveal';
  *  aval falso; se reemplazan por comercios de verdad cuando los haya. */
 const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Óptica Luz', 'Sabor Sur'];
 
-const VALUES = [
-  {
-    title: 'Tu página, tu link',
-    body: 'Tu logo, tu color, tus productos. giftcards.bo/tu-negocio, listo para el estado de WhatsApp.',
-    icon: 'M4 5h16v14H4zM4 9h16',
-  },
-  {
-    title: 'Cobras por adelantado',
-    body: 'Tu cliente paga por QR y recibe la gift card por email. La plata entra hoy.',
-    icon: 'M12 3v18M8 7h6a3 3 0 0 1 0 6h-4a3 3 0 0 0 0 6h6',
-  },
-  {
-    title: 'Sabes lo que debes',
-    body: 'Separamos lo cobrado de lo que todavía tienes que entregar. Nadie más te lo dice.',
-    icon: 'M3 12h4l3 8 4-16 3 8h4',
-  },
-];
-
 @Component({
   selector: 'app-landing',
   imports: [RouterLink, Wordmark, Reveal],
@@ -60,7 +42,7 @@ const VALUES = [
             <a routerLink="/login" class="btn btn-lg btn-ghost">Ya tengo cuenta</a>
           </div>
 
-          <dl reveal="3" class="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-base-300 pt-6 text-sm">
+          <dl reveal="3" class="mt-10 grid max-w-md grid-cols-2 gap-6 border-t border-base-300 pt-6 text-sm">
             @for (n of numeros; track n.k) {
               <div>
                 <dt class="text-xl font-semibold">{{ n.k }}</dt>
@@ -74,10 +56,12 @@ const VALUES = [
         <div reveal="2" class="relative mx-auto mb-10 w-full max-w-[310px] lg:mb-0 lg:max-w-[340px]">
           <div>
             <div class="overflow-hidden rounded-[1.75rem] border border-base-300 bg-base-100 shadow-lg">
-              <div class="relative h-24" style="background-color:#3b7d6e">
+              <div class="relative">
+                <img src="img/spa-cover.jpg" alt="" width="760" height="280"
+                     class="h-28 w-full object-cover">
                 <div class="absolute inset-x-0 -bottom-7 px-5">
-                  <span class="grid size-14 place-items-center rounded-2xl border-4 border-base-100 text-lg font-semibold text-white"
-                        style="background-color:#2f6457">SA</span>
+                  <img src="img/spa-aurora-logo.svg" alt="Spa Aurora" width="56" height="56"
+                       class="size-14 rounded-2xl border-4 border-base-100">
                 </div>
               </div>
 
@@ -124,23 +108,6 @@ const VALUES = [
       </div>
     </section>
 
-    <!-- ── qué te damos ────────────────────────────────────── -->
-    <section class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <div class="grid gap-5 md:grid-cols-3">
-        @for (v of values; track v.title; let i = $index) {
-          <div [reveal]="i + 1" class="min-w-0 rounded-box border border-base-300 bg-base-100 p-6">
-            <span class="grid size-11 place-items-center rounded-field bg-accent text-accent-content">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="size-6">
-                <path [attr.d]="v.icon" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <h2 class="mt-4 text-lg font-medium">{{ v.title }}</h2>
-            <p class="mt-2 text-base-content/65">{{ v.body }}</p>
-          </div>
-        }
-      </div>
-    </section>
-
     <!-- ── cierre ──────────────────────────────────────────── -->
     <section class="border-t border-base-300 bg-base-100">
       <div reveal class="mx-auto flex max-w-6xl flex-wrap items-center gap-8 px-4 py-14 sm:px-6">
@@ -168,7 +135,6 @@ const VALUES = [
 })
 export class Landing {
   readonly logos = LOGOS;
-  readonly values = VALUES;
   readonly montos = [
     { label: 'Bs 150', on: false },
     { label: 'Bs 250', on: true },
@@ -177,7 +143,6 @@ export class Landing {
   ];
   readonly numeros = [
     { k: '10 min', v: 'y tu página está lista' },
-    { k: 'Sin app', v: 'ni para ti ni para tus clientes' },
     { k: 'Por QR', v: 'tus clientes pagan como ya pagan' },
   ];
   readonly shops = inject(Store).publishedTenants();

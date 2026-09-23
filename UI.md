@@ -166,6 +166,14 @@ metiéramos el naranja, todos los comercios se verían iguales.
 Español latinoamericano neutro, **tuteo**, sin voseo rioplatense: "sabes", no "sabés";
 "crea tu comercio", no "creá tu comercio". Los clientes son bolivianos.
 
+### Imágenes
+
+`public/img/spa-cover.jpg` es una foto real de Unsplash (licencia Unsplash: uso comercial
+libre, sin atribución obligatoria) y se sirve desde nuestro propio hosting, no enlazada
+en caliente. `public/img/spa-aurora-logo.svg` es un logo **inventado** para el comercio
+de ejemplo — un amanecer, por "Aurora". Las dos son del mockup de la landing, no de
+ningún comercio real.
+
 ### Precio
 
 **La landing no menciona el precio.** Decidido a propósito: hablar de comisión antes de
@@ -206,6 +214,14 @@ guard y la regla de Firestore. Un comercio que adivine la URL ve su propio panel
 
 Español latinoamericano neutro, **tuteo**, sin voseo rioplatense: "sabes", no "sabés";
 "crea tu comercio", no "creá tu comercio". Los clientes son bolivianos.
+
+### Imágenes
+
+`public/img/spa-cover.jpg` es una foto real de Unsplash (licencia Unsplash: uso comercial
+libre, sin atribución obligatoria) y se sirve desde nuestro propio hosting, no enlazada
+en caliente. `public/img/spa-aurora-logo.svg` es un logo **inventado** para el comercio
+de ejemplo — un amanecer, por "Aurora". Las dos son del mockup de la landing, no de
+ningún comercio real.
 
 ### Precio
 
