@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CardState, GiftCard, Perm, Store, cardState } from '../data';
 import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
 import { Storefront } from '../storefront';
+import { GiftcardArt } from '../giftcard';
 import { RedeemDialog } from './redeem';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
@@ -18,7 +19,7 @@ const TABS: { id: CardState; label: string }[] = [
  *  escribe la subcolección `cards`; `code` es la identidad y no se edita. */
 @Component({
   selector: 'app-emitidas',
-  imports: [FormsModule, BsPipe, FechaPipe, Status, RedeemDialog],
+  imports: [FormsModule, BsPipe, FechaPipe, Status, RedeemDialog, GiftcardArt],
   template: `
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div role="tablist" class="tabs tabs-box w-fit">
@@ -109,13 +110,7 @@ const TABS: { id: CardState; label: string }[] = [
             <td class="text-base-content/60">{{ c.expires | fecha }}</td>
             <td><app-status [status]="state(c)" /></td>
             <td class="text-right whitespace-nowrap">
-              <div class="dropdown dropdown-end">
-                <div tabindex="0" role="button" class="btn btn-ghost btn-xs">enviar ▾</div>
-                <ul tabindex="0" class="dropdown-content menu z-10 w-36 rounded-box border border-base-300 bg-base-100 p-1 shadow-lg">
-                  <li><a [href]="waHref(c)" target="_blank" rel="noopener">WhatsApp</a></li>
-                  <li><a [href]="mailHref(c)">Correo</a></li>
-                </ul>
-              </div>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="sending.set(c)">enviar</button>
               <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
               <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
             </td>
@@ -143,13 +138,7 @@ const TABS: { id: CardState; label: string }[] = [
           <p class="text-sm text-base-content/50">de {{ c.value | bs }} · vence {{ c.expires | fecha }}</p>
         </div>
         <div class="mt-3 flex flex-wrap items-center gap-2">
-          <div class="dropdown">
-            <div tabindex="0" role="button" class="btn btn-outline btn-xs">enviar ▾</div>
-            <ul tabindex="0" class="dropdown-content menu z-10 w-36 rounded-box border border-base-300 bg-base-100 p-1 shadow-lg">
-              <li><a [href]="waHref(c)" target="_blank" rel="noopener">WhatsApp</a></li>
-              <li><a [href]="mailHref(c)">Correo</a></li>
-            </ul>
-          </div>
+          <button type="button" class="btn btn-outline btn-xs" (click)="sending.set(c)">enviar</button>
           <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
           <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
         </div>
@@ -158,10 +147,31 @@ const TABS: { id: CardState; label: string }[] = [
       <li class="py-8 text-center text-base-content/50">Nada aquí.</li>
     }
   </ul>
+
+  <!-- enviar: overlay fijo (no lo recorta el scroll de la tabla) con el diseño -->
+  @if (sending(); as c) {
+    <div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" (click)="sending.set(null)">
+      <div class="w-full max-w-sm rounded-box bg-base-100 p-5 shadow-xl" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-medium">Enviar gift card</h3>
+          <button type="button" class="btn btn-ghost btn-sm btn-square" (click)="sending.set(null)">✕</button>
+        </div>
+        <div class="mt-4"><app-giftcard-art [card]="c" [business]="s.business()" /></div>
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <a class="btn gap-2 text-white" style="background-color:#25D366;border-color:#25D366"
+             [href]="waHref(c)" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn-outline" [href]="mailHref(c)">Correo</a>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm mt-2 w-full" (click)="copy(c)">
+          {{ copiedCode() === c.code ? '¡Link copiado!' : 'Copiar link' }}
+        </button>
+      </div>
+    </div>
+  }
   `,
 })
 export class Emitidas {
-  private readonly s = inject(Store);
+  readonly s = inject(Store);
   readonly tabs = TABS;
   readonly tab = signal<CardState>('activa');
   readonly state = (c: GiftCard) => cardState(c);
@@ -213,10 +223,15 @@ export class Emitidas {
   }
 
   // ── enviar la gift card ─────────────────────────────────────────────────────
+  readonly sending = signal<GiftCard | null>(null);
+  readonly copiedCode = signal<string | null>(null);
   private shareUrl(c: GiftCard) { return `${location.origin}${giftPath(this.s.business().slug, c.code)}`; }
   waHref(c: GiftCard) { return waLink(giftMessage(this.s.business().name, this.shareUrl(c), c)); }
   mailHref(c: GiftCard) {
     return mailtoLink(`Tu gift card de ${this.s.business().name}`, giftMessage(this.s.business().name, this.shareUrl(c), c));
+  }
+  async copy(c: GiftCard) {
+    try { await navigator.clipboard.writeText(this.shareUrl(c)); this.copiedCode.set(c.code); } catch { /* sin clipboard */ }
   }
 }
 
