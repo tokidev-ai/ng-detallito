@@ -180,6 +180,21 @@ ningún comercio real.
 que el negocio entienda qué gana espanta a quien recién llega. La conversación de precio
 va después, cuando ya vio la propuesta.
 
+### La landing en móvil
+
+El orden de lectura cambia a propósito bajo `lg`: titular, promesa, botón y recién ahí
+el producto asomando. En un teléfono entran unos 640px útiles antes del primer scroll;
+si el botón no entra ahí, la landing no vende. Medido: el CTA del hero queda dentro de
+la primera pantalla de 844px, con 48px de alto de área táctil.
+
+Tres decisiones que solo aplican en móvil:
+
+- **La barra superior oculta su CTA**, porque duplica el del hero que está a un dedo.
+- **La tarjeta de canje deja de flotar** (`static` en vez de `absolute`): flotando
+  tapaba el botón del mockup.
+- **Las cifras bajan debajo del producto.** Son apoyo, no anzuelo. Se renderizan en dos
+  `<dl>` alternos, nunca los dos a la vez.
+
 ### Pantallas de venta
 
 `/` es la landing pública, un **one-pager** con animaciones de entrada (`reveal`,
@@ -228,6 +243,21 @@ ningún comercio real.
 **La landing no menciona el precio.** Decidido a propósito: hablar de comisión antes de
 que el negocio entienda qué gana espanta a quien recién llega. La conversación de precio
 va después, cuando ya vio la propuesta.
+
+### La landing en móvil
+
+El orden de lectura cambia a propósito bajo `lg`: titular, promesa, botón y recién ahí
+el producto asomando. En un teléfono entran unos 640px útiles antes del primer scroll;
+si el botón no entra ahí, la landing no vende. Medido: el CTA del hero queda dentro de
+la primera pantalla de 844px, con 48px de alto de área táctil.
+
+Tres decisiones que solo aplican en móvil:
+
+- **La barra superior oculta su CTA**, porque duplica el del hero que está a un dedo.
+- **La tarjeta de canje deja de flotar** (`static` en vez de `absolute`): flotando
+  tapaba el botón del mockup.
+- **Las cifras bajan debajo del producto.** Son apoyo, no anzuelo. Se renderizan en dos
+  `<dl>` alternos, nunca los dos a la vez.
 
 ### Pantallas de venta
 
