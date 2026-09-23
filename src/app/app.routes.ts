@@ -26,8 +26,6 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'resumen' },
       { path: 'resumen', loadComponent: () => import('./merchant/resumen').then(m => m.Resumen) },
       { path: 'gift-cards', loadComponent: () => import('./merchant/sections').then(m => m.Emitidas) },
-      { path: 'productos', loadComponent: () => import('./merchant/sections').then(m => m.Catalogo) },
-      { path: 'vigencia', loadComponent: () => import('./merchant/sections').then(m => m.Vigencia) },
       { path: 'marca', loadComponent: () => import('./merchant/sections').then(m => m.Marca) },
       { path: 'equipo', loadComponent: () => import('./merchant/sections').then(m => m.Equipo) },
     ],

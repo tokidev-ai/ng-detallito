@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CardState, GiftCard, Perm, ProductKind, Store, cardState } from '../data';
+import { CardState, GiftCard, Perm, Store, cardState } from '../data';
 import { Storefront } from '../storefront';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
@@ -187,114 +187,6 @@ export class Emitidas {
   async del(c: GiftCard) {
     if (confirm(`¿Borrar la gift card ${c.code} de ${c.to}?`)) await this.s.removeCard(c.code);
   }
-}
-
-@Component({
-  selector: 'app-catalogo',
-  imports: [FormsModule, BsPipe],
-  template: `
-  <p class="mb-4 max-w-2xl text-sm text-base-content/60">
-    Los montos y servicios que tus clientes ven en tu página. Sin al menos uno,
-    tu página no puede vender nada.
-  </p>
-
-  <ul class="space-y-2">
-    @for (p of s.products(); track p.id) {
-      <li class="flex flex-wrap items-center gap-3 rounded-box border border-base-300 bg-base-100 p-4">
-        <span class="badge badge-sm badge-ghost">{{ label[p.kind] }}</span>
-        <span class="min-w-0 flex-1 truncate">{{ p.name }}</span>
-        <span class="tabular-nums font-semibold">
-          {{ p.kind === 'open' ? (p.min | bs) + ' – ' + (p.max | bs) : (p.amount | bs) }}
-        </span>
-        <button type="button" class="btn btn-ghost btn-xs" (click)="s.removeProduct(p.id)">quitar</button>
-      </li>
-    } @empty {
-      <li class="rounded-box border border-dashed border-base-300 p-8 text-center text-base-content/55">
-        Sin productos tu página no puede vender nada.
-      </li>
-    }
-  </ul>
-
-  <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4 sm:p-5">
-    <p class="text-xs uppercase tracking-wider text-base-content/50">Agregar</p>
-    <div class="mt-3 flex flex-wrap gap-2">
-      @for (k of kinds; track k) {
-        <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
-                [class.btn-primary]="kind() === k" [class.btn-outline]="kind() !== k"
-                (click)="kind.set(k)">{{ label[k] }}</button>
-      }
-    </div>
-    <div class="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
-      <input class="input input-bordered w-full" [(ngModel)]="name" name="pname" placeholder="Nombre visible">
-      @if (kind() === 'open') {
-        <div class="join">
-          <input type="number" class="input input-bordered join-item w-24" [(ngModel)]="min" name="pmin" placeholder="min">
-          <input type="number" class="input input-bordered join-item w-24" [(ngModel)]="max" name="pmax" placeholder="max">
-        </div>
-      } @else {
-        <input type="number" class="input input-bordered w-32" [(ngModel)]="amount" name="pamount" placeholder="Bs">
-      }
-    </div>
-    <button type="button" class="btn btn-outline btn-sm mt-3" (click)="add()">+ Agregar</button>
-  </div>
-  `,
-})
-export class Catalogo {
-  readonly s = inject(Store);
-  readonly label = { fixed: 'Monto fijo', open: 'Monto abierto', service: 'Servicio' } as const;
-  readonly kinds = ['fixed', 'open', 'service'] as const;
-
-  readonly kind = signal<ProductKind>('fixed');
-  name = '';
-  amount: number | null = null;
-  min: number | null = null;
-  max: number | null = null;
-
-  async add() {
-    const kind = this.kind();
-    if (kind === 'open' ? !(this.min && this.max) : !this.amount) return;
-    const name = this.name.trim() || (kind === 'open' ? 'Monto abierto' : `Gift card Bs ${this.amount}`);
-    await this.s.addProduct({
-      kind, name,
-      ...(kind === 'open' ? { min: this.min!, max: this.max! } : { amount: this.amount! }),
-    });
-    this.name = ''; this.amount = null; this.min = null; this.max = null;
-  }
-}
-
-
-@Component({
-  selector: 'app-vigencia',
-  imports: [FormsModule],
-  template: `
-  <div class="max-w-2xl space-y-6">
-    <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-      <h2 class="text-lg font-medium">Vigencia</h2>
-      <div class="mt-4 flex flex-wrap items-center gap-2">
-        @for (m of [6, 12, 18, 24]; track m) {
-          <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
-                  [class.btn-primary]="b().validityMonths === m" [class.btn-outline]="b().validityMonths !== m"
-                  (click)="s.saveBusiness({ validityMonths: m })">{{ m }} meses</button>
-        }
-      </div>
-      <p class="mt-2 text-sm text-base-content/55">Cuenta desde la emisión. Aparece al pie de cada gift card.</p>
-    </section>
-
-    <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-      <h2 class="text-lg font-medium">Términos del comercio</h2>
-      <label class="form-control mt-4 block">
-        <textarea class="textarea textarea-bordered h-28 w-full" [ngModel]="b().terms" name="terms"
-                  (ngModelChange)="s.saveBusiness({ terms: $event })"
-                  placeholder="Dónde vale, si se puede transferir, qué pasa si no alcanza el saldo…"></textarea>
-      </label>
-      <p class="mt-2 text-sm text-base-content/55">Se muestra en tu página y en el correo que recibe quien compra.</p>
-    </section>
-  </div>
-  `,
-})
-export class Vigencia {
-  readonly s = inject(Store);
-  readonly b = this.s.business;
 }
 
 @Component({
