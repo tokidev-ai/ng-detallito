@@ -1,29 +1,93 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CardStatus, Perm, ProductKind, Store } from '../data';
+import { CardState, GiftCard, Perm, ProductKind, Store, cardState } from '../data';
 import { Storefront } from '../storefront';
-import { BsPipe, Status } from '../ui';
+import { BsPipe, FechaPipe, Status } from '../ui';
 
-const STATES: (CardStatus | 'todas')[] = ['todas', 'activa', 'parcial', 'canjeada', 'vencida', 'pagada'];
+const TABS: { id: CardState; label: string }[] = [
+  { id: 'activa', label: 'Activas' },
+  { id: 'canjeada', label: 'Canjeadas' },
+  { id: 'vencida', label: 'Vencidas' },
+];
 
+/** CRUD de las gift cards emitidas. El estado (activa/canjeada/vencida) no se
+ *  guarda: se deriva del saldo y la fecha (`cardState`), así que las pestañas
+ *  no filtran un campo sino que reparten por ese cálculo. Crear/editar/borrar
+ *  escribe la subcolección `cards`; `code` es la identidad y no se edita. */
 @Component({
   selector: 'app-emitidas',
-  imports: [BsPipe, Status],
+  imports: [FormsModule, BsPipe, FechaPipe, Status],
   template: `
-  <div class="flex flex-wrap items-center gap-2">
-    @for (f of states; track f) {
-      <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
-              [class.btn-primary]="filter() === f" [class.btn-outline]="filter() !== f"
-              (click)="filter.set(f)">{{ f }}</button>
-    }
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div role="tablist" class="tabs tabs-box w-fit">
+      @for (t of tabs; track t.id) {
+        <button type="button" role="tab" class="tab" [class.tab-active]="tab() === t.id"
+                (click)="tab.set(t.id)">{{ t.label }} ({{ count(t.id) }})</button>
+      }
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
   </div>
+
+  <!-- filtro de fecha, solo en canjeadas -->
+  @if (tab() === 'canjeada') {
+    <div class="mt-4 flex flex-wrap items-end gap-3">
+      <label class="form-control">
+        <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Desde</span>
+        <input type="date" class="input input-bordered input-sm" [(ngModel)]="desde" name="desde">
+      </label>
+      <label class="form-control">
+        <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Hasta</span>
+        <input type="date" class="input input-bordered input-sm" [(ngModel)]="hasta" name="hasta">
+      </label>
+      @if (desde || hasta) {
+        <button type="button" class="btn btn-ghost btn-sm" (click)="desde = ''; hasta = ''">limpiar</button>
+      }
+    </div>
+  }
+
+  <!-- alta / edición -->
+  @if (formOpen()) {
+    <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4 sm:p-5">
+      <p class="text-xs uppercase tracking-wider text-base-content/50">
+        {{ editingCode ? 'Editar ' + editingCode : 'Nueva gift card' }}
+      </p>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <label class="form-control">
+          <span class="mb-1 block text-sm text-base-content/60">Código</span>
+          <input class="input input-bordered w-full font-mono" [(ngModel)]="fCode" name="code"
+                 [disabled]="!!editingCode" placeholder="1234-AB5">
+        </label>
+        <label class="form-control">
+          <span class="mb-1 block text-sm text-base-content/60">Destinatario</span>
+          <input class="input input-bordered w-full" [(ngModel)]="fTo" name="to" placeholder="Nombre">
+        </label>
+        <label class="form-control">
+          <span class="mb-1 block text-sm text-base-content/60">Valor (Bs)</span>
+          <input type="number" class="input input-bordered w-full" [(ngModel)]="fValue" name="value">
+        </label>
+        <label class="form-control">
+          <span class="mb-1 block text-sm text-base-content/60">Saldo (Bs)</span>
+          <input type="number" class="input input-bordered w-full" [(ngModel)]="fBalance" name="balance"
+                 placeholder="por defecto, el valor">
+        </label>
+        <label class="form-control sm:col-span-2">
+          <span class="mb-1 block text-sm text-base-content/60">Vence</span>
+          <input type="date" class="input input-bordered w-full sm:w-52" [(ngModel)]="fExpires" name="expires">
+        </label>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button type="button" class="btn btn-primary btn-sm" (click)="save()">Guardar</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="formOpen.set(false)">Cancelar</button>
+      </div>
+    </div>
+  }
 
   <!-- escritorio: tabla -->
   <div class="mt-4 hidden overflow-x-auto rounded-box border border-base-300 sm:block">
     <table class="table">
       <thead>
         <tr class="text-xs uppercase tracking-wider">
-          <th>Código</th><th>Destinatario</th><th>Valor</th><th>Saldo</th><th>Vence</th><th>Estado</th>
+          <th>Código</th><th>Destinatario</th><th>Valor</th><th>Saldo</th><th>Vence</th><th>Estado</th><th></th>
         </tr>
       </thead>
       <tbody>
@@ -33,17 +97,21 @@ const STATES: (CardStatus | 'todas')[] = ['todas', 'activa', 'parcial', 'canjead
             <td>{{ c.to }}</td>
             <td class="tabular-nums">{{ c.value | bs }}</td>
             <td class="tabular-nums font-medium">{{ c.balance | bs }}</td>
-            <td class="text-base-content/60">{{ c.expires }}</td>
-            <td><app-status [status]="c.status" /></td>
+            <td class="text-base-content/60">{{ c.expires | fecha }}</td>
+            <td><app-status [status]="state(c)" /></td>
+            <td class="text-right whitespace-nowrap">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
+            </td>
           </tr>
         } @empty {
-          <tr><td colspan="6" class="py-8 text-center text-base-content/50">Nada con ese filtro.</td></tr>
+          <tr><td colspan="7" class="py-8 text-center text-base-content/50">Nada aquí.</td></tr>
         }
       </tbody>
     </table>
   </div>
 
-  <!-- móvil: tarjetas, que una tabla de 6 columnas no entra -->
+  <!-- móvil: tarjetas, que una tabla de 7 columnas no entra -->
   <ul class="mt-4 space-y-2 sm:hidden">
     @for (c of visible(); track c.code) {
       <li class="rounded-box border border-base-300 bg-base-100 p-4">
@@ -52,27 +120,73 @@ const STATES: (CardStatus | 'todas')[] = ['todas', 'activa', 'parcial', 'canjead
             <p class="font-mono">{{ c.code }}</p>
             <p class="truncate text-sm text-base-content/60">{{ c.to }}</p>
           </div>
-          <app-status [status]="c.status" />
+          <app-status [status]="state(c)" />
         </div>
         <div class="mt-3 flex items-end justify-between">
           <p class="text-2xl font-semibold tabular-nums">{{ c.balance | bs }}</p>
-          <p class="text-sm text-base-content/50">de {{ c.value | bs }} · vence {{ c.expires }}</p>
+          <p class="text-sm text-base-content/50">de {{ c.value | bs }} · vence {{ c.expires | fecha }}</p>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
+          <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
         </div>
       </li>
     } @empty {
-      <li class="py-8 text-center text-base-content/50">Nada con ese filtro.</li>
+      <li class="py-8 text-center text-base-content/50">Nada aquí.</li>
     }
   </ul>
   `,
 })
 export class Emitidas {
   private readonly s = inject(Store);
-  readonly states = STATES;
-  readonly filter = signal<CardStatus | 'todas'>('todas');
+  readonly tabs = TABS;
+  readonly tab = signal<CardState>('activa');
+  readonly state = (c: GiftCard) => cardState(c);
+  count(t: CardState) { return this.s.cards().filter(c => cardState(c) === t).length; }
+
+  // filtro de fecha (solo canjeadas), ISO yyyy-mm-dd para comparar como texto
+  desde = '';
+  hasta = '';
+
   readonly visible = computed(() => {
-    const f = this.filter();
-    return f === 'todas' ? this.s.cards() : this.s.cards().filter(c => c.status === f);
+    const list = this.s.cards().filter(c => cardState(c) === this.tab());
+    if (this.tab() !== 'canjeada') return list;
+    return list.filter(c =>
+      (!this.desde || c.expires >= this.desde) && (!this.hasta || c.expires <= this.hasta));
   });
+
+  // ── formulario ─────────────────────────────────────────────────────────────
+  readonly formOpen = signal(false);
+  editingCode: string | null = null;
+  fCode = ''; fTo = ''; fValue: number | null = null; fBalance: number | null = null; fExpires = '';
+
+  openNew() {
+    this.editingCode = null;
+    this.fCode = ''; this.fTo = ''; this.fValue = null; this.fBalance = null; this.fExpires = '';
+    this.formOpen.set(true);
+  }
+
+  openEdit(c: GiftCard) {
+    this.editingCode = c.code;
+    this.fCode = c.code; this.fTo = c.to; this.fValue = c.value; this.fBalance = c.balance;
+    this.fExpires = c.expires;
+    this.formOpen.set(true);
+  }
+
+  async save() {
+    const code = this.fCode.trim();
+    if (!code || this.fValue == null || !this.fExpires) return;
+    await this.s.saveCard({
+      code, to: this.fTo.trim(), value: this.fValue,
+      balance: this.fBalance ?? this.fValue,  // saldo en blanco = carta entera
+      expires: this.fExpires,
+    });
+    this.formOpen.set(false);
+  }
+
+  async del(c: GiftCard) {
+    if (confirm(`¿Borrar la gift card ${c.code} de ${c.to}?`)) await this.s.removeCard(c.code);
+  }
 }
 
 @Component({

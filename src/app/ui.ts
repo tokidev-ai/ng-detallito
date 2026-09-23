@@ -1,5 +1,5 @@
 import { Component, Pipe, PipeTransform, input } from '@angular/core';
-import { CardStatus } from './data';
+import { CardState } from './card';
 
 /** Texto legible sobre un color de marca arbitrario, sin librería: luminancia relativa.
  *  ponytail: umbral fijo en 0.45, afinado a ojo. Si hace falta cumplir WCAG AA
@@ -18,6 +18,15 @@ const nf = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 0 });
 export class BsPipe implements PipeTransform {
   transform(value: number | null | undefined): string {
     return value == null ? '—' : `Bs ${nf.format(value)}`;
+  }
+}
+
+/** ISO `yyyy-mm-dd` → `dd/mm/yy`. ponytail: split, sin DatePipe ni locale. */
+@Pipe({ name: 'fecha' })
+export class FechaPipe implements PipeTransform {
+  transform(iso: string | null | undefined): string {
+    const [y, m, d] = (iso ?? '').split('-');
+    return d ? `${d}/${m}/${y.slice(2)}` : (iso || '—');
   }
 }
 
@@ -41,12 +50,10 @@ export class Stat {
   readonly big = input(false);
 }
 
-const BADGE: Record<CardStatus, string> = {
+const BADGE: Record<CardState, string> = {
   activa: 'badge-success',
-  parcial: 'badge-warning',
   canjeada: 'badge-ghost',
   vencida: 'badge-error',
-  pagada: 'badge-info',
 };
 
 @Component({
@@ -54,6 +61,6 @@ const BADGE: Record<CardStatus, string> = {
   template: `<span class="badge badge-sm badge-soft {{ cls }}">{{ status() }}</span>`,
 })
 export class Status {
-  readonly status = input.required<CardStatus>();
+  readonly status = input.required<CardState>();
   get cls() { return BADGE[this.status()]; }
 }

@@ -91,21 +91,20 @@ const TENANTS = [
       { kind: 'service', name: "Masaje relajante 60'", amount: 180 },
       { kind: 'open', name: 'Monto abierto', min: 100, max: 1000 },
     ],
+    // saldo = valor − suma de canjes de ese código (el estado se deriva de ahí)
     cards: [
-      { code: '4821-KQ7', to: 'Ana Quispe', value: 250, balance: 60, status: 'parcial', expires: '14/11/26' },
-      { code: '9013-MB2', to: 'Diego R.', value: 400, balance: 400, status: 'activa', expires: '02/12/26' },
-      { code: '5577-TX9', to: 'Marta L.', value: 150, balance: 0, status: 'canjeada', expires: '19/10/26' },
-      { code: '1204-JD4', to: 'Sofía V.', value: 250, balance: 250, status: 'activa', expires: '30/01/27' },
-      { code: '7788-PL1', to: 'Iván C.', value: 200, balance: 200, status: 'vencida', expires: '08/09/26' },
-      { code: '3391-WQ8', to: 'Elena M.', value: 300, balance: 300, status: 'pagada', expires: '22/02/27' },
+      { code: '4821-KQ7', to: 'Ana Quispe', value: 250, balance: 130, expires: '2026-11-14' }, // parcial
+      { code: '9013-MB2', to: 'Diego R.', value: 400, balance: 400, expires: '2026-12-02' },   // activa
+      { code: '5577-TX9', to: 'Marta L.', value: 150, balance: 0, expires: '2026-10-19' },      // canjeada
+      { code: '1204-JD4', to: 'Sofía V.', value: 250, balance: 250, expires: '2027-01-30' },    // activa
+      { code: '7788-PL1', to: 'Iván C.', value: 200, balance: 200, expires: '2026-09-08' },     // vencida
+      { code: '3391-WQ8', to: 'Elena M.', value: 300, balance: 60, expires: '2027-02-22' },     // parcial
     ],
     redemptions: [
       { by: 'Luis', code: '4821-KQ7', amount: 120, at: '11/09 14:22' },
       { by: 'Luis', code: '5577-TX9', amount: 150, at: '10/09 18:05' },
-      { by: 'Ana', code: '2210-RF5', amount: 80, at: '09/09 11:40' },
-      { by: 'Luis', code: '6654-HH3', amount: 250, at: '08/09 16:12' },
-      { by: 'Ana', code: '8890-KP2', amount: 60, at: '06/09 09:55' },
-      { by: 'Luis', code: '4402-ZQ6', amount: 190, at: '04/09 13:30' },
+      { by: 'Ana', code: '3391-WQ8', amount: 180, at: '09/09 11:40' },
+      { by: 'Luis', code: '3391-WQ8', amount: 60, at: '06/09 09:55' },
     ],
     extraStaff: [
       { email: 'luis@spaaurora.bo', role: 'staff', lastSeen: '11/09',
@@ -128,8 +127,8 @@ const TENANTS = [
       { kind: 'service', name: 'Corte + barba', amount: 120 },
     ],
     cards: [
-      { code: '6120-AA3', to: 'Pablo M.', value: 120, balance: 120, status: 'activa', expires: '03/03/27' },
-      { code: '7742-BQ1', to: 'Ruth S.', value: 80, balance: 0, status: 'canjeada', expires: '12/12/26' },
+      { code: '6120-AA3', to: 'Pablo M.', value: 120, balance: 120, expires: '2027-03-03' },
+      { code: '7742-BQ1', to: 'Ruth S.', value: 80, balance: 0, expires: '2026-12-12' },
     ],
     redemptions: [{ by: 'Rodrigo', code: '7742-BQ1', amount: 80, at: '07/09 10:15' }],
     extraStaff: [],

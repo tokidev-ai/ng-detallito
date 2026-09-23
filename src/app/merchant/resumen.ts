@@ -1,10 +1,10 @@
 import { Component, computed, inject } from '@angular/core';
-import { Store } from '../data';
-import { BsPipe, Stat } from '../ui';
+import { Store, cardState } from '../data';
+import { BsPipe, FechaPipe, Stat } from '../ui';
 
 @Component({
   selector: 'app-resumen',
-  imports: [BsPipe, Stat],
+  imports: [BsPipe, FechaPipe, Stat],
   template: `
   <div class="grid gap-4 lg:grid-cols-2">
 
@@ -14,7 +14,7 @@ import { BsPipe, Stat } from '../ui';
         <p class="text-xs uppercase tracking-wider text-base-content/50">Saldo pendiente de canje (deuda)</p>
         <p class="mt-1 text-5xl font-semibold tabular-nums sm:text-6xl">{{ s.debt() | bs }}</p>
         <p class="mt-2 text-sm text-base-content/60">
-          de {{ s.liveCards() }} gift cards vivas · vence la más próxima el {{ s.nextExpiry() }}
+          de {{ s.liveCards() }} gift cards vivas · vence la más próxima el {{ s.nextExpiry() | fecha }}
         </p>
 
         <div class="mt-4 flex h-2.5 overflow-hidden rounded-full bg-base-300">
@@ -80,15 +80,14 @@ export class Resumen {
   pct(v: number) { return Math.round((v / this.peak()) * 100); }
 
   readonly mix = computed(() => {
-    const cards = this.s.cards();
-    const live = cards.filter(c => c.status === 'activa' || c.status === 'parcial' || c.status === 'pagada');
+    const live = this.s.cards().filter(c => cardState(c) === 'activa');
     const n = live.length || 1;
-    const count = (f: (s: string) => boolean) => (live.filter(c => f(c.status)).length / n) * 100;
+    const pct = (k: number) => (k / n) * 100;
+    const enteras = live.filter(c => c.balance >= c.value).length;
     return [
       // sobre blanco, zinc-100 no se ve: la escala va de naranja a gris medio
-      { label: 'activas', pct: count(s => s === 'activa' || s === 'pagada'), cls: 'bg-[#ea580c]' },
-      { label: 'parciales', pct: count(s => s === 'parcial'), cls: 'bg-[#fdba74]' },
-      { label: 'por vencer', pct: 12, cls: 'bg-[#d4d4d8]' },
+      { label: 'enteras', pct: pct(enteras), cls: 'bg-[#ea580c]' },
+      { label: 'parciales', pct: pct(live.length - enteras), cls: 'bg-[#fdba74]' },
     ];
   });
 }

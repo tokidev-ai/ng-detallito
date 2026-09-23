@@ -6,8 +6,10 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
 import { AuthService } from './auth';
+import { cardState } from './card';
 
-export type CardStatus = 'activa' | 'parcial' | 'canjeada' | 'vencida' | 'pagada';
+export { cardState } from './card';
+export type { CardState } from './card';
 export type ProductKind = 'fixed' | 'open' | 'service';
 export type Perm = 'redeem' | 'viewCards' | 'viewSales' | 'manageProducts' | 'manageBranding' | 'manageStaff';
 
@@ -24,7 +26,9 @@ export interface Business {
 }
 
 export interface Product { id: string; kind: ProductKind; name: string; amount?: number; min?: number; max?: number }
-export interface GiftCard { code: string; to: string; value: number; balance: number; status: CardStatus; expires: string }
+/** `expires` es ISO `yyyy-mm-dd` (comparable y ordenable como texto). El estado
+ *  no se guarda: se deriva con `cardState`. `code` es la clave del documento. */
+export interface GiftCard { code: string; to: string; value: number; balance: number; expires: string }
 export interface Redemption { by: string; code: string; amount: number; at: string }
 export interface StaffMember { email: string; role: 'owner' | 'staff'; lastSeen: string; perms: Record<Perm, boolean> }
 
@@ -99,8 +103,7 @@ export class Store {
   readonly liveCards = computed(() => liveOf(this.cards()).length);
   readonly nextExpiry = computed(() => {
     const live = liveOf(this.cards());
-    const key = (d: string) => d.split('/').reverse().join('');  // dd/mm/yy -> yymmdd
-    return live.length ? live.map(c => c.expires).sort((a, b) => (key(a) < key(b) ? -1 : 1))[0] : '—';
+    return live.length ? live.map(c => c.expires).sort()[0] : '—';  // ISO ordena como texto
   });
 
   // ── la página pública, sin sesión ──────────────────────────────────────────
@@ -162,6 +165,31 @@ export class Store {
     if (id) await deleteDoc(doc(this.db, 'tenants', id, 'products', productId));
   }
 
+  async updateProduct(productId: string, patch: Omit<Product, 'id'>) {
+    const id = this.currentId();
+    if (id) await updateDoc(doc(this.db, 'tenants', id, 'products', productId), patch);
+  }
+
+  /** Alta y edición de gift card: `code` es la clave, así que setDoc sirve para
+   *  ambas. Editar no cambia el código (es la identidad de la carta). */
+  async saveCard(card: GiftCard) {
+    const id = this.currentId();
+    if (id) await setDoc(doc(this.db, 'tenants', id, 'cards', card.code), card);
+  }
+
+  async removeCard(code: string) {
+    const id = this.currentId();
+    if (id) await deleteDoc(doc(this.db, 'tenants', id, 'cards', code));
+  }
+
+  /** Emisión desde la página pública: sin sesión, con el tenant explícito.
+   *  ponytail: escribe la carta directo, sin pago ni verificación. Antes de
+   *  producción, esto va detrás de la pasarela de pago y de reglas que solo
+   *  dejen crear `cards` a una función/servidor, no a cualquier visitante. */
+  async issueCard(tenantId: string, card: GiftCard) {
+    await setDoc(doc(this.db, 'tenants', tenantId, 'cards', card.code), card);
+  }
+
   async togglePerm(email: string, perm: Perm) {
     const id = this.currentId();
     const member = this.staff().find(m => m.email === email);
@@ -194,8 +222,7 @@ export class Store {
 
 }
 
-const liveOf = (cards: GiftCard[]) =>
-  cards.filter(c => c.status !== 'vencida' && c.status !== 'canjeada');
+const liveOf = (cards: GiftCard[]) => cards.filter(c => cardState(c) === 'activa');
 
 // helper local: signal -> observable sin arrastrar toObservable a cada archivo
 import { toObservable } from '@angular/core/rxjs-interop';

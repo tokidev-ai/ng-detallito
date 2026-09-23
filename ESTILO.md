@@ -169,3 +169,9 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 - **`get()` dentro de una regla de `list`** rompe la consulta entera: en una query las
   reglas se evalúan por documento y `resource` ya trae todo.
 - **Items de grid con `min-width: auto`** desbordan a lo ancho en móvil. `min-w-0`.
+- **`npx vitest` directo no compila Angular** (`needs JIT compiler`). El runner real es
+  `ng test` (builder `@angular/build:unit-test`): compila AOT y luego corre vitest. Por
+  eso la lógica pura testeable vive en módulos sin `@angular/fire` (`card.ts`, `wizard`).
+- **El estado de una gift card no se guarda: se deriva** (`card.ts` → `cardState`) del
+  saldo y la fecha. Saldo 0 → canjeada; fecha pasada → vencida; si no, activa. `expires`
+  es ISO `yyyy-mm-dd` (ordena y compara como texto; se muestra con el pipe `fecha`).
