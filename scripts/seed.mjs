@@ -25,7 +25,7 @@ function resolveOwner(argUid) {
 
   if (!users.length) {
     console.error('\nNo hay ningún usuario todavía.');
-    console.error('Entrá una vez en https://giftcards-bo.web.app/login y volvé a correr esto.\n');
+    console.error('Entra una vez en https://giftcards-bo.web.app/login y vuelve a correr esto.\n');
     process.exit(1);
   }
   if (argUid) {
@@ -34,7 +34,7 @@ function resolveOwner(argUid) {
     return { uid: u.localId, email: u.email ?? u.localId };
   }
   if (users.length > 1) {
-    console.error(`Hay ${users.length} usuarios. Decí cuál: npm run seed -- <uid|email>`);
+    console.error(`Hay ${users.length} usuarios. Di cuál: npm run seed -- <uid|email>`);
     users.forEach(u => console.error(`  ${u.localId}  ${u.email}`));
     process.exit(1);
   }

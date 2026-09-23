@@ -15,7 +15,7 @@ import { Wordmark } from './brand';
           <p class="mt-1 text-sm text-base-content/55">Gift cards para tu negocio</p>
 
           <p class="mt-7 text-base-content/70">
-            Entrá para administrar tu comercio: tu página, tus productos, tus ventas y los canjes.
+            Entra para administrar tu comercio: tu página, tus productos, tus ventas y los canjes.
           </p>
 
           <button type="button"
@@ -41,8 +41,8 @@ import { Wordmark } from './brand';
           }
 
           <p class="mt-7 border-t border-base-300 pt-5 text-sm text-base-content/50">
-            ¿Todavía no tenés comercio?
-            <a routerLink="/onboarding" class="font-medium text-primary hover:underline">Creá el tuyo</a>
+            ¿Todavía no tienes comercio?
+            <a routerLink="/onboarding" class="font-medium text-primary hover:underline">Crea el tuyo</a>
             — toma diez minutos.
           </p>
         </div>
@@ -73,9 +73,9 @@ export class Login {
       const code = (e as { code?: string }).code ?? '';
       this.error.set(
         code === 'auth/popup-closed-by-user' ? 'Cerraste la ventana antes de terminar.'
-        : code === 'auth/popup-blocked' ? 'El navegador bloqueó la ventana. Permitila y probá de nuevo.'
+        : code === 'auth/popup-blocked' ? 'El navegador bloqueó la ventana. Permitila y prueba de nuevo.'
         : code === 'auth/operation-not-allowed' ? 'Falta habilitar Google como proveedor en la consola de Firebase.'
-        : 'No pudimos entrar. Probá de nuevo.');
+        : 'No pudimos entrar. Prueba de nuevo.');
     } finally {
       this.busy.set(false);
     }

@@ -7,15 +7,15 @@ import { Wordmark } from '../brand';
 const PITCH = [
   {
     title: 'Tu página de productos',
-    body: 'Armamos la página de tu negocio con tu logo, tu color y lo que vendés. Te queda un link propio — giftcards.bo/tu-negocio — listo para compartir.',
+    body: 'Armamos la página de tu negocio con tu logo, tu color y lo que vendes. Te queda un link propio — giftcards.bo/tu-negocio — listo para compartir.',
   },
   {
     title: 'Gift cards que se venden solas',
-    body: 'Tus clientes eligen un monto o un servicio, pagan por QR y reciben la gift card por email. Vos cobrás por adelantado.',
+    body: 'Tus clientes eligen un monto o un servicio, pagan por QR y reciben la gift card por email. Vos cobras por adelantado.',
   },
   {
     title: 'Canje y control desde el celular',
-    body: 'Tu equipo canjea con el código, incluso por partes. Y vos ves en todo momento cuánto vendiste y cuánto todavía debés entregar.',
+    body: 'Tu equipo canjea con el código, incluso por partes. Y tú ves en todo momento cuánto vendiste y cuánto todavía debes entregar.',
   },
 ];
 
@@ -43,18 +43,18 @@ const PITCH = [
           <p class="text-sm text-base-content/50">Hola{{ firstName() ? ', ' + firstName() : '' }}</p>
 
           <h1 class="mt-2 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
-            Todavía no tenés un comercio.<br>
+            Todavía no tienes un comercio.<br>
             <span class="text-primary">Creemos el primero.</span>
           </h1>
 
           <p class="mt-5 max-w-2xl text-lg text-base-content/70">
-            GiftKBol le arma a tu negocio una página propia donde mostrás tus productos
-            y vendés gift cards. Nosotros ponemos el cobro, la entrega y el canje.
+            GiftKBol le arma a tu negocio una página propia donde muestras tus productos
+            y vendes gift cards. Nosotros ponemos el cobro, la entrega y el canje.
           </p>
 
           <div class="mt-8 flex flex-wrap items-center gap-4">
             <a routerLink="/onboarding" class="btn btn-lg btn-primary">Crear mi comercio</a>
-            <span class="text-sm text-base-content/50">Toma unos diez minutos · sin mensualidad</span>
+            <span class="text-sm text-base-content/50">Toma unos diez minutos</span>
           </div>
 
           <div class="mt-12 grid gap-4 md:grid-cols-3">
@@ -74,7 +74,7 @@ const PITCH = [
               <div class="min-w-0 flex-1">
                 <h2 class="text-xl font-medium">Lo que vas a configurar</h2>
                 <p class="mt-1 text-base-content/60">
-                  Cinco pasos, con la vista previa de tu página al lado mientras la armás.
+                  Cinco pasos, con la vista previa de tu página al lado mientras la armas.
                 </p>
               </div>
               <a routerLink="/onboarding" class="btn btn-primary">Empezar</a>

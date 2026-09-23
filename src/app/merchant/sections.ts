@@ -89,7 +89,7 @@ export class GiftCards {
       </li>
     }
   </ul>
-  <p class="mt-3 text-sm text-warning">append-only: acá no se edita nada, solo se agregan canjes.</p>
+  <p class="mt-3 text-sm text-warning">append-only: aquí no se edita nada, solo se agregan canjes.</p>
   `,
 })
 export class Canjes { readonly s = inject(Store); }
@@ -176,7 +176,7 @@ export class Productos {
           <label class="grid h-28 w-28 shrink-0 cursor-pointer place-items-center rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 hover:border-primary/50">
             @if (b().logoUrl) {
               <img [src]="b().logoUrl" alt="logo" class="size-full rounded-box object-cover">
-            } @else { <span>subí tu<br>logo</span> }
+            } @else { <span>sube tu<br>logo</span> }
             <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
           </label>
 
@@ -270,7 +270,7 @@ export class Marca {
   onLogo(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
     // ponytail: objectURL, no Storage: se ve al instante y no sobrevive al reload.
-    // Cuando entre Firebase Storage se sube acá y se guarda la URL real.
+    // Cuando entre Firebase Storage se sube aquí y se guarda la URL real.
     if (file) this.s.saveBusiness({ logoUrl: URL.createObjectURL(file) });
   }
 }

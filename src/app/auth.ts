@@ -30,7 +30,7 @@ export class AuthService {
 }
 
 /** ponytail: un solo guard. Los permisos finos los hacen cumplir las Firestore Rules;
- *  la UI solo acompaña, así que acá alcanza con "¿hay sesión?". */
+ *  la UI solo acompaña, así que aquí alcanza con "¿hay sesión?". */
 export const authGuard: CanActivateFn = (_route, state) => {
   const router = inject(Router);
   return authState(inject(Auth)).pipe(

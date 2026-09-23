@@ -6,7 +6,7 @@ import { AuthService } from '../auth';
 import { Wordmark } from '../brand';
 import { BsPipe } from '../ui';
 
-/** Panel de la startup. Distinto del panel del comercio: acá vemos TODOS los
+/** Panel de la startup. Distinto del panel del comercio: aquí vemos TODOS los
  *  comercios y el dinero que pasa por nuestra cuenta. */
 @Component({
   selector: 'app-admin-panel',

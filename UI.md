@@ -10,7 +10,7 @@
 | # | Qué es | Contenido observado |
 |---|---|---|
 | **1a** | Checkout en **una sola página** (móvil, `giftcards.bo/spa-aurora`) | portada + logo + "Spa Aurora / Masajes y estética · La Paz". Montos Bs 150 / **Bs 250 ✓** / Bs 400 / "otro monto". Bloque PARA QUIÉN: nombre, email, mensaje opcional, email del comprador. Total Bs 250 → **Pagar con QR**. Pie: "Vence en 12 meses · términos del comercio" |
-| **1b** | El **mismo checkout como wizard de 3 pasos** | paso 1 de 3 con barra de progreso. "¿Cuánto querés regalar?" → card del comercio, Gift card Bs 250 ✓, Bs 400, **Masaje relajante 60' Bs 180** (producto-servicio), **Monto abierto (Bs 100 – 1.000)** → Continuar |
+| **1b** | El **mismo checkout como wizard de 3 pasos** | paso 1 de 3 con barra de progreso. "¿Cuánto quieres regalar?" → card del comercio, Gift card Bs 250 ✓, Bs 400, **Masaje relajante 60' Bs 180** (producto-servicio), **Monto abierto (Bs 100 – 1.000)** → Continuar |
 | **1c** | Panel del comercio con **sidebar** | nav: Resumen · Gift cards · Canjes · Productos · Marca y página · Empleados · Datos bancarios. Header "Publicada · ver página". 3 tiles: VENDIDO DEL MES Bs 2.000 (8 gift cards) / CANJEADO Bs 1.150 (11 canjes) / **A DEPOSITARTE (30/09) Bs 1.900** (bruto 2.000 − comisión 5%). Banner **Bs 3.480 "Saldo pendiente de canje — es deuda, no ingreso"**. Tabla: código / destinatario / valor / saldo / estado (parcial, activa, canjeada, vencida, pagada). Nota: "los ítems se ocultan según permisos" |
 | **1d** | El **mismo panel con tabs** arriba | tabs: Resumen · Gift cards · Canjes · Productos · Marca · Equipo · Cobros. Header con slug, "Compartir link", "Ana (owner)". La **deuda pasa a ser la cifra principal**: Bs 3.480, "de 19 gift cards vivas · vence la más próxima el 14/11", barra activas/parciales/por vencer. Tiles secundarios VENDIDO SEP Bs 2.000 y NETO A COBRAR Bs 1.900. Gráfico VENTAS vs CANJES · 6 MESES. Panel ÚLTIMOS CANJES (append-only: el saldo se recalcula) |
 | **1e** | **Onboarding del comercio**, wizard de 5 pasos | 1 Marca · 2 Productos · 3 Vigencia y términos · 4 Datos bancarios · 5 Publicar. Paso 1: logo, nombre, link público `giftcards.bo/spa-aurora`, descripción corta, color de marca (3 swatches + `+`). **Vista previa móvil en vivo** al costado. "sin plantillas de diseño en el MVP: logo + 1 color + descripción" |
@@ -161,6 +161,17 @@ daisyUI, así que cambiar la paleta no toca ninguna plantilla.
 le pone un primary neutro para que lo único que tiña sea el color del comercio: si le
 metiéramos el naranja, todos los comercios se verían iguales.
 
+### Idioma
+
+Español latinoamericano neutro, **tuteo**, sin voseo rioplatense: "sabes", no "sabés";
+"crea tu comercio", no "creá tu comercio". Los clientes son bolivianos.
+
+### Precio
+
+**La landing no menciona el precio.** Decidido a propósito: hablar de comisión antes de
+que el negocio entienda qué gana espanta a quien recién llega. La conversación de precio
+va después, cuando ya vio la propuesta.
+
 ### Pantallas de venta
 
 `/` es la landing pública, un **one-pager** con animaciones de entrada (`reveal`,
@@ -190,6 +201,17 @@ puede desde el script con credenciales de gcloud. Cada uno lee únicamente su pr
 La ruta del panel interno **no está enlazada desde ningún lado**: se llega solo
 escribiendo la URL. Eso es comodidad, no seguridad — lo que realmente protege es el
 guard y la regla de Firestore. Un comercio que adivine la URL ve su propio panel.
+
+### Idioma
+
+Español latinoamericano neutro, **tuteo**, sin voseo rioplatense: "sabes", no "sabés";
+"crea tu comercio", no "creá tu comercio". Los clientes son bolivianos.
+
+### Precio
+
+**La landing no menciona el precio.** Decidido a propósito: hablar de comisión antes de
+que el negocio entienda qué gana espanta a quien recién llega. La conversación de precio
+va después, cuando ya vio la propuesta.
 
 ### Pantallas de venta
 

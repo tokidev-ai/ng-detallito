@@ -23,10 +23,10 @@ import { Business, Product, Store } from './data';
         </div>
 
         <p class="mt-3 text-sm text-base-content/70">
-          {{ b().description || 'Contá en una línea qué ofrecés.' }}
+          {{ b().description || 'Cuenta en una línea qué ofreces.' }}
         </p>
 
-        <p class="mt-6 text-xs uppercase tracking-wider text-base-content/50">Elegí el monto</p>
+        <p class="mt-6 text-xs uppercase tracking-wider text-base-content/50">Elige el monto</p>
         <div class="mt-2 grid grid-cols-2 gap-2">
           @for (p of buyable(); track p.id) {
             <button type="button"

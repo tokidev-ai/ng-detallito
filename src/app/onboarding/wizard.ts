@@ -31,7 +31,7 @@ export const slugify = (s: string) =>
       <!-- pasos -->
       <header class="border-b border-base-300 p-4 sm:p-6">
         <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-          <h1 class="text-xl font-semibold sm:text-2xl">Configurá tu comercio</h1>
+          <h1 class="text-xl font-semibold sm:text-2xl">Configura tu comercio</h1>
           <ol class="flex flex-1 flex-wrap items-center gap-2">
             @for (s of steps; track s; let i = $index) {
               <li class="flex items-center gap-2">
@@ -59,7 +59,7 @@ export const slugify = (s: string) =>
                 <label class="grid h-28 w-28 shrink-0 cursor-pointer place-items-center rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 hover:border-primary/40">
                   @if (draft().logoUrl) {
                     <img [src]="draft().logoUrl" alt="logo" class="size-full rounded-box object-cover">
-                  } @else { <span>subí tu<br>logo</span> }
+                  } @else { <span>sube tu<br>logo</span> }
                   <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
                 </label>
 
@@ -356,7 +356,7 @@ export class Onboarding {
       this.store.setCurrent(id);
       await this.router.navigate(['/app', id, 'resumen']);
     } catch {
-      this.publishError.set('No pudimos publicar. Revisá tu conexión y probá de nuevo.');
+      this.publishError.set('No pudimos publicar. Revisá tu conexión y prueba de nuevo.');
     } finally {
       this.publishing.set(false);
     }

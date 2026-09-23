@@ -15,13 +15,13 @@ const VALUES = [
     icon: 'M4 5h16v14H4zM4 9h16',
   },
   {
-    title: 'Cobrás por adelantado',
+    title: 'Cobras por adelantado',
     body: 'Tu cliente paga por QR y recibe la gift card por email. La plata entra hoy.',
     icon: 'M12 3v18M8 7h6a3 3 0 0 1 0 6h-4a3 3 0 0 0 0 6h6',
   },
   {
-    title: 'Sabés lo que debés',
-    body: 'Separamos lo cobrado de lo que todavía tenés que entregar. Nadie más te lo dice.',
+    title: 'Sabes lo que debes',
+    body: 'Separamos lo cobrado de lo que todavía tienes que entregar. Nadie más te lo dice.',
     icon: 'M3 12h4l3 8 4-16 3 8h4',
   },
 ];
@@ -52,7 +52,7 @@ const VALUES = [
 
           <p reveal="1" class="mt-6 max-w-xl text-lg text-base-content/70">
             Te armamos una página con tus productos y tu marca, en un link propio.
-            Tus clientes compran ahí mismo y vos cobrás por adelantado.
+            Tus clientes compran ahí mismo y tú cobras por adelantado.
           </p>
 
           <div reveal="2" class="mt-8 flex flex-wrap items-center gap-3">
@@ -60,11 +60,11 @@ const VALUES = [
             <a routerLink="/login" class="btn btn-lg btn-ghost">Ya tengo cuenta</a>
           </div>
 
-          <dl reveal="3" class="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-base-300 pt-6">
+          <dl reveal="3" class="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-base-300 pt-6 text-sm">
             @for (n of numeros; track n.k) {
               <div>
-                <dt class="text-2xl font-semibold tabular-nums">{{ n.k }}</dt>
-                <dd class="mt-0.5 text-sm text-base-content/55">{{ n.v }}</dd>
+                <dt class="text-xl font-semibold">{{ n.k }}</dt>
+                <dd class="mt-0.5 text-base-content/55">{{ n.v }}</dd>
               </div>
             }
           </dl>
@@ -141,17 +141,16 @@ const VALUES = [
       </div>
     </section>
 
-    <!-- ── precio y cierre ─────────────────────────────────── -->
+    <!-- ── cierre ──────────────────────────────────────────── -->
     <section class="border-t border-base-300 bg-base-100">
       <div reveal class="mx-auto flex max-w-6xl flex-wrap items-center gap-8 px-4 py-14 sm:px-6">
         <div class="min-w-0 flex-1">
-          <p class="text-5xl font-semibold tracking-tight sm:text-6xl">
-            <span class="text-primary">5%</span>
-            <span class="ms-3 align-middle text-lg font-normal text-base-content/60">por venta</span>
-          </p>
+          <h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Tu página puede estar lista <span class="text-primary">hoy mismo</span>.
+          </h2>
           <p class="mt-3 max-w-xl text-base-content/70">
-            Sin mensualidad, sin costo de alta, sin permanencia. Si no vendés, no pagás.
-            Toma unos diez minutos dejar tu página lista.
+            Toma unos diez minutos: tu marca, lo que vendes y listo. Después compartes el link
+            y empiezas a recibir pedidos.
           </p>
         </div>
         <a routerLink="/onboarding" class="btn btn-lg btn-primary">Crear mi comercio</a>
@@ -177,9 +176,9 @@ export class Landing {
     { label: 'Otro monto', on: false },
   ];
   readonly numeros = [
-    { k: '5%', v: 'por venta, nada más' },
     { k: '10 min', v: 'y tu página está lista' },
-    { k: 'Bs 0', v: 'de mensualidad' },
+    { k: 'Sin app', v: 'ni para ti ni para tus clientes' },
+    { k: 'Por QR', v: 'tus clientes pagan como ya pagan' },
   ];
   readonly shops = inject(Store).publishedTenants();
 }

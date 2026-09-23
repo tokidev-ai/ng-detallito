@@ -5,7 +5,7 @@
  *   npm run superadmin -- tu@mail.com --quitar revoca
  *
  * Nadie se lo puede dar a sí mismo desde la app: las reglas prohíben escribir
- * en /superadmins. Solo desde acá, con las credenciales de gcloud.
+ * en /superadmins. Solo desde aquí, con las credenciales de gcloud.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync } from 'node:fs';
