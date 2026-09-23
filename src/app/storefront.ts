@@ -33,7 +33,7 @@ import { Reveal } from './reveal';
         <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
              [style.background-color]="b().color" aria-hidden="true"></div>
 
-        <div class="relative mx-auto grid max-w-6xl gap-x-12 gap-y-7 px-5 py-9 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:py-16">
+        <div class="relative mx-auto grid max-w-6xl gap-x-12 gap-y-10 px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:gap-y-8 lg:py-16">
 
           <!-- 1 · título -->
           <h1 reveal class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
