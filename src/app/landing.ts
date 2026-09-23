@@ -125,16 +125,17 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
         </div>
 
         <!-- 5 · las cifras -->
-        <!-- cada cifra en su tarjeta: el mismo lenguaje de borde fino que el resto del sitio -->
-        <dl reveal="3" class="grid grid-cols-2 gap-3 text-sm
-                              lg:col-start-1 lg:row-start-4 lg:mt-10 lg:max-w-md">
+        <!-- Sin caja: la jerarquía la hacen el tamaño y el color, y una línea
+             vertical separa las dos cifras sin encerrarlas. -->
+        <dl reveal="3" class="mx-auto grid w-full max-w-[21rem] grid-cols-2 divide-x divide-base-300
+                              border-t border-base-300 pt-7 text-center
+                              lg:col-start-1 lg:row-start-4 lg:mx-0 lg:mt-10 lg:max-w-sm lg:text-left">
           @for (n of numeros; track n.k) {
-            <!-- La cifra va en orange-700 y la descripción sin transparencia:
-                 sobre el naranja tenue, orange-600 da 3,35:1 y el texto al 75%
-                 da 4,06:1, los dos por debajo del 4,5:1 de AA. Así dan 4,88 y 6,88. -->
-            <div class="rounded-box border border-primary/15 bg-accent p-4 text-center lg:p-5 lg:text-left">
-              <dt class="text-xl font-semibold text-[#c2410c]">{{ n.k }}</dt>
-              <dd class="mt-1 text-accent-content">{{ n.v }}</dd>
+            <div class="px-3 first:pl-0 lg:px-5 lg:first:pl-0">
+              <dt class="text-2xl font-extrabold tracking-[-0.03em] text-[#c2410c] sm:text-[1.75rem]">
+                {{ n.k }}
+              </dt>
+              <dd class="mt-1.5 text-[13px] leading-snug text-base-content/55">{{ n.v }}</dd>
             </div>
           }
         </dl>
