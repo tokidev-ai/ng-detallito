@@ -27,7 +27,8 @@ export const routes: Routes = [
       { path: 'resumen', loadComponent: () => import('./merchant/resumen').then(m => m.Resumen) },
       { path: 'gift-cards', loadComponent: () => import('./merchant/sections').then(m => m.GiftCards) },
       { path: 'canjes', loadComponent: () => import('./merchant/sections').then(m => m.Canjes) },
-      { path: 'productos', loadComponent: () => import('./merchant/sections').then(m => m.Productos) },
+      // las gift cards son el único producto: /productos se absorbió en /gift-cards
+      { path: 'productos', pathMatch: 'full', redirectTo: 'gift-cards' },
       { path: 'marca', loadComponent: () => import('./merchant/sections').then(m => m.Marca) },
       { path: 'equipo', loadComponent: () => import('./merchant/sections').then(m => m.Equipo) },
       { path: 'cobros', loadComponent: () => import('./merchant/sections').then(m => m.Cobros) },

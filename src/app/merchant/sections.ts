@@ -7,7 +7,7 @@ import { BsPipe, Status } from '../ui';
 const STATES: (CardStatus | 'todas')[] = ['todas', 'activa', 'parcial', 'canjeada', 'vencida', 'pagada'];
 
 @Component({
-  selector: 'app-gift-cards',
+  selector: 'app-emitidas',
   imports: [BsPipe, Status],
   template: `
   <div class="flex flex-wrap items-center gap-2">
@@ -65,7 +65,7 @@ const STATES: (CardStatus | 'todas')[] = ['todas', 'activa', 'parcial', 'canjead
   </ul>
   `,
 })
-export class GiftCards {
+export class Emitidas {
   private readonly s = inject(Store);
   readonly states = STATES;
   readonly filter = signal<CardStatus | 'todas'>('todas');
@@ -95,7 +95,7 @@ export class GiftCards {
 export class Canjes { readonly s = inject(Store); }
 
 @Component({
-  selector: 'app-productos',
+  selector: 'app-catalogo',
   imports: [FormsModule, BsPipe],
   template: `
   <ul class="space-y-2">
@@ -139,7 +139,7 @@ export class Canjes { readonly s = inject(Store); }
   </div>
   `,
 })
-export class Productos {
+export class Catalogo {
   readonly s = inject(Store);
   readonly label = { fixed: 'Monto fijo', open: 'Monto abierto', service: 'Servicio' } as const;
   readonly kinds = ['fixed', 'open', 'service'] as const;
@@ -160,6 +160,84 @@ export class Productos {
     });
     this.name = ''; this.amount = null; this.min = null; this.max = null;
   }
+}
+
+
+@Component({
+  selector: 'app-vigencia',
+  imports: [FormsModule],
+  template: `
+  <div class="max-w-2xl space-y-6">
+    <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+      <h2 class="text-lg font-medium">Vigencia</h2>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        @for (m of [6, 12, 18, 24]; track m) {
+          <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
+                  [class.btn-primary]="b().validityMonths === m" [class.btn-outline]="b().validityMonths !== m"
+                  (click)="s.saveBusiness({ validityMonths: m })">{{ m }} meses</button>
+        }
+      </div>
+      <p class="mt-2 text-sm text-base-content/55">Cuenta desde la emisión. Aparece al pie de cada gift card.</p>
+    </section>
+
+    <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+      <h2 class="text-lg font-medium">Términos del comercio</h2>
+      <label class="form-control mt-4 block">
+        <textarea class="textarea textarea-bordered h-28 w-full" [ngModel]="b().terms" name="terms"
+                  (ngModelChange)="s.saveBusiness({ terms: $event })"
+                  placeholder="Dónde vale, si se puede transferir, qué pasa si no alcanza el saldo…"></textarea>
+      </label>
+      <p class="mt-2 text-sm text-base-content/55">Se muestra en tu página y en el correo que recibe quien compra.</p>
+    </section>
+  </div>
+  `,
+})
+export class Vigencia {
+  readonly s = inject(Store);
+  readonly b = this.s.business;
+}
+
+/** Gift cards: todo lo que gira alrededor de ellas vive en una sola pestaña —
+ *  lo que ya se vendió, lo que se ofrece y las reglas con las que se venden
+ *  (vigencia, términos). Antes esto último vivía suelto en "Marca", que es
+ *  branding visual, no lógica de negocio; ahora está donde se lo busca. */
+@Component({
+  selector: 'app-gift-cards',
+  imports: [Emitidas, Catalogo, Vigencia],
+  template: `
+  <div role="tablist" class="tabs tabs-box w-fit">
+    @for (v of vistas; track v.id) {
+      <button type="button" role="tab" class="tab" [class.tab-active]="vista() === v.id"
+              (click)="vista.set(v.id)">{{ v.label }}</button>
+    }
+  </div>
+
+  <div class="mt-5">
+    @switch (vista()) {
+      @case ('emitidas') {
+        <app-emitidas />
+      }
+      @case ('catalogo') {
+        <p class="mb-4 max-w-2xl text-sm text-base-content/60">
+          Los montos y servicios que tus clientes ven en tu página. Sin al menos uno,
+          tu página no puede vender nada.
+        </p>
+        <app-catalogo />
+      }
+      @case ('vigencia') {
+        <app-vigencia />
+      }
+    }
+  </div>
+  `,
+})
+export class GiftCards {
+  readonly vistas = [
+    { id: 'emitidas' as const, label: 'Vendidas' },
+    { id: 'catalogo' as const, label: 'Lo que vendes' },
+    { id: 'vigencia' as const, label: 'Vigencia y términos' },
+  ];
+  readonly vista = signal<'emitidas' | 'catalogo' | 'vigencia'>('emitidas');
 }
 
 @Component({
@@ -211,26 +289,6 @@ export class Productos {
             </label>
           </div>
         </fieldset>
-      </section>
-
-      <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-        <h2 class="text-lg font-medium">Vigencia y términos</h2>
-
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          @for (m of [6, 12, 18, 24]; track m) {
-            <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
-                    [class.btn-primary]="b().validityMonths === m" [class.btn-outline]="b().validityMonths !== m"
-                    (click)="s.saveBusiness({ validityMonths: m })">{{ m }} meses</button>
-          }
-        </div>
-        <p class="mt-2 text-sm text-base-content/55">Cuenta desde la emisión. Aparece al pie de cada gift card.</p>
-
-        <label class="form-control mt-5 block">
-          <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Términos del comercio</span>
-          <textarea class="textarea textarea-bordered h-28 w-full" [ngModel]="b().terms" name="terms"
-                    (ngModelChange)="s.saveBusiness({ terms: $event })"
-                    placeholder="Dónde vale, si se puede transferir, qué pasa si no alcanza el saldo…"></textarea>
-        </label>
       </section>
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">

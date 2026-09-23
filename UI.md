@@ -42,10 +42,10 @@ vive en Firestore y llega por `collectionData()`; lo demás son signals locales.
 /app                          lista de comercios · punto de entrada multitenant
 /onboarding                   wizard de 5 pasos + vista previa en vivo  (1e)
 /app/:tenant/resumen          dashboard · tabs en desktop, bottom nav en móvil  (1d)
-/app/:tenant/gift-cards       tabla en desktop, tarjetas en móvil
+/app/:tenant/gift-cards       vendidas · catálogo · vigencia y términos, en un solo lugar
 /app/:tenant/canjes           append-only
-/app/:tenant/productos
-/app/:tenant/marca
+/app/:tenant/productos        redirige a gift-cards (el catálogo vive ahí)
+/app/:tenant/marca            solo branding: logo, nombre, descripción, color, publicar
 /app/:tenant/equipo           los 6 permisos  (1i)
 /app/:tenant/cobros
 /:slug                        página pública del comercio (404 si no está publicada)
@@ -154,6 +154,24 @@ puede desde el script con credenciales de gcloud. Cada uno lee únicamente su pr
 La ruta del panel interno **no está enlazada desde ningún lado**: se llega solo
 escribiendo la URL. Eso es comodidad, no seguridad — lo que realmente protege es el
 guard y la regla de Firestore. Un comercio que adivine la URL ve su propio panel.
+
+### Gift cards, una sola pestaña
+
+`Productos` y `Gift cards` eran dos pestañas separadas, pero un comercio en este
+producto **solo vende gift cards** — no hay catálogo de otra cosa. Tenerlas separadas
+sugería que eran dominios distintos cuando son la misma cosa vista en dos momentos:
+lo que se ofrece y lo que ya se vendió.
+
+Se unificaron bajo `/app/:tenant/gift-cards`, con un toggle interno de tres vistas:
+
+- **Vendidas** — las gift cards ya emitidas (antes vivía en `Gift cards`).
+- **Lo que vendes** — el catálogo: montos fijos, monto abierto, servicios (antes vivía
+  en `Productos`).
+- **Vigencia y términos** — se movió acá desde `Marca`. Es una regla de negocio sobre
+  las gift cards (cuánto duran, qué dicen los términos), no branding visual. `Marca`
+  quedó solo con lo que se ve: logo, nombre, descripción, color, publicar.
+
+`/app/:tenant/productos` redirige a `/gift-cards` para no romper un link guardado.
 
 
 ---
