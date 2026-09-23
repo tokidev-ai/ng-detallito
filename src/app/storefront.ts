@@ -14,7 +14,7 @@ import { Reveal } from './reveal';
   selector: 'app-storefront',
   imports: [FormsModule, BsPipe, GiftcardArt, Wordmark, Reveal],
   template: `
-    <div class="storefront flex min-h-full flex-col bg-base-100 text-base-content">
+    <div class="storefront flex flex-col bg-base-100 text-base-content" [class.min-h-dvh]="interactive()">
 
       <!-- barra superior -->
       <header class="sticky top-0 z-30 border-b border-base-300 bg-base-100/85 backdrop-blur">
@@ -33,7 +33,7 @@ import { Reveal } from './reveal';
         <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
              [style.background-color]="b().color" aria-hidden="true"></div>
 
-        <div class="relative mx-auto grid h-full max-w-6xl content-between gap-x-12 gap-y-8 px-5 py-8 text-center sm:px-8 sm:py-12 lg:h-auto lg:grid-cols-[1.05fr_1fr] lg:content-start lg:items-start lg:gap-y-8 lg:py-16 lg:text-left">
+        <div class="relative mx-auto grid h-full max-w-6xl content-center gap-x-12 gap-y-8 px-5 py-8 text-center sm:px-8 sm:py-12 lg:h-auto lg:grid-cols-[1.05fr_1fr] lg:content-start lg:items-start lg:gap-y-8 lg:py-16 lg:text-left">
 
           <!-- 1 · título -->
           <h1 reveal class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
