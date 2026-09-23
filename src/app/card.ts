@@ -40,7 +40,7 @@ export const giftPath = (slug: string, code: string) => `/${slug}/g/${code}`;
 export function giftMessage(businessName: string, url: string, c: { to?: string; from?: string }): string {
   const para = c.to ? ` para ${c.to}` : '';
   const de = c.from ? `, de parte de ${c.from}` : '';
-  return `¡Tenés una gift card de ${businessName}${para}${de}! 🎁\nÁbrila acá: ${url}`;
+  return `¡Tienes una gift card de ${businessName}${para}${de}! 🎁\nÁbrela aquí: ${url}`;
 }
 
 export const waLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;

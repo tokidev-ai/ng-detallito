@@ -45,7 +45,7 @@ const TABS: { id: CardState; label: string }[] = [
       <h2 class="text-lg font-medium">Montos sugeridos</h2>
       <p class="mt-1 text-sm text-base-content/55">
         Aparecen como botones en tu página. El cliente igual puede escribir un monto libre,
-        así que podés dejarlo vacío.
+        así que puedes dejarlo vacío.
       </p>
       <div class="mt-4 flex flex-wrap gap-2">
         @for (a of s.business().suggestedAmounts; track a) {
@@ -403,7 +403,7 @@ export class Emitidas {
           Esto elimina el negocio, su página pública y su panel. No se puede deshacer.
         </p>
         <label class="mt-4 block">
-          <span class="mb-1 block text-sm text-base-content/60">Escribí <b>{{ b().name }}</b> para confirmar</span>
+          <span class="mb-1 block text-sm text-base-content/60">Escribe <b>{{ b().name }}</b> para confirmar</span>
           <input class="input input-bordered w-full" [(ngModel)]="deleteText" name="delText" [placeholder]="b().name">
         </label>
         <div class="mt-5 flex justify-end gap-2">
@@ -527,7 +527,7 @@ const CASHIER: Record<Perm, boolean> = {
         <h3 class="text-lg font-medium">Quitar del equipo</h3>
         <p class="mt-2 text-sm text-base-content/70">
           <span class="font-medium text-base-content">{{ email }}</span> dejará de tener acceso al negocio.
-          Podés volver a agregarlo cuando quieras.
+          Puedes volver a agregarlo cuando quieras.
         </p>
         <div class="mt-5 flex justify-end gap-2">
           <button type="button" class="btn btn-ghost btn-sm" (click)="removing.set(null)">Cancelar</button>
@@ -547,7 +547,7 @@ export class Equipo {
 
   add() {
     const email = this.email.trim().toLowerCase();
-    if (!email || !email.includes('@')) { this.error.set('Ingresá un correo válido.'); return; }
+    if (!email || !email.includes('@')) { this.error.set('Ingresa un correo válido.'); return; }
     if (this.s.staff().some(m => m.email === email)) { this.error.set('Ese correo ya está en el equipo.'); return; }
     this.error.set('');
     this.s.addStaff(email, { ...CASHIER });

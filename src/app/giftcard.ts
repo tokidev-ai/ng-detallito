@@ -82,7 +82,7 @@ export class GiftcardArt {
                 @case ('vencida') { <p class="font-medium text-error">Esta gift card venció.</p> }
                 @default {
                   <p class="text-base-content/70">
-                    Mostrá este código o el QR en <span class="font-medium text-base-content">{{ p.business.name }}</span> para usar tu gift card.
+                    Muestra este código o el QR en <span class="font-medium text-base-content">{{ p.business.name }}</span> para usar tu gift card.
                   </p>
                 }
               }

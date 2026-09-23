@@ -259,7 +259,7 @@ export class Onboarding {
       this.store.setCurrent(id);
       await this.router.navigate(['/app', id, 'resumen']);
     } catch {
-      this.publishError.set('No pudimos publicar. Revisá tu conexión y prueba de nuevo.');
+      this.publishError.set('No pudimos publicar. Revisa tu conexión y prueba de nuevo.');
     } finally {
       this.publishing.set(false);
     }

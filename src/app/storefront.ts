@@ -33,42 +33,23 @@ import { Reveal } from './reveal';
         <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
              [style.background-color]="b().color" aria-hidden="true"></div>
 
-        <div class="relative mx-auto grid max-w-6xl gap-8 px-5 py-9 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:py-16">
+        <div class="relative mx-auto grid max-w-6xl gap-x-12 gap-y-7 px-5 py-9 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:py-16">
 
-          <!-- pitch (debajo de la compra en móvil) -->
-          <div reveal class="order-2 lg:order-1">
-            <span class="inline-flex items-center gap-2 rounded-full border border-base-300 px-3 py-1 text-xs font-medium text-base-content/60">
-              <span class="size-2 rounded-full" [style.background-color]="b().color"></span> Gift card digital
+          <!-- 1 · título -->
+          <h1 reveal class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
+            Regala una gift card de
+            <span class="relative inline-block" [style.color]="b().color">
+              {{ b().name || 'tu comercio' }}
+              <svg class="subrayado absolute -bottom-1.5 left-0 w-full" height="14"
+                   viewBox="0 0 200 14" preserveAspectRatio="none" fill="none" aria-hidden="true">
+                <path d="M3 9.5C42 4 86 2.6 130 4.2c25 .9 48 2.6 67 5.3"
+                      stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              </svg>
             </span>
-            <h1 class="mt-4 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:text-[3.75rem] lg:leading-[0.95]">
-              Regalá una gift card de
-              <span class="relative inline-block" [style.color]="b().color">
-                {{ b().name || 'tu comercio' }}
-                <svg class="subrayado absolute -bottom-1.5 left-0 w-full" height="14"
-                     viewBox="0 0 200 14" preserveAspectRatio="none" fill="none" aria-hidden="true">
-                  <path d="M3 9.5C42 4 86 2.6 130 4.2c25 .9 48 2.6 67 5.3"
-                        stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                </svg>
-              </span>
-            </h1>
-            <p class="mt-6 max-w-md text-lg text-base-content/70">
-              {{ b().description || 'Cuenta en una línea qué ofreces.' }}
-            </p>
-            <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/60">
-              @for (v of trust(); track v) {
-                <li class="inline-flex items-center gap-1.5">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4"
-                       [style.color]="b().color">
-                    <path d="M4 12.5l5 5 11-11" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  {{ v }}
-                </li>
-              }
-            </ul>
-          </div>
+          </h1>
 
-          <!-- tarjeta de compra -->
-          <div reveal="1" class="relative order-1 lg:order-2">
+          <!-- 2 · tarjeta de compra -->
+          <div reveal="1" class="relative order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
             <div class="pointer-events-none absolute -inset-3 rounded-[2rem] opacity-20 blur-2xl"
                  [style.background-color]="b().color" aria-hidden="true"></div>
 
@@ -78,7 +59,7 @@ import { Reveal } from './reveal';
               @if (issuedCard(); as card) {
                 <p class="text-center text-sm font-medium text-base-content/70">🎉 ¡Tu gift card está lista!</p>
                 <div class="mt-3"><app-giftcard-art [card]="card" [business]="b()" /></div>
-                <p class="mt-5 text-center text-xs uppercase tracking-wider text-base-content/50">Enviásela a quien la recibe</p>
+                <p class="mt-5 text-center text-xs uppercase tracking-wider text-base-content/50">Envíasela a quien la recibe</p>
                 <div class="mt-2 grid grid-cols-2 gap-2">
                   <a class="btn gap-2 text-white" style="background-color:#25D366;border-color:#25D366"
                      [href]="waHref()" target="_blank" rel="noopener">WhatsApp</a>
@@ -106,7 +87,7 @@ import { Reveal } from './reveal';
 
                 @switch (view()) {
                   @case (0) {
-                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Elegí el monto</p>
+                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Elige el monto</p>
                     @if (amounts().length) {
                       <div class="mt-2 grid grid-cols-3 gap-2">
                         @for (a of amounts(); track a) {
@@ -137,7 +118,7 @@ import { Reveal } from './reveal';
                     <input class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="to" name="to" placeholder="Nombre de quien la recibe">
                     <input class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="from" name="from"
                            placeholder="De parte de… (opcional)">
-                    <p class="mt-1 text-xs text-base-content/50">Dejalo vacío si querés que el regalo sea anónimo.</p>
+                    <p class="mt-1 text-xs text-base-content/50">Déjalo vacío si quieres que el regalo sea anónimo.</p>
                     <div class="mt-4 flex gap-2">
                       <button type="button" class="btn btn-ghost h-12 flex-1" (click)="back()">Atrás</button>
                       <button type="button" class="btn h-12 flex-1 border-none" [disabled]="!to.trim()"
@@ -147,7 +128,7 @@ import { Reveal } from './reveal';
                   }
 
                   @case (2) {
-                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Revisá y confirmá</p>
+                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Revisa y confirma</p>
                     <dl class="mt-2 divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
                       <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Monto</dt><dd class="text-lg font-bold tabular-nums" [style.color]="b().color">{{ amount | bs }}</dd></div>
                       <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Para</dt><dd class="font-medium">{{ to }}</dd></div>
@@ -167,6 +148,23 @@ import { Reveal } from './reveal';
                 }
               }
             </div>
+          </div>
+
+          <!-- 3 · descripción y detalles -->
+          <div reveal="2" class="order-3 lg:col-start-1 lg:row-start-2 lg:self-start">
+            <p class="max-w-md text-lg text-base-content/70">
+              {{ b().description || 'Cuenta en una línea qué ofreces.' }}
+            </p>
+            <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/60">
+              @for (v of trust(); track v) {
+                <li class="inline-flex items-center gap-1.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4" [style.color]="b().color">
+                    <path d="M4 12.5l5 5 11-11" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {{ v }}
+                </li>
+              }
+            </ul>
           </div>
         </div>
       </section>
@@ -232,7 +230,7 @@ export class Storefront {
       await this.store.issueCard(id, card);
       this.issuedCard.set(card);
     } catch {
-      this.error.set('No pudimos emitir la gift card. Probá de nuevo en un momento.');
+      this.error.set('No pudimos emitir la gift card. Prueba de nuevo en un momento.');
     } finally {
       this.busy.set(false);
     }

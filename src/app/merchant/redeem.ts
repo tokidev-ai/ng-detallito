@@ -27,14 +27,14 @@ const BD: any = (globalThis as any).BarcodeDetector;
         @if (!found()) {
           @if (scanning()) {
             <video #video class="mt-4 aspect-square w-full rounded-box bg-black object-cover" playsinline muted></video>
-            <p class="mt-2 text-center text-sm text-base-content/60">Apuntá al QR de la gift card</p>
+            <p class="mt-2 text-center text-sm text-base-content/60">Apunta al QR de la gift card</p>
             <button type="button" class="btn btn-ghost btn-sm mt-1 w-full" (click)="stopScan()">Cancelar cámara</button>
           } @else {
             @if (canScan) {
               <button type="button" class="btn btn-primary mt-4 w-full" (click)="startScan()">📷 Escanear QR</button>
-              <div class="divider my-3 text-xs text-base-content/40">o ingresá el código</div>
+              <div class="divider my-3 text-xs text-base-content/40">o ingresa el código</div>
             } @else {
-              <p class="mt-4 text-sm text-base-content/60">Ingresá el código de la gift card:</p>
+              <p class="mt-4 text-sm text-base-content/60">Ingresa el código de la gift card:</p>
             }
             <div class="join mt-1 w-full">
               <input class="input input-bordered join-item w-full font-mono uppercase" [(ngModel)]="code"
@@ -134,7 +134,7 @@ export class RedeemDialog {
       this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       this.scanning.set(true);  // el effect toma el <video> cuando aparece
     } catch {
-      this.error.set('No pudimos abrir la cámara. Ingresá el código a mano.');
+      this.error.set('No pudimos abrir la cámara. Ingresa el código a mano.');
     }
   }
 
