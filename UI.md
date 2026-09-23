@@ -202,7 +202,12 @@ el producto asomando. En un teléfono entran unos 640px útiles antes del primer
 si el botón no entra ahí, la landing no vende. Medido: el CTA del hero queda dentro de
 la primera pantalla de 844px, con 48px de alto de área táctil.
 
-Seis decisiones que solo aplican en móvil:
+El hero es **una columna de flex en móvil y una grilla de dos columnas desde `lg`**,
+con posiciones explícitas (`col-start` / `row-start`). Así el orden de lectura en móvil
+lo da el DOM — titular, producto, texto, cifras — y en escritorio el mockup se va a la
+derecha sin duplicar markup ni pelear con `order`.
+
+Decisiones que solo aplican en móvil:
 
 - **El hero no lleva botones.** El CTA vive en la barra, que es fija: te acompaña todo
   el scroll en vez de quedarse atrás en la primera pantalla.
@@ -286,7 +291,12 @@ el producto asomando. En un teléfono entran unos 640px útiles antes del primer
 si el botón no entra ahí, la landing no vende. Medido: el CTA del hero queda dentro de
 la primera pantalla de 844px, con 48px de alto de área táctil.
 
-Seis decisiones que solo aplican en móvil:
+El hero es **una columna de flex en móvil y una grilla de dos columnas desde `lg`**,
+con posiciones explícitas (`col-start` / `row-start`). Así el orden de lectura en móvil
+lo da el DOM — titular, producto, texto, cifras — y en escritorio el mockup se va a la
+derecha sin duplicar markup ni pelear con `order`.
+
+Decisiones que solo aplican en móvil:
 
 - **El hero no lleva botones.** El CTA vive en la barra, que es fija: te acompaña todo
   el scroll en vez de quedarse atrás en la primera pantalla.
