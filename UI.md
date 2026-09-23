@@ -180,6 +180,21 @@ ningún comercio real.
 que el negocio entienda qué gana espanta a quien recién llega. La conversación de precio
 va después, cuando ya vio la propuesta.
 
+### El titular
+
+`Tu negocio vendiendo **gift cards** desde hoy.` — sujeto, acción y urgencia en ese orden,
+con el subrayado trazado a mano bajo la frase que importa. Recursos, todos en CSS:
+
+- **Trama de puntos** de fondo con máscara radial, para que la sección no sea un vacío
+  blanco. Dos gradientes, ninguna imagen.
+- **Subrayado irregular** en SVG que se dibuja con `stroke-dashoffset` al entrar. Marca
+  la frase clave mejor que pintar toda una línea de naranja.
+- **Tracking cerrado** (`-0.035em`) y altura de línea corta: es lo que separa un titular
+  diseñado de uno por defecto.
+- **Resplandor suave** detrás del mockup para que no flote sobre la nada.
+
+Todo se apaga con `prefers-reduced-motion`.
+
 ### La landing en móvil
 
 El orden de lectura cambia a propósito bajo `lg`: titular, promesa, botón y recién ahí
@@ -243,6 +258,21 @@ ningún comercio real.
 **La landing no menciona el precio.** Decidido a propósito: hablar de comisión antes de
 que el negocio entienda qué gana espanta a quien recién llega. La conversación de precio
 va después, cuando ya vio la propuesta.
+
+### El titular
+
+`Tu negocio vendiendo **gift cards** desde hoy.` — sujeto, acción y urgencia en ese orden,
+con el subrayado trazado a mano bajo la frase que importa. Recursos, todos en CSS:
+
+- **Trama de puntos** de fondo con máscara radial, para que la sección no sea un vacío
+  blanco. Dos gradientes, ninguna imagen.
+- **Subrayado irregular** en SVG que se dibuja con `stroke-dashoffset` al entrar. Marca
+  la frase clave mejor que pintar toda una línea de naranja.
+- **Tracking cerrado** (`-0.035em`) y altura de línea corta: es lo que separa un titular
+  diseñado de uno por defecto.
+- **Resplandor suave** detrás del mockup para que no flote sobre la nada.
+
+Todo se apaga con `prefers-reduced-motion`.
 
 ### La landing en móvil
 

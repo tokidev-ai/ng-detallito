@@ -27,13 +27,24 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
     <!-- En móvil el orden es otro a propósito: titular, promesa, acción y
          recién ahí el producto asomando. La pantalla inicial de un celular
          entra ~640px útiles; si el botón no entra, la landing no vende. -->
-    <section class="overflow-hidden border-b border-base-300 bg-base-100">
-      <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-8 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:py-20">
+    <section class="relative overflow-hidden border-b border-base-300 bg-base-100">
+      <div class="dotgrid pointer-events-none absolute inset-0" aria-hidden="true"></div>
+
+      <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:py-20">
 
         <div>
-          <h1 reveal class="text-[2.1rem] font-semibold leading-[1.08] tracking-tight text-balance sm:text-5xl sm:leading-[1.05] lg:text-6xl">
-            La página de tu negocio,
-            <span class="text-primary">vendiendo gift cards</span>
+          <h1 reveal
+              class="text-[2.35rem] font-semibold leading-[1.04] tracking-[-0.035em] text-balance
+                     sm:text-5xl lg:text-[4.25rem] lg:leading-[0.98]">
+            Tu negocio vendiendo
+            <span class="relative inline-block whitespace-nowrap text-primary">
+              gift cards
+              <svg class="subrayado absolute -bottom-2.5 left-0 w-full sm:-bottom-3" height="14"
+                   viewBox="0 0 200 14" preserveAspectRatio="none" fill="none" aria-hidden="true">
+                <path d="M3 9.5C42 4 86 2.6 130 4.2c25 .9 48 2.6 67 5.3"
+                      stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </span>
             desde hoy.
           </h1>
 
@@ -46,6 +57,21 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
             <a routerLink="/onboarding" class="btn btn-lg btn-primary w-full sm:w-auto">Crear mi comercio</a>
             <a routerLink="/login" class="btn btn-lg btn-ghost w-full sm:w-auto">Ya tengo cuenta</a>
           </div>
+
+          <p reveal="3" class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-base-content/50">
+            <span class="inline-flex items-center gap-1.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4 text-primary">
+                <path d="M4 12.5l5 5 11-11" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Sin instalar nada
+            </span>
+            <span class="inline-flex items-center gap-1.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4 text-primary">
+                <path d="M4 12.5l5 5 11-11" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Tu propio link
+            </span>
+          </p>
 
           <!-- en móvil las cifras van DESPUÉS del producto: son apoyo, no anzuelo -->
           <dl reveal="3"
@@ -61,7 +87,9 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
 
         <!-- la página que le va a quedar al comercio -->
         <div reveal="2" class="relative mx-auto w-full max-w-[280px] sm:max-w-[310px] lg:max-w-[340px]">
-          <div class="overflow-hidden rounded-[1.75rem] border border-base-300 bg-base-100 shadow-lg">
+          <div class="pointer-events-none absolute -inset-8 rounded-full bg-primary/10 blur-3xl" aria-hidden="true"></div>
+
+          <div class="relative overflow-hidden rounded-[1.75rem] border border-base-300 bg-base-100 shadow-lg">
             <div class="relative">
               <img src="img/spa-cover.jpg" alt="" width="760" height="280"
                    class="h-24 w-full object-cover sm:h-28">
