@@ -33,7 +33,7 @@ import { Reveal } from './reveal';
         <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
              [style.background-color]="b().color" aria-hidden="true"></div>
 
-        <div class="relative mx-auto grid max-w-6xl gap-x-12 gap-y-10 px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:gap-y-8 lg:py-16">
+        <div class="relative mx-auto grid h-full max-w-6xl content-between gap-x-12 gap-y-8 px-5 py-8 text-center sm:px-8 sm:py-12 lg:h-auto lg:grid-cols-[1.05fr_1fr] lg:content-start lg:items-start lg:gap-y-8 lg:py-16 lg:text-left">
 
           <!-- 1 · título -->
           <h1 reveal class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
@@ -49,7 +49,7 @@ import { Reveal } from './reveal';
           </h1>
 
           <!-- 2 · tarjeta de compra -->
-          <div reveal="1" class="relative order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
+          <div reveal="1" class="relative order-2 text-left lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
             <div class="pointer-events-none absolute -inset-3 rounded-[2rem] opacity-20 blur-2xl"
                  [style.background-color]="b().color" aria-hidden="true"></div>
 
@@ -152,10 +152,10 @@ import { Reveal } from './reveal';
 
           <!-- 3 · descripción y detalles -->
           <div reveal="2" class="order-3 lg:col-start-1 lg:row-start-2 lg:self-start">
-            <p class="max-w-md text-lg text-base-content/70">
+            <p class="mx-auto max-w-md text-lg text-base-content/70 lg:mx-0">
               {{ b().description || 'Cuenta en una línea qué ofreces.' }}
             </p>
-            <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/60">
+            <ul class="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-base-content/60 lg:justify-start">
               @for (v of trust(); track v) {
                 <li class="inline-flex items-center gap-1.5">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4" [style.color]="b().color">
