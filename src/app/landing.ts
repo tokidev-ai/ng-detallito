@@ -125,8 +125,9 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
         </div>
 
         <!-- 5 · las cifras -->
-        <dl reveal="3" class="grid grid-cols-2 gap-6 border-t border-base-300 pt-6 text-sm
-                              lg:col-start-1 lg:row-start-4 lg:mt-10 lg:max-w-md">
+        <dl reveal="3" class="mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-6 border-t border-base-300
+                              pt-6 text-center text-sm
+                              lg:col-start-1 lg:row-start-4 lg:mx-0 lg:mt-10 lg:max-w-md lg:text-left">
           @for (n of numeros; track n.k) {
             <div>
               <dt class="text-xl font-semibold">{{ n.k }}</dt>
@@ -167,7 +168,7 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
     </section>
 
     <footer class="border-t border-base-300">
-      <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-7 text-sm text-base-content/45 sm:px-6">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-4 px-4 py-7 text-sm text-base-content/45 sm:px-6">
         <app-wordmark />
       </div>
     </footer>
