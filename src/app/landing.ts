@@ -129,9 +129,12 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
         <dl reveal="3" class="grid grid-cols-2 gap-3 text-sm
                               lg:col-start-1 lg:row-start-4 lg:mt-10 lg:max-w-md">
           @for (n of numeros; track n.k) {
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center lg:p-5 lg:text-left">
-              <dt class="text-xl font-semibold text-primary">{{ n.k }}</dt>
-              <dd class="mt-1 text-base-content/60">{{ n.v }}</dd>
+            <!-- sobre el naranja tenue, orange-600 se queda en 3.35:1 y la
+                 descripción al 75% en 4.06:1; ambos por debajo de AA. Con
+                 orange-700 y opacidad plena quedan en 4.88 y 6.88. -->
+            <div class="rounded-box border border-primary/15 bg-accent p-4 text-center lg:p-5 lg:text-left">
+              <dt class="text-xl font-semibold text-[#c2410c]">{{ n.k }}</dt>
+              <dd class="mt-1 text-accent-content">{{ n.v }}</dd>
             </div>
           }
         </dl>
