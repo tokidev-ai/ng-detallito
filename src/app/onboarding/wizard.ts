@@ -1,12 +1,11 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Business, EMPTY_BUSINESS, Product, Store } from '../data';
+import { Business, EMPTY_BUSINESS, Store } from '../data';
 import { Storefront } from '../storefront';
 import { Wordmark } from '../brand';
-import { BsPipe } from '../ui';
 
-const STEPS = ['Marca', 'Productos', 'Vigencia y términos', 'Datos bancarios', 'Publicar'] as const;
+const STEPS = ['Marca', 'Datos bancarios', 'Publicar'] as const;
 const SWATCHES = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
 
 export const slugify = (s: string) =>
@@ -15,7 +14,7 @@ export const slugify = (s: string) =>
 
 @Component({
   selector: 'app-onboarding',
-  imports: [FormsModule, RouterLink, Storefront, BsPipe, Wordmark],
+  imports: [FormsModule, RouterLink, Storefront, Wordmark],
   template: `
   <div class="min-h-dvh bg-base-200 text-base-content">
     <header class="border-b border-base-300 bg-base-100">
@@ -121,74 +120,6 @@ export const slugify = (s: string) =>
 
             @case (1) {
               <p class="text-sm text-base-content/60">
-                Lo que tus clientes pueden comprar. Al menos uno para poder publicar.
-              </p>
-              <ul class="mt-4 space-y-2">
-                @for (p of products(); track p.id) {
-                  <li class="flex items-center gap-3 rounded-field border border-base-300 p-3">
-                    <span class="badge badge-sm badge-ghost">{{ kindLabel[p.kind] }}</span>
-                    <span class="min-w-0 flex-1 truncate">{{ p.name }}</span>
-                    <span class="font-semibold tabular-nums">
-                      {{ p.kind === 'open' ? (p.min | bs) + ' – ' + (p.max | bs) : (p.amount | bs) }}
-                    </span>
-                    <button type="button" class="btn btn-ghost btn-xs" (click)="removeProduct(p.id)">quitar</button>
-                  </li>
-                } @empty {
-                  <li class="rounded-field border border-dashed border-base-300 p-6 text-center text-sm text-base-content/50">
-                    Todavía no agregaste nada.
-                  </li>
-                }
-              </ul>
-
-              <div class="mt-4 rounded-box border border-base-300 p-4">
-                <div class="flex flex-wrap gap-2">
-                  @for (k of kinds; track k) {
-                    <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
-                            [class.btn-primary]="newKind() === k" [class.btn-outline]="newKind() !== k"
-                            (click)="newKind.set(k)">{{ kindLabel[k] }}</button>
-                  }
-                </div>
-                <div class="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
-                  <input class="input input-bordered w-full" [(ngModel)]="newName" name="pname"
-                         [placeholder]="newKind() === 'service' ? 'Masaje relajante 60\\'' : 'Nombre visible'">
-                  @if (newKind() === 'open') {
-                    <div class="join">
-                      <input type="number" class="input input-bordered join-item w-24" [(ngModel)]="newMin" name="pmin" placeholder="min">
-                      <input type="number" class="input input-bordered join-item w-24" [(ngModel)]="newMax" name="pmax" placeholder="max">
-                    </div>
-                  } @else {
-                    <input type="number" class="input input-bordered w-32" [(ngModel)]="newAmount" name="pamount" placeholder="Bs">
-                  }
-                </div>
-                <button type="button" class="btn btn-outline btn-sm mt-3" (click)="addProduct()">+ Agregar</button>
-              </div>
-            }
-
-            @case (2) {
-              <label class="form-control block">
-                <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Vigencia</span>
-                <div class="flex flex-wrap items-center gap-2">
-                  @for (m of [6, 12, 18, 24]; track m) {
-                    <button type="button" class="btn btn-sm rounded-full font-normal normal-case"
-                            [class.btn-primary]="draft().validityMonths === m" [class.btn-outline]="draft().validityMonths !== m"
-                            (click)="patch({ validityMonths: m })">{{ m }} meses</button>
-                  }
-                </div>
-              </label>
-              <p class="mt-2 text-sm text-base-content/60">
-                Cuenta desde la emisión. Aparece al pie de cada gift card.
-              </p>
-
-              <label class="form-control mt-5 block">
-                <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Términos del comercio</span>
-                <textarea class="textarea textarea-bordered h-32 w-full" [ngModel]="draft().terms"
-                          (ngModelChange)="patch({ terms: $event })" name="terms"
-                          placeholder="Dónde vale, si se puede transferir, qué pasa si no alcanza el saldo…"></textarea>
-              </label>
-            }
-
-            @case (3) {
-              <p class="text-sm text-base-content/60">
                 A esta cuenta te depositamos cada fin de mes. No se comparte con tus empleados.
               </p>
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
@@ -202,7 +133,7 @@ export const slugify = (s: string) =>
               </div>
             }
 
-            @case (4) {
+            @case (2) {
               <ul class="space-y-2">
                 @for (c of checklist(); track c.label) {
                   <li class="flex items-center gap-3 rounded-field border border-base-300 p-3">
@@ -247,7 +178,7 @@ export const slugify = (s: string) =>
         <aside class="border-t border-base-300 bg-base-200 p-4 sm:p-6 lg:border-l lg:border-t-0">
           <p class="mb-3 text-xs uppercase tracking-wider text-base-content/50">Vista previa · móvil</p>
           <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-base-content/80 bg-base-100">
-            <app-storefront [business]="draft()" [productList]="products()" />
+            <app-storefront [business]="draft()" />
           </div>
         </aside>
       </div>
@@ -262,8 +193,6 @@ export class Onboarding {
 
   readonly steps = STEPS;
   readonly swatches = SWATCHES;
-  readonly kinds = ['fixed', 'open', 'service'] as const;
-  readonly kindLabel = { fixed: 'Monto fijo', open: 'Monto abierto', service: 'Servicio' } as const;
   readonly bankFields = [
     { key: 'bank' as const, label: 'Banco', placeholder: 'BNB' },
     { key: 'account' as const, label: 'Cuenta', placeholder: '10-2345678' },
@@ -275,23 +204,13 @@ export class Onboarding {
   readonly step = signal(0);
   readonly furthest = signal(0);
   readonly draft = signal<Business>({ ...EMPTY_BUSINESS });
-  readonly products = signal<Product[]>([]);
-
-  // alta de producto
-  readonly newKind = signal<Product['kind']>('fixed');
-  newName = '';
-  newAmount: number | null = null;
-  newMin: number | null = null;
-  newMax: number | null = null;
 
   /** El slug lo escribe el nombre hasta que el usuario lo edita a mano. */
   private slugTouched = false;
 
   readonly checklist = computed(() => [
     { label: 'Nombre y link público', ok: !!this.draft().name && this.slugFree(), step: 0 },
-    { label: 'Al menos un producto', ok: this.products().length > 0, step: 1 },
-    { label: 'Vigencia definida', ok: this.draft().validityMonths > 0, step: 2 },
-    { label: 'Datos bancarios completos', ok: Object.values(this.draft().bank).every(Boolean), step: 3 },
+    { label: 'Datos bancarios completos', ok: Object.values(this.draft().bank).every(Boolean), step: 1 },
   ]);
   readonly canPublish = computed(() => this.checklist().every(c => c.ok) && !this.publishing());
 
@@ -324,20 +243,6 @@ export class Onboarding {
     if (file) this.patch({ logoUrl: URL.createObjectURL(file) });
   }
 
-  addProduct() {
-    const kind = this.newKind();
-    const name = this.newName.trim() || (kind === 'open' ? 'Monto abierto' : `Gift card Bs ${this.newAmount ?? 0}`);
-    if (kind === 'open' ? !(this.newMin && this.newMax) : !this.newAmount) return;
-
-    this.products.update(list => [...list, {
-      id: crypto.randomUUID(), kind, name,
-      ...(kind === 'open' ? { min: this.newMin!, max: this.newMax! } : { amount: this.newAmount! }),
-    }]);
-    this.newName = ''; this.newAmount = null; this.newMin = null; this.newMax = null;
-  }
-
-  removeProduct(id: string) { this.products.update(l => l.filter(p => p.id !== id)); }
-
   goTo(i: number) { if (i <= this.furthest()) this.step.set(i); }
   back() { this.step.update(s => Math.max(0, s - 1)); }
   next() {
@@ -350,9 +255,7 @@ export class Onboarding {
     this.publishing.set(true);
     this.publishError.set('');
     try {
-      const id = await this.store.createTenant(
-        { ...this.draft(), published: true },
-        this.products().map(({ id: _drop, ...p }) => p));
+      const id = await this.store.createTenant({ ...this.draft(), published: true });
       this.store.setCurrent(id);
       await this.router.navigate(['/app', id, 'resumen']);
     } catch {

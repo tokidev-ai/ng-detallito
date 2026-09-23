@@ -175,3 +175,7 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 - **El estado de una gift card no se guarda: se deriva** (`card.ts` → `cardState`) del
   saldo y la fecha. Saldo 0 → canjeada; fecha pasada → vencida; si no, activa. `expires`
   es ISO `yyyy-mm-dd` (ordena y compara como texto; se muestra con el pipe `fecha`).
+- **No hay modelo `Product`: solo gift cards.** Lo que la página ofrece son
+  `business.suggestedAmounts` (números), botones en el storefront; el cliente además
+  escribe un monto libre, así que la lista puede estar vacía y la página igual vende.
+  El dueño los edita en "Editar página"; el onboarding son 3 pasos (Marca, Banco, Publicar).

@@ -100,7 +100,7 @@ export class Tenants {
   readonly auth = inject(AuthService);
 
   readonly pitch = PITCH;
-  readonly steps = ['Marca', 'Productos', 'Vigencia', 'Datos bancarios', 'Publicar'];
+  readonly steps = ['Marca', 'Datos bancarios', 'Publicar'];
 
   readonly email = computed(() => this.auth.user()?.email ?? '');
   readonly firstName = computed(() => {

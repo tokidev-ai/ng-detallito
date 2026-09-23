@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BsPipe, onBrand } from './ui';
-import { Business, Product, Store } from './data';
+import { Business, Store } from './data';
 import { expiryFrom, newCode } from './card';
 
 /** La página pública del comercio. Se usa tal cual en /:slug y dentro del
@@ -34,41 +34,32 @@ import { expiryFrom, newCode } from './card';
             <p class="text-sm text-base-content/60">¡Listo! Tu gift card</p>
             <p class="mt-1 font-mono text-2xl font-semibold">{{ code }}</p>
             <p class="mt-2 text-sm text-base-content/60">
-              {{ selected()!.kind === 'open' ? (amount | bs) : (selected()!.amount | bs) }} ·
-              vence {{ b().validityMonths }} meses desde hoy
+              {{ amount | bs }} · vence {{ b().validityMonths }} meses desde hoy
             </p>
             <button type="button" class="btn btn-ghost btn-sm mt-3" (click)="reset()">Comprar otra</button>
           </div>
         } @else {
           <p class="mt-6 text-xs uppercase tracking-wider text-base-content/50">Elige el monto</p>
-          <div class="mt-2 grid grid-cols-2 gap-2">
-            @for (p of buyable(); track p.id) {
-              <button type="button" (click)="pick(p)"
-                class="btn h-auto justify-between px-3 py-3 font-normal normal-case"
-                [class.btn-outline]="selected() !== p"
-                [class.btn-primary]="selected() === p">
-                <span class="truncate text-left text-sm">{{ p.kind === 'fixed' ? '' : p.name }}</span>
-                <span class="font-semibold">
-                  {{ p.kind === 'open' ? (p.min | bs) + '+' : (p.amount | bs) }}
-                </span>
-              </button>
-            } @empty {
-              <p class="col-span-2 rounded-field border border-dashed border-base-300 p-4 text-center text-sm text-base-content/50">
-                Todavía no cargaste productos.
-              </p>
-            }
-          </div>
-
-          <!-- datos de la compra: solo en la página real, con un monto elegido -->
-          @if (interactive() && selected(); as p) {
-            <div class="mt-3 space-y-2">
-              @if (p.kind === 'open') {
-                <input type="number" class="input input-bordered input-sm w-full" [(ngModel)]="amount" name="amount"
-                       [placeholder]="'Monto entre ' + (p.min | bs) + ' y ' + (p.max | bs)">
+          @if (amounts().length) {
+            <div class="mt-2 grid grid-cols-3 gap-2">
+              @for (a of amounts(); track a) {
+                <button type="button" (click)="pick(a)"
+                  class="btn font-semibold normal-case"
+                  [class.btn-outline]="amount !== a" [class.btn-primary]="amount === a">
+                  {{ a | bs }}
+                </button>
               }
-              <input class="input input-bordered input-sm w-full" [(ngModel)]="to" name="to"
-                     placeholder="¿Para quién? (nombre)">
             </div>
+          }
+
+          <!-- monto libre: siempre disponible, con o sin sugeridos -->
+          <input type="number" min="1" class="input input-bordered mt-2 w-full" [(ngModel)]="amount" name="amount"
+                 [placeholder]="amounts().length ? 'Otro monto (Bs)' : 'Monto de la gift card (Bs)'">
+
+          <!-- para quién: solo en la página real -->
+          @if (interactive()) {
+            <input class="input input-bordered mt-2 w-full" [(ngModel)]="to" name="to"
+                   placeholder="¿Para quién? (nombre)">
           }
 
           <button type="button" class="btn mt-4 w-full"
@@ -91,36 +82,30 @@ export class Storefront {
 
   /** Sin inputs usa el store — así /:slug no necesita pasarle nada. */
   readonly business = input<Business | null>(null);
-  readonly productList = input<Product[] | null>(null);
   /** Solo la página pública real es interactiva; la vista previa del wizard, no. */
   readonly interactive = input(false);
   readonly tenantId = input<string | null>(null);
 
   readonly b = computed(() => this.business() ?? this.store.business());
-  readonly buyable = computed(() => (this.productList() ?? this.store.products()).slice(0, 4));
+  readonly amounts = computed(() => this.b().suggestedAmounts ?? []);
   readonly onBrand = computed(() => onBrand(this.b().color));
 
   // ── compra ───────────────────────────────────────────────────────────────
-  readonly selected = signal<Product | null>(null);
   readonly busy = signal(false);
   readonly issued = signal<string | null>(null);
   to = '';
   amount: number | null = null;
 
-  pick(p: Product) { this.selected.set(p); if (p.kind !== 'open') this.amount = p.amount ?? null; }
+  pick(a: number) { this.amount = a; }
 
   canBuy(): boolean {
-    const p = this.selected();
-    if (!p || !this.to.trim()) return false;
-    if (p.kind !== 'open') return true;
-    return this.amount != null && this.amount >= (p.min ?? 0) && this.amount <= (p.max ?? Infinity);
+    return !!this.to.trim() && this.amount != null && this.amount > 0;
   }
 
   async buy() {
     const id = this.tenantId();
     if (!this.interactive() || !id || !this.canBuy() || this.busy()) return;
-    const p = this.selected()!;
-    const value = p.kind === 'open' ? this.amount! : p.amount!;
+    const value = this.amount!;
     const code = newCode();
     this.busy.set(true);
     try {
@@ -134,7 +119,7 @@ export class Storefront {
     }
   }
 
-  reset() { this.issued.set(null); this.selected.set(null); this.to = ''; this.amount = null; }
+  reset() { this.issued.set(null); this.to = ''; this.amount = null; }
 }
 
 @Component({
@@ -146,7 +131,7 @@ export class Storefront {
     } @else if (page.hasValue() && page.value(); as p) {
       <div class="storefront min-h-dvh bg-base-200">
         <div class="mx-auto min-h-dvh max-w-md bg-base-100 shadow-sm">
-          <app-storefront [business]="p.tenant.business" [productList]="p.products"
+          <app-storefront [business]="p.tenant.business"
                           [interactive]="true" [tenantId]="p.tenant.id" />
         </div>
       </div>

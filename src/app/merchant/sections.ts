@@ -191,7 +191,7 @@ export class Emitidas {
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule, Storefront],
+  imports: [FormsModule, Storefront, BsPipe],
   template: `
   <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
 
@@ -241,6 +241,30 @@ export class Emitidas {
       </section>
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+        <h2 class="text-lg font-medium">Montos sugeridos</h2>
+        <p class="mt-1 text-sm text-base-content/55">
+          Aparecen como botones en tu página. El cliente igual puede escribir un monto libre,
+          así que podés dejarlo vacío.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          @for (a of b().suggestedAmounts; track a) {
+            <span class="badge badge-lg gap-2 py-3">
+              {{ a | bs }}
+              <button type="button" class="text-base-content/50 hover:text-error" aria-label="Quitar"
+                      (click)="removeAmount(a)">✕</button>
+            </span>
+          } @empty {
+            <span class="text-sm text-base-content/45">Sin montos sugeridos todavía.</span>
+          }
+        </div>
+        <div class="mt-3 flex gap-2">
+          <input type="number" min="1" class="input input-bordered input-sm w-32" [(ngModel)]="newAmount"
+                 name="newAmount" placeholder="Bs" (keyup.enter)="addAmount()">
+          <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
+        </div>
+      </section>
+
+      <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
         <div class="flex flex-wrap items-center gap-4">
           <div class="min-w-0 flex-1">
             <h2 class="text-lg font-medium">{{ b().published ? 'Tu página está publicada' : 'Tu página está en borrador' }}</h2>
@@ -273,6 +297,7 @@ export class Marca {
   readonly s = inject(Store);
   readonly b = this.s.business;
   readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
+  newAmount: number | null = null;
 
   onLogo(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
@@ -280,13 +305,25 @@ export class Marca {
     // Cuando entre Firebase Storage se sube aquí y se guarda la URL real.
     if (file) this.s.saveBusiness({ logoUrl: URL.createObjectURL(file) });
   }
+
+  addAmount() {
+    const a = this.newAmount;
+    if (!a || a <= 0) return;
+    const list = this.b().suggestedAmounts;
+    if (!list.includes(a)) this.s.saveBusiness({ suggestedAmounts: [...list, a].sort((x, y) => x - y) });
+    this.newAmount = null;
+  }
+
+  removeAmount(a: number) {
+    this.s.saveBusiness({ suggestedAmounts: this.b().suggestedAmounts.filter(x => x !== a) });
+  }
 }
 
 const PERMS = [
   ['redeem', 'Canjear gift cards'],
   ['viewCards', 'Ver listado y saldos'],
   ['viewSales', 'Ver ventas y dashboard'],
-  ['manageProducts', 'Crear y editar productos'],
+  ['manageProducts', 'Editar montos y página'],
   ['manageBranding', 'Editar marca y página'],
   ['manageStaff', 'Agregar y quitar empleados'],
 ] as const;

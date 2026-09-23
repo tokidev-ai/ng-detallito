@@ -80,17 +80,11 @@ const TENANTS = [
       description: 'Masajes, faciales y estética en Sopocachi.',
       logoUrl: null, color: '#3b7d6e', published: true, validityMonths: 12,
       terms: 'No reembolsable. Válida en Sopocachi. Presentar código al momento de la atención.',
+      suggestedAmounts: [150, 250, 400],
       bank: { bank: 'BNB', account: '10-2345678', holder: 'Ana Rocha', nit: '4821993015' },
     },
     soldThisMonth: 2000,
     monthly: [[900, 400], [1400, 620], [1200, 780], [1900, 1050], [1750, 1200], [2000, 1150]],
-    products: [
-      { kind: 'fixed', name: 'Gift card Bs 150', amount: 150 },
-      { kind: 'fixed', name: 'Gift card Bs 250', amount: 250 },
-      { kind: 'fixed', name: 'Gift card Bs 400', amount: 400 },
-      { kind: 'service', name: "Masaje relajante 60'", amount: 180 },
-      { kind: 'open', name: 'Monto abierto', min: 100, max: 1000 },
-    ],
     // saldo = valor − suma de canjes de ese código (el estado se deriva de ahí)
     cards: [
       { code: '4821-KQ7', to: 'Ana Quispe', value: 250, balance: 130, expires: '2026-11-14' }, // parcial
@@ -118,14 +112,11 @@ const TENANTS = [
       description: 'Cortes clásicos y barba en Miraflores.',
       logoUrl: null, color: '#a94434', published: true, validityMonths: 6,
       terms: 'Válida solo en el local de Miraflores. No acumulable con promociones.',
+      suggestedAmounts: [80, 120],
       bank: { bank: 'BCP', account: '4-9911203', holder: 'Rodrigo Nor', nit: '3391882204' },
     },
     soldThisMonth: 1650,
     monthly: [[600, 300], [820, 410], [900, 520], [1100, 700], [1400, 880], [1650, 980]],
-    products: [
-      { kind: 'fixed', name: 'Gift card Bs 80', amount: 80 },
-      { kind: 'service', name: 'Corte + barba', amount: 120 },
-    ],
     cards: [
       { code: '6120-AA3', to: 'Pablo M.', value: 120, balance: 120, expires: '2027-03-03' },
       { code: '7742-BQ1', to: 'Ruth S.', value: 80, balance: 0, expires: '2026-12-12' },
@@ -152,11 +143,10 @@ for (const t of TENANTS) {
   await put(`tenants/${t.id}/staff/${owner.email}`,
     { email: owner.email, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS });
   for (const m of t.extraStaff) await put(`tenants/${t.id}/staff/${m.email}`, m);
-  for (const [i, p] of t.products.entries()) await put(`tenants/${t.id}/products/p${i + 1}`, p);
   for (const c of t.cards) await put(`tenants/${t.id}/cards/${c.code}`, c);
   for (const [i, r] of t.redemptions.entries()) await put(`tenants/${t.id}/redemptions/r${i + 1}`, r);
 
-  console.log(`  ✓ ${t.business.name} — ${t.products.length} productos, ${t.cards.length} gift cards`);
+  console.log(`  ✓ ${t.business.name} — ${t.business.suggestedAmounts.length} montos, ${t.cards.length} gift cards`);
 }
 
 console.log('\nListo. https://giftcards-bo.web.app/app\n');

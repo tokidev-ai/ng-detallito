@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  Firestore, addDoc, collection, collectionData, deleteDoc, doc, getDocs,
+  Firestore, collection, collectionData, deleteDoc, doc, getDocs,
   query, setDoc, updateDoc, where,
 } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
@@ -10,7 +10,6 @@ import { cardState } from './card';
 
 export { cardState } from './card';
 export type { CardState } from './card';
-export type ProductKind = 'fixed' | 'open' | 'service';
 export type Perm = 'redeem' | 'viewCards' | 'viewSales' | 'manageProducts' | 'manageBranding' | 'manageStaff';
 
 export interface Business {
@@ -22,10 +21,12 @@ export interface Business {
   published: boolean;
   validityMonths: number;
   terms: string;
+  /** Montos que la página ofrece como botones. El cliente igual puede escribir
+   *  uno libre, así que la lista puede estar vacía y la página sigue vendiendo. */
+  suggestedAmounts: number[];
   bank: { bank: string; account: string; holder: string; nit: string };
 }
 
-export interface Product { id: string; kind: ProductKind; name: string; amount?: number; min?: number; max?: number }
 /** `expires` es ISO `yyyy-mm-dd` (comparable y ordenable como texto). El estado
  *  no se guarda: se deriva con `cardState`. `code` es la clave del documento. */
 export interface GiftCard { code: string; to: string; value: number; balance: number; expires: string }
@@ -47,7 +48,7 @@ export interface MonthPoint { sold: number; redeemed: number }
 
 export const EMPTY_BUSINESS: Business = {
   name: '', slug: '', description: '', logoUrl: null, color: '#1c1b18',
-  published: false, validityMonths: 12, terms: '',
+  published: false, validityMonths: 12, terms: '', suggestedAmounts: [],
   bank: { bank: '', account: '', holder: '', nit: '' },
 };
 
@@ -88,7 +89,6 @@ export class Store {
       { initialValue: [] as T[] });
   }
 
-  readonly products = this.sub<Product>('products', 'id');
   readonly cards = this.sub<GiftCard>('cards');
   readonly redemptions = this.sub<Redemption>('redemptions');
   readonly staff = this.sub<StaffMember>('staff');
@@ -120,8 +120,7 @@ export class Store {
           where('business.published', '==', true)));
         if (snap.empty) return null;
         const tenant = { id: snap.docs[0].id, ...snap.docs[0].data() } as Tenant;
-        const prods = await getDocs(collection(this.db, 'tenants', tenant.id, 'products'));
-        return { tenant, products: prods.docs.map(d => ({ id: d.id, ...d.data() }) as Product) };
+        return { tenant };
       },
     });
   }
@@ -155,21 +154,6 @@ export class Store {
     await updateDoc(this.tenantRef(id), flat);
   }
 
-  async addProduct(p: Omit<Product, 'id'>) {
-    const id = this.currentId();
-    if (id) await addDoc(collection(this.db, 'tenants', id, 'products'), p);
-  }
-
-  async removeProduct(productId: string) {
-    const id = this.currentId();
-    if (id) await deleteDoc(doc(this.db, 'tenants', id, 'products', productId));
-  }
-
-  async updateProduct(productId: string, patch: Omit<Product, 'id'>) {
-    const id = this.currentId();
-    if (id) await updateDoc(doc(this.db, 'tenants', id, 'products', productId), patch);
-  }
-
   /** Alta y edición de gift card: `code` es la clave, así que setDoc sirve para
    *  ambas. Editar no cambia el código (es la identidad de la carta). */
   async saveCard(card: GiftCard) {
@@ -199,7 +183,7 @@ export class Store {
   }
 
   /** Alta de comercio: lo que produce el wizard. Devuelve el id del tenant. */
-  async createTenant(business: Business, products: Omit<Product, 'id'>[]): Promise<string> {
+  async createTenant(business: Business): Promise<string> {
     const user = this.auth.user();
     if (!user) throw new Error('sin sesión');
 
@@ -214,9 +198,6 @@ export class Store {
     await setDoc(doc(this.db, 'tenants', id, 'staff', user.email ?? user.uid), {
       email: user.email ?? user.uid, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS,
     });
-    for (const p of products) {
-      await addDoc(collection(this.db, 'tenants', id, 'products'), p);
-    }
     return id;
   }
 
