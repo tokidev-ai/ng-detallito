@@ -386,54 +386,97 @@ export class Marca {
   }
 }
 
-const PERMS = [
-  ['redeem', 'Canjear gift cards'],
-  ['viewCards', 'Ver listado y saldos'],
-  ['viewSales', 'Ver ventas y dashboard'],
-  ['manageProducts', 'Editar montos y página'],
-  ['manageBranding', 'Editar marca y página'],
-  ['manageStaff', 'Agregar y quitar empleados'],
-] as const;
+/** Los permisos, agrupados por el tab que habilitan: así el dueño reparte
+ *  "acceso a cada tab" en vez de flags sueltos. */
+const PERM_GROUPS: { tab: string; items: [Perm, string][] }[] = [
+  { tab: 'Dashboard', items: [['viewSales', 'Ver ventas y deuda']] },
+  { tab: 'Gift cards', items: [['viewCards', 'Ver listado y saldos'], ['redeem', 'Canjear gift cards']] },
+  { tab: 'Editar página', items: [['manageBranding', 'Editar marca y página'], ['manageProducts', 'Editar montos sugeridos']] },
+  { tab: 'Equipo', items: [['manageStaff', 'Agregar y quitar empleados']] },
+];
+
+/** Empleado nuevo arranca como cajero: canjea y ve cartas, nada más. */
+const CASHIER: Record<Perm, boolean> = {
+  redeem: true, viewCards: true, viewSales: false,
+  manageProducts: false, manageBranding: false, manageStaff: false,
+};
 
 @Component({
   selector: 'app-equipo',
+  imports: [FormsModule],
   template: `
-  <ul class="space-y-4">
+  <!-- invitar -->
+  <div class="rounded-box border border-base-300 bg-base-100 p-4 sm:p-5">
+    <p class="text-xs uppercase tracking-wider text-base-content/50">Agregar al equipo</p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <input type="email" class="input input-bordered input-sm w-full sm:w-80" [(ngModel)]="email" name="newEmail"
+             placeholder="correo@empleado.com" (keyup.enter)="add()">
+      <button type="button" class="btn btn-primary btn-sm" (click)="add()">+ Agregar</button>
+    </div>
+    @if (error()) { <p class="mt-2 text-sm text-error">{{ error() }}</p> }
+    <p class="mt-2 text-sm text-base-content/55">
+      Entra con ese correo (Google) y ve solo los tabs que le habilites. Arranca como cajero.
+    </p>
+  </div>
+
+  <ul class="mt-4 space-y-4">
     @for (m of s.staff(); track m.email) {
       <li class="rounded-box border border-base-300 bg-base-100">
         <div class="flex flex-wrap items-center gap-2 border-b border-base-300 p-4">
           <div class="min-w-0 flex-1">
             <p class="truncate font-medium">{{ m.email }}</p>
-            <p class="text-sm text-base-content/50">{{ m.role }} · último acceso {{ m.lastSeen }}</p>
+            <p class="text-sm text-base-content/50">
+              @if (m.role === 'owner') { dueño · acceso total } @else { empleado · último acceso {{ m.lastSeen }} }
+            </p>
           </div>
-          <button type="button" class="btn btn-ghost btn-xs">quitar</button>
-        </div>
-        <ul class="grid gap-1 p-4 sm:grid-cols-2">
-          @for (p of perms; track p[0]) {
-            <li>
-              <label class="flex cursor-pointer items-start gap-3 rounded-field p-2 hover:bg-base-200">
-                <input type="checkbox" class="checkbox checkbox-sm mt-0.5"
-                       [checked]="m.perms[p[0]]" (change)="toggle(m.email, p[0])">
-                <span>
-                  <span class="block font-mono text-sm">{{ p[0] }}</span>
-                  <span class="block text-sm text-base-content/55">{{ p[1] }}</span>
-                </span>
-              </label>
-            </li>
+          @if (m.role !== 'owner') {
+            <button type="button" class="btn btn-ghost btn-xs text-error" (click)="remove(m.email)">quitar</button>
           }
-        </ul>
-        <p class="border-t border-base-300 p-4 text-sm text-base-content/60">
-          Datos bancarios y liquidaciones no se delegan nunca.
-        </p>
+        </div>
+
+        @if (m.role === 'owner') {
+          <p class="p-4 text-sm text-base-content/55">El dueño ve y gestiona todos los tabs.</p>
+        } @else {
+          <div class="grid gap-x-6 gap-y-4 p-4 sm:grid-cols-2">
+            @for (g of groups; track g.tab) {
+              <div>
+                <p class="mb-1 text-xs font-medium uppercase tracking-wider text-base-content/50">{{ g.tab }}</p>
+                @for (it of g.items; track it[0]) {
+                  <label class="flex cursor-pointer items-center gap-3 rounded-field p-1.5 hover:bg-base-200">
+                    <input type="checkbox" class="toggle toggle-sm" [checked]="m.perms[it[0]]"
+                           (change)="s.togglePerm(m.email, it[0])">
+                    <span class="text-sm">{{ it[1] }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        }
       </li>
     }
   </ul>
-  <p class="mt-4 text-sm text-warning">la UI oculta; las Firestore Rules son las que mandan.</p>
+
+  <p class="mt-4 text-sm text-base-content/60">Datos bancarios y liquidaciones no se delegan nunca.</p>
+  <p class="mt-1 text-sm text-warning">la UI oculta; las Firestore Rules son las que mandan.</p>
   `,
 })
 export class Equipo {
   readonly s = inject(Store);
-  readonly perms = PERMS;
-  toggle(email: string, key: Perm) { this.s.togglePerm(email, key); }
+  readonly groups = PERM_GROUPS;
+  email = '';
+  readonly error = signal('');
+
+  add() {
+    const email = this.email.trim().toLowerCase();
+    if (!email || !email.includes('@')) { this.error.set('Ingresá un correo válido.'); return; }
+    if (this.s.staff().some(m => m.email === email)) { this.error.set('Ese correo ya está en el equipo.'); return; }
+    this.error.set('');
+    this.s.addStaff(email, { ...CASHIER });
+    this.email = '';
+  }
+
+  remove(email: string) {
+    if (confirm(`¿Quitar a ${email} del equipo?`)) this.s.removeStaff(email);
+  }
 }
 

@@ -1,16 +1,17 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Store } from '../data';
+import { Perm, Store } from '../data';
 import { AuthService } from '../auth';
 
-interface Tab { path: string; label: string; short: string; icon: string }
+interface Tab { path: string; label: string; short: string; icon: string; perm: Perm }
 
-/** Los 4 primeros van a la barra inferior en móvil; el resto cae en "Más". */
+/** Cada tab necesita un permiso; el owner los tiene todos. Los 3 primeros
+ *  visibles van a la barra inferior en móvil; el resto cae en "Más". */
 const TABS: Tab[] = [
-  { path: 'resumen',    label: 'Dashboard',      short: 'Dashboard', icon: 'M3 12h4l3 8 4-16 3 8h4' },
-  { path: 'gift-cards', label: 'Gift cards',     short: 'Cards',     icon: 'M3 7h18v10H3zM3 11h18' },
-  { path: 'marca',      label: 'Editar página',  short: 'Página',    icon: 'M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.9-5.3-2.8-5.3 2.8 1-5.9L3.5 9.2l5.9-.9z' },
-  { path: 'equipo',     label: 'Equipo',         short: 'Equipo',    icon: 'M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6' },
+  { path: 'resumen',    label: 'Dashboard',      short: 'Dashboard', perm: 'viewSales',      icon: 'M3 12h4l3 8 4-16 3 8h4' },
+  { path: 'gift-cards', label: 'Gift cards',     short: 'Cards',     perm: 'viewCards',      icon: 'M3 7h18v10H3zM3 11h18' },
+  { path: 'marca',      label: 'Editar página',  short: 'Página',    perm: 'manageBranding', icon: 'M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.9-5.3-2.8-5.3 2.8 1-5.9L3.5 9.2l5.9-.9z' },
+  { path: 'equipo',     label: 'Equipo',         short: 'Equipo',    perm: 'manageStaff',    icon: 'M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6' },
 ];
 
 @Component({
@@ -64,7 +65,7 @@ const TABS: Tab[] = [
         <!-- tabs: escritorio -->
         <nav class="hidden border-b border-base-300 px-4 sm:px-6 md:block">
           <div role="tablist" class="tabs tabs-lift -mb-px">
-            @for (t of tabs; track t.path) {
+            @for (t of tabs(); track t.path) {
               <a role="tab" class="tab" [routerLink]="t.path" routerLinkActive="tab-active">{{ t.label }}</a>
             }
           </div>
@@ -78,7 +79,7 @@ const TABS: Tab[] = [
 
     <!-- bottom nav: móvil -->
     <nav class="btm-nav fixed inset-x-0 bottom-0 z-40 flex h-[4.5rem] items-stretch border-t border-base-300 bg-base-100 pb-[env(safe-area-inset-bottom)] md:hidden">
-      @for (t of tabs.slice(0, 3); track t.path) {
+      @for (t of tabs().slice(0, 3); track t.path) {
         <a class="flex flex-1 flex-col items-center justify-center gap-1 text-xs text-base-content/60"
            [routerLink]="t.path" routerLinkActive="!text-primary font-medium">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" class="size-6">
@@ -102,7 +103,7 @@ const TABS: Tab[] = [
         <div class="absolute inset-x-0 bottom-0 rounded-t-box bg-base-100 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-base-300"></div>
           <ul class="menu w-full">
-            @for (t of tabs.slice(3); track t.path) {
+            @for (t of tabs().slice(3); track t.path) {
               <li><a [routerLink]="t.path" routerLinkActive="active" (click)="moreOpen.set(false)">{{ t.label }}</a></li>
             }
           </ul>
@@ -120,7 +121,8 @@ export class MerchantShell {
   /** withComponentInputBinding() ata el :tenant de la ruta a este input. */
   readonly tenant = input<string>();
 
-  readonly tabs = TABS;
+  /** Solo los tabs que el usuario puede ver, según su rol/permisos. */
+  readonly tabs = computed(() => TABS.filter(t => this.store.can(t.perm)));
   readonly moreOpen = signal(false);
   readonly b = this.store.business;
   readonly ownerName = computed(() =>
@@ -133,5 +135,17 @@ export class MerchantShell {
 
   constructor() {
     effect(() => this.store.setCurrent(this.tenant() ?? null));
+
+    // si el usuario cae en un tab que no puede ver (link directo, permiso
+    // recién cargado), lo mandamos al primero permitido.
+    effect(() => {
+      const allowed = this.tabs();
+      if (!allowed.length) return;
+      const seg = this.router.url.split('?')[0].split('/').pop();
+      const known = TABS.some(t => t.path === seg);
+      if (seg && known && !allowed.some(t => t.path === seg)) {
+        this.router.navigate(['/app', this.tenant(), allowed[0].path], { replaceUrl: true });
+      }
+    });
   }
 }

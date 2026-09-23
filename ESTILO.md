@@ -193,4 +193,12 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   código. Del QR (URL `.../g/CODE`) o del input se saca el código, se busca en `cards()`
   y `Store.redeem` descuenta el saldo + agrega el canje en una transacción (dos cajas no
   pisan el mismo saldo). Va autenticado, las reglas ya lo permiten.
-- **Enviar = un dropdown** (WhatsApp / Correo) por carta, no dos botones sueltos.
+- **Enviar = un modal**, no un dropdown: un menú CSS dentro del contenedor con scroll
+  de la tabla queda recortado. El modal (overlay fijo) muestra el diseño + WhatsApp/Correo/link.
+- **RBAC:** cada tab del shell tiene un `perm`; `Store.can(perm)` decide (el owner puede
+  todo, `isOwner` por `ownerUid == uid`; el resto por `currentMember().perms[perm]`, buscado
+  por email en `staff()`). El shell muestra solo los tabs permitidos y redirige si caés en
+  uno que no podés. En Equipo el dueño agrega/quita miembros y reparte permisos agrupados
+  por tab. Pendiente de infra (no hecho aún): que un empleado agregado por email pueda
+  loguearse y acceder — hoy la membresía es `memberUids` (uid), hay que pasarla a email
+  (o invitación) y desplegar reglas que exijan los permisos. La UI oculta; las Rules mandan.

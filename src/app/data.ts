@@ -96,6 +96,22 @@ export class Store {
 
   readonly business = computed(() => this.current()?.business ?? EMPTY_BUSINESS);
   readonly monthly = computed(() => this.current()?.monthly ?? []);
+
+  // ── RBAC: quién soy en el comercio activo y qué puedo ────────────────────────
+  readonly isOwner = computed(() => {
+    const uid = this.auth.uid();
+    return !!uid && this.current()?.ownerUid === uid;
+  });
+  readonly currentMember = computed(() => {
+    const email = this.auth.user()?.email ?? null;
+    return email ? this.staff().find(m => m.email === email) ?? null : null;
+  });
+  /** El owner puede todo; el resto, según su permiso. La UI oculta con esto;
+   *  las Firestore Rules son las que mandan de verdad. */
+  can(p: Perm): boolean {
+    return this.isOwner() || (this.currentMember()?.perms[p] ?? false);
+  }
+
   readonly soldThisMonth = computed(() => this.current()?.soldThisMonth ?? 0);
   readonly netToCollect = computed(() => Math.round(this.soldThisMonth() * (1 - this.commissionRate)));
 
@@ -220,6 +236,17 @@ export class Store {
     if (id && member) {
       await updateDoc(doc(this.db, 'tenants', id, 'staff', email), { [`perms.${perm}`]: !member.perms[perm] });
     }
+  }
+
+  async addStaff(email: string, perms: Record<Perm, boolean>) {
+    const id = this.currentId();
+    if (id) await setDoc(doc(this.db, 'tenants', id, 'staff', email),
+      { email, role: 'staff', lastSeen: '—', perms });
+  }
+
+  async removeStaff(email: string) {
+    const id = this.currentId();
+    if (id) await deleteDoc(doc(this.db, 'tenants', id, 'staff', email));
   }
 
   /** Alta de comercio: lo que produce el wizard. Devuelve el id del tenant. */
