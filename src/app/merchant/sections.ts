@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CardState, GiftCard, Perm, Store, cardState } from '../data';
+import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
 import { Storefront } from '../storefront';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
@@ -61,6 +62,10 @@ const TABS: { id: CardState; label: string }[] = [
           <span class="mb-1 block text-sm text-base-content/60">Destinatario</span>
           <input class="input input-bordered w-full" [(ngModel)]="fTo" name="to" placeholder="Nombre">
         </label>
+        <label class="form-control sm:col-span-2">
+          <span class="mb-1 block text-sm text-base-content/60">De parte de <span class="text-base-content/40">(opcional)</span></span>
+          <input class="input input-bordered w-full" [(ngModel)]="fFrom" name="from" placeholder="Quién regala — vacío = anónimo">
+        </label>
         <label class="form-control">
           <span class="mb-1 block text-sm text-base-content/60">Valor (Bs)</span>
           <input type="number" class="input input-bordered w-full" [(ngModel)]="fValue" name="value">
@@ -100,6 +105,8 @@ const TABS: { id: CardState; label: string }[] = [
             <td class="text-base-content/60">{{ c.expires | fecha }}</td>
             <td><app-status [status]="state(c)" /></td>
             <td class="text-right whitespace-nowrap">
+              <a class="btn btn-ghost btn-xs" [href]="waHref(c)" target="_blank" rel="noopener" title="Enviar por WhatsApp">WhatsApp</a>
+              <a class="btn btn-ghost btn-xs" [href]="mailHref(c)" title="Enviar por correo">correo</a>
               <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
               <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
             </td>
@@ -126,7 +133,9 @@ const TABS: { id: CardState; label: string }[] = [
           <p class="text-2xl font-semibold tabular-nums">{{ c.balance | bs }}</p>
           <p class="text-sm text-base-content/50">de {{ c.value | bs }} · vence {{ c.expires | fecha }}</p>
         </div>
-        <div class="mt-3 flex gap-2">
+        <div class="mt-3 flex flex-wrap gap-2">
+          <a class="btn btn-outline btn-xs" [href]="waHref(c)" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn-outline btn-xs" [href]="mailHref(c)">correo</a>
           <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
           <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
         </div>
@@ -158,18 +167,18 @@ export class Emitidas {
   // ── formulario ─────────────────────────────────────────────────────────────
   readonly formOpen = signal(false);
   editingCode: string | null = null;
-  fCode = ''; fTo = ''; fValue: number | null = null; fBalance: number | null = null; fExpires = '';
+  fCode = ''; fTo = ''; fFrom = ''; fValue: number | null = null; fBalance: number | null = null; fExpires = '';
 
   openNew() {
     this.editingCode = null;
-    this.fCode = ''; this.fTo = ''; this.fValue = null; this.fBalance = null; this.fExpires = '';
+    this.fCode = ''; this.fTo = ''; this.fFrom = ''; this.fValue = null; this.fBalance = null; this.fExpires = '';
     this.formOpen.set(true);
   }
 
   openEdit(c: GiftCard) {
     this.editingCode = c.code;
-    this.fCode = c.code; this.fTo = c.to; this.fValue = c.value; this.fBalance = c.balance;
-    this.fExpires = c.expires;
+    this.fCode = c.code; this.fTo = c.to; this.fFrom = c.from ?? '';
+    this.fValue = c.value; this.fBalance = c.balance; this.fExpires = c.expires;
     this.formOpen.set(true);
   }
 
@@ -180,12 +189,20 @@ export class Emitidas {
       code, to: this.fTo.trim(), value: this.fValue,
       balance: this.fBalance ?? this.fValue,  // saldo en blanco = carta entera
       expires: this.fExpires,
+      ...(this.fFrom.trim() ? { from: this.fFrom.trim() } : {}),
     });
     this.formOpen.set(false);
   }
 
   async del(c: GiftCard) {
     if (confirm(`¿Borrar la gift card ${c.code} de ${c.to}?`)) await this.s.removeCard(c.code);
+  }
+
+  // ── enviar la gift card ─────────────────────────────────────────────────────
+  private shareUrl(c: GiftCard) { return `${location.origin}${giftPath(this.s.business().slug, c.code)}`; }
+  waHref(c: GiftCard) { return waLink(giftMessage(this.s.business().name, this.shareUrl(c), c)); }
+  mailHref(c: GiftCard) {
+    return mailtoLink(`Tu gift card de ${this.s.business().name}`, giftMessage(this.s.business().name, this.shareUrl(c), c));
   }
 }
 

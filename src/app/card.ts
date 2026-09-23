@@ -30,3 +30,19 @@ export function expiryFrom(months: number, from = new Date()): string {
   d.setUTCMonth(d.getUTCMonth() + months);  // todo en UTC, igual que toISOString
   return d.toISOString().slice(0, 10);
 }
+
+// ── compartir la gift card ───────────────────────────────────────────────────
+
+/** Ruta pública de una gift card: la página con diseño de marca y QR. */
+export const giftPath = (slug: string, code: string) => `/${slug}/g/${code}`;
+
+/** Mensaje que acompaña el link al mandarla por WhatsApp o correo. */
+export function giftMessage(businessName: string, url: string, c: { to?: string; from?: string }): string {
+  const para = c.to ? ` para ${c.to}` : '';
+  const de = c.from ? `, de parte de ${c.from}` : '';
+  return `¡Tenés una gift card de ${businessName}${para}${de}! 🎁\nÁbrila acá: ${url}`;
+}
+
+export const waLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
+export const mailtoLink = (subject: string, body: string) =>
+  `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

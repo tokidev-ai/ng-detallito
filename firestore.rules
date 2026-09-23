@@ -57,15 +57,23 @@ service cloud.firestore {
 
       allow delete: if isOwner(tenantId);
 
-      // el catálogo es público: la página de compra lo necesita sin sesión
-      match /products/{productId} {
-        allow read: if true;
-        allow write: if isMember(tenantId);
-      }
-
-      // saldos, canjes y empleados nunca salen del comercio
+      // saldos y empleados nunca salen del comercio…
       match /cards/{code} {
         allow read, write: if isMember(tenantId);
+
+        // …salvo la carta puntual: quien recibe el regalo la abre por su código
+        // (el código es el secreto). Solo get, nunca list, y con el comercio publicado.
+        allow get: if tenant(tenantId).business.published == true;
+
+        // la página pública emite la gift card al comprar, sin sesión.
+        // ponytail: sin pago ni verificación — cualquiera puede crear una carta.
+        // Antes de producción esto va detrás de una Cloud Function/pasarela; acá
+        // solo se valida la forma (código == id, saldo == valor, valor > 0).
+        allow create: if tenant(tenantId).business.published == true
+                      && request.resource.data.code == code
+                      && request.resource.data.value is number
+                      && request.resource.data.value > 0
+                      && request.resource.data.balance == request.resource.data.value;
       }
       match /redemptions/{id} {
         allow read: if isMember(tenantId);

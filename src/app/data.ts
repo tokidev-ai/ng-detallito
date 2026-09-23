@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  Firestore, collection, collectionData, deleteDoc, doc, getDocs,
+  Firestore, collection, collectionData, deleteDoc, doc, getDoc, getDocs,
   query, setDoc, updateDoc, where,
 } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
@@ -28,8 +28,9 @@ export interface Business {
 }
 
 /** `expires` es ISO `yyyy-mm-dd` (comparable y ordenable como texto). El estado
- *  no se guarda: se deriva con `cardState`. `code` es la clave del documento. */
-export interface GiftCard { code: string; to: string; value: number; balance: number; expires: string }
+ *  no se guarda: se deriva con `cardState`. `code` es la clave del documento.
+ *  `from` es opcional: el regalo puede ser anónimo. */
+export interface GiftCard { code: string; to: string; from?: string; value: number; balance: number; expires: string }
 export interface Redemption { by: string; code: string; amount: number; at: string }
 export interface StaffMember { email: string; role: 'owner' | 'staff'; lastSeen: string; perms: Record<Perm, boolean> }
 
@@ -121,6 +122,28 @@ export class Store {
         if (snap.empty) return null;
         const tenant = { id: snap.docs[0].id, ...snap.docs[0].data() } as Tenant;
         return { tenant };
+      },
+    });
+  }
+
+  /** Una gift card puntual para su página pública con QR. `key` es `slug|code`.
+   *  ponytail: lee la carta por código sin sesión; el código es el secreto. En
+   *  producción, las reglas deben permitir get de una `cards` solo por id, no list. */
+  publicCard(key: () => string) {
+    return resource({
+      params: key,
+      loader: async ({ params }) => {
+        const [slug, code] = (params ?? '').split('|');
+        if (!slug || !code) return null;
+        const snap = await getDocs(query(
+          collection(this.db, 'tenants'),
+          where('business.slug', '==', slug),
+          where('business.published', '==', true)));
+        if (snap.empty) return null;
+        const business = (snap.docs[0].data() as Tenant).business;
+        const cardSnap = await getDoc(doc(this.db, 'tenants', snap.docs[0].id, 'cards', code));
+        if (!cardSnap.exists()) return null;
+        return { business, card: cardSnap.data() as GiftCard };
       },
     });
   }

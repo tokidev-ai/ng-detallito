@@ -179,3 +179,12 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   `business.suggestedAmounts` (números), botones en el storefront; el cliente además
   escribe un monto libre, así que la lista puede estar vacía y la página igual vende.
   El dueño los edita en "Editar página"; el onboarding son 3 pasos (Marca, Banco, Publicar).
+- **Compartir la gift card = link, no imagen adjunta.** Cada carta tiene su página
+  pública `/{slug}/g/{code}` (`giftcard.ts`) con diseño de marca (logo, color, QR que
+  apunta a esa misma URL). WhatsApp (`wa.me`) y correo (`mailto:`) mandan ese link.
+  `from` es opcional en `GiftCard` (regalo anónimo). QR con `qrcode` (CommonJS, allowlisted
+  en angular.json). Adjuntar la imagen de verdad y el pago quedan para un backend/función.
+- **Reglas de `cards`:** miembros leen/escriben todo; además `get` público (nunca `list`)
+  si el comercio está publicado — para abrir el regalo por código — y `create` público
+  validado para el checkout (código == id, saldo == valor, valor > 0). Sin pago aún:
+  cualquiera puede crear; en producción va detrás de una Cloud Function/pasarela.

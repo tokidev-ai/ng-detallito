@@ -100,8 +100,8 @@ const TENANTS = [
     monthly: [[900, 400], [1400, 620], [1200, 780], [1900, 1050], [1750, 1200], [2000, 1150]],
     // saldo = valor − suma de canjes de ese código (el estado se deriva de ahí)
     cards: [
-      { code: '4821-KQ7', to: 'Ana Quispe', value: 250, balance: 130, expires: '2026-11-14' }, // parcial
-      { code: '9013-MB2', to: 'Diego R.', value: 400, balance: 400, expires: '2026-12-02' },   // activa
+      { code: '4821-KQ7', to: 'Ana Quispe', from: 'Carlos M.', value: 250, balance: 130, expires: '2026-11-14' }, // parcial
+      { code: '9013-MB2', to: 'Diego R.', value: 400, balance: 400, expires: '2026-12-02' },   // activa (anónima)
       { code: '5577-TX9', to: 'Marta L.', value: 150, balance: 0, expires: '2026-10-19' },      // canjeada
       { code: '1204-JD4', to: 'Sofía V.', value: 250, balance: 250, expires: '2027-01-30' },    // activa
       { code: '7788-PL1', to: 'Iván C.', value: 200, balance: 200, expires: '2026-09-08' },     // vencida
@@ -131,7 +131,7 @@ const TENANTS = [
     soldThisMonth: 1650,
     monthly: [[600, 300], [820, 410], [900, 520], [1100, 700], [1400, 880], [1650, 980]],
     cards: [
-      { code: '6120-AA3', to: 'Pablo M.', value: 120, balance: 120, expires: '2027-03-03' },
+      { code: '6120-AA3', to: 'Pablo M.', from: 'Marcia V.', value: 120, balance: 120, expires: '2027-03-03' },
       { code: '7742-BQ1', to: 'Ruth S.', value: 80, balance: 0, expires: '2026-12-12' },
     ],
     redemptions: [{ by: 'Rodrigo', code: '7742-BQ1', amount: 80, at: '07/09 10:15' }],

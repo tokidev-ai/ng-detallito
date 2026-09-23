@@ -39,6 +39,9 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/panel').then(m => m.AdminPanel),
   },
 
+  // la gift card puntual, con diseño y QR: lo que se abre al compartir el regalo.
+  { path: ':slug/g/:code', loadComponent: () => import('./giftcard').then(m => m.GiftCardView) },
+
   // catch-all: la página pública del comercio, sin sesión. Va última a propósito.
   { path: ':slug', loadComponent: () => import('./storefront').then(m => m.StorefrontPage) },
 ];

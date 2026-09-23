@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BsPipe, FechaPipe, onBrand } from './ui';
-import { cardState, expiryFrom, newCode } from './card';
+import { cardState, expiryFrom, giftMessage, giftPath, newCode, waLink } from './card';
 import { slugify } from './onboarding/wizard';
 
 describe('slugify', () => {
@@ -56,6 +56,20 @@ describe('expiryFrom', () => {
   it('suma meses y devuelve ISO', () => {
     expect(expiryFrom(12, new Date('2026-09-23'))).toBe('2027-09-23');
     expect(expiryFrom(6, new Date('2026-09-23'))).toBe('2027-03-23');
+  });
+});
+
+describe('compartir', () => {
+  it('giftPath arma la ruta pública', () => {
+    expect(giftPath('barberia-nor', '6120-AA3')).toBe('/barberia-nor/g/6120-AA3');
+  });
+  it('el mensaje omite para/de cuando faltan (regalo anónimo)', () => {
+    expect(giftMessage('Barbería Nor', 'http://x/g/1', {})).not.toContain('parte de');
+    expect(giftMessage('Barbería Nor', 'http://x/g/1', { to: 'Ana', from: 'Luis' }))
+      .toContain('para Ana, de parte de Luis');
+  });
+  it('waLink escapa el texto', () => {
+    expect(waLink('a b')).toBe('https://wa.me/?text=a%20b');
   });
 });
 
