@@ -127,7 +127,6 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
     <footer class="border-t border-base-300">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-7 text-sm text-base-content/45 sm:px-6">
         <app-wordmark />
-        <span class="ms-auto">La Paz, Bolivia</span>
       </div>
     </footer>
   </div>
