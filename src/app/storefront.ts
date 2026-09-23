@@ -5,14 +5,15 @@ import { Business, GiftCard, Store } from './data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from './card';
 import { GiftcardArt } from './giftcard';
 import { Wordmark } from './brand';
-import { Reveal } from './reveal';
+// ponytail: sin `reveal` acá — la animación de entrada se traga la tarjeta en la
+// preview embebida del panel. La página igual queda atractiva sin ella.
 
 /** La página pública del comercio: comprar una gift card en pasos. Se usa tal
  *  cual en /:slug y como vista previa en vivo del wizard (ahí no es interactiva,
  *  se queda en el primer paso). El color y el logo son los del comercio. */
 @Component({
   selector: 'app-storefront',
-  imports: [FormsModule, BsPipe, GiftcardArt, Wordmark, Reveal],
+  imports: [FormsModule, BsPipe, GiftcardArt, Wordmark],
   template: `
     <div class="storefront flex flex-col bg-base-100 text-base-content" [class.min-h-dvh]="interactive()">
 
@@ -36,7 +37,7 @@ import { Reveal } from './reveal';
         <div class="relative mx-auto grid h-full max-w-6xl content-center gap-x-12 gap-y-8 px-5 py-8 text-center sm:px-8 sm:py-12 lg:h-auto lg:grid-cols-[1.05fr_1fr] lg:content-start lg:items-start lg:gap-y-8 lg:py-16 lg:text-left">
 
           <!-- 1 · título -->
-          <h1 reveal class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
+          <h1 class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
             Regala una gift card de
             <span class="relative inline-block" [style.color]="b().color">
               {{ b().name || 'tu comercio' }}
@@ -49,7 +50,7 @@ import { Reveal } from './reveal';
           </h1>
 
           <!-- 2 · tarjeta de compra -->
-          <div reveal="1" class="relative order-2 text-left lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
+          <div class="relative order-2 text-left lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
             <div class="pointer-events-none absolute -inset-3 rounded-[2rem] opacity-20 blur-2xl"
                  [style.background-color]="b().color" aria-hidden="true"></div>
 
@@ -151,7 +152,7 @@ import { Reveal } from './reveal';
           </div>
 
           <!-- 3 · descripción y detalles -->
-          <div reveal="2" class="order-3 lg:col-start-1 lg:row-start-2 lg:self-start">
+          <div class="order-3 lg:col-start-1 lg:row-start-2 lg:self-start">
             <p class="mx-auto max-w-md text-lg text-base-content/70 lg:mx-0">
               {{ b().description || 'Cuenta en una línea qué ofreces.' }}
             </p>
