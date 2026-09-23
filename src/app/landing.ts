@@ -33,18 +33,8 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
 
       <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:py-20">
 
-        <div>
-          <p reveal
-             class="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-accent
-                    px-3.5 py-1.5 text-sm font-medium text-accent-content">
-            <span class="relative flex size-2">
-              <span class="latido absolute inline-flex size-full rounded-full bg-primary opacity-70"></span>
-              <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
-            </span>
-            Tu página puede estar lista hoy mismo
-          </p>
-
-          <h1 reveal="1"
+        <div class="text-center lg:text-left">
+          <h1 reveal
               class="text-[2.75rem] font-extrabold leading-[0.98] tracking-[-0.045em] text-balance
                      sm:text-6xl lg:text-[4.75rem] lg:leading-[0.95]">
             Tu negocio vendiendo
@@ -59,17 +49,19 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
             desde hoy.
           </h1>
 
-          <p reveal="2" class="mt-5 max-w-xl text-base text-base-content/70 sm:mt-6 sm:text-lg">
+          <p reveal="1" class="mx-auto mt-5 max-w-xl text-base text-base-content/70 sm:mt-6 sm:text-lg lg:mx-0">
             Te armamos una página con tus productos y tu marca, en un link propio.
-            Tus clientes compran ahí mismo y tú cobras por adelantado.
+            <strong class="font-bold text-primary underline decoration-2 underline-offset-4">
+              Tu página puede estar lista hoy mismo
+            </strong>
           </p>
 
-          <div reveal="3" class="mt-8 hidden flex-wrap items-center gap-3 lg:flex">
+          <div reveal="2" class="mt-8 hidden flex-wrap items-center gap-3 lg:flex">
             <a routerLink="/onboarding" class="btn btn-lg btn-primary">Crear mi comercio</a>
             <a routerLink="/login" class="btn btn-lg btn-ghost">Ya tengo cuenta</a>
           </div>
 
-          <p reveal="4" class="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-sm
+          <p reveal="3" class="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-sm
                     text-base-content/55 lg:mt-4 lg:justify-start">
             <span class="inline-flex items-center gap-1.5">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4 text-primary">

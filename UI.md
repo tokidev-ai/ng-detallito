@@ -206,8 +206,9 @@ Seis decisiones que solo aplican en móvil:
 
 - **El hero no lleva botones.** El CTA vive en la barra, que es fija: te acompaña todo
   el scroll en vez de quedarse atrás en la primera pantalla.
-- **El cierre no se muestra.** Su mensaje subió al hero como anuncio, arriba del titular.
-- **Los verificados van centrados.**
+- **El cierre no se muestra.** Su mensaje vive ahora al final del párrafo del hero,
+  en negrita, color de marca y subrayado.
+- **Todo el bloque de texto va centrado**; en escritorio vuelve a la izquierda.
 
 - **La tarjeta de canje deja de flotar** (`static` en vez de `absolute`): flotando
   tapaba el botón del mockup.
@@ -289,8 +290,9 @@ Seis decisiones que solo aplican en móvil:
 
 - **El hero no lleva botones.** El CTA vive en la barra, que es fija: te acompaña todo
   el scroll en vez de quedarse atrás en la primera pantalla.
-- **El cierre no se muestra.** Su mensaje subió al hero como anuncio, arriba del titular.
-- **Los verificados van centrados.**
+- **El cierre no se muestra.** Su mensaje vive ahora al final del párrafo del hero,
+  en negrita, color de marca y subrayado.
+- **Todo el bloque de texto va centrado**; en escritorio vuelve a la izquierda.
 
 - **La tarjeta de canje deja de flotar** (`static` en vez de `absolute`): flotando
   tapaba el botón del mockup.

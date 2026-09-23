@@ -84,14 +84,6 @@ body {
 }
 @keyframes trazo { to { stroke-dashoffset: 0; } }
 
-/* El punto del anuncio, latiendo. */
-.latido { animation: latido 2s cubic-bezier(0,0,.2,1) infinite; }
-@keyframes latido {
-  0%   { transform: scale(1);   opacity: .7; }
-  70%  { transform: scale(2.4); opacity: 0; }
-  100% { transform: scale(2.4); opacity: 0; }
-}
-
 /* ── movimiento ──────────────────────────────────────────────────────────────
    Entrada nada más; se apaga entero con prefers-reduced-motion. */
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -105,7 +97,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .reveal { animation: none !important; }
   .subrayado path { animation: none !important; stroke-dashoffset: 0; }
-  .latido { animation: none !important; }
 }
 
 /* la bottom nav móvil es fija: que el contenido no quede debajo */
