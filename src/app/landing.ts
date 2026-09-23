@@ -31,7 +31,7 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
     <section class="relative overflow-hidden border-b border-base-300 bg-base-100">
       <div class="dotgrid pointer-events-none absolute inset-0" aria-hidden="true"></div>
 
-      <div class="relative mx-auto flex max-w-6xl flex-col gap-7 px-4 pt-10 pb-0 sm:px-6 sm:pt-14
+      <div class="relative mx-auto flex max-w-6xl flex-col gap-7 px-4 py-10 sm:px-6 sm:py-14
                   lg:grid lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-x-12 lg:gap-y-0 lg:py-20">
 
         <!-- 1 · el titular -->
@@ -125,21 +125,16 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
         </div>
 
         <!-- 5 · las cifras -->
-        <!-- franja de borde a borde en móvil; en escritorio vuelve a ser texto suelto -->
-        <div reveal="3"
-             class="-mx-4 bg-primary px-4 py-7 text-primary-content sm:-mx-6 sm:px-6
-                    lg:col-start-1 lg:row-start-4 lg:mx-0 lg:mt-10 lg:border-t lg:border-base-300
-                    lg:bg-transparent lg:px-0 lg:py-0 lg:pt-6 lg:text-base-content">
-          <dl class="mx-auto grid w-full max-w-[19rem] grid-cols-2 gap-6 text-center text-sm
-                     lg:mx-0 lg:max-w-md lg:text-left">
-            @for (n of numeros; track n.k) {
-              <div>
-                <dt class="text-xl font-semibold">{{ n.k }}</dt>
-                <dd class="mt-0.5 text-primary-content/80 lg:text-base-content/55">{{ n.v }}</dd>
-              </div>
-            }
-          </dl>
-        </div>
+        <!-- cada cifra en su tarjeta: el mismo lenguaje de borde fino que el resto del sitio -->
+        <dl reveal="3" class="grid grid-cols-2 gap-3 text-sm
+                              lg:col-start-1 lg:row-start-4 lg:mt-10 lg:max-w-md">
+          @for (n of numeros; track n.k) {
+            <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center lg:p-5 lg:text-left">
+              <dt class="text-xl font-semibold text-primary">{{ n.k }}</dt>
+              <dd class="mt-1 text-base-content/60">{{ n.v }}</dd>
+            </div>
+          }
+        </dl>
       </div>
     </section>
 
