@@ -4,136 +4,182 @@ import { BsPipe, onBrand } from './ui';
 import { Business, GiftCard, Store } from './data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from './card';
 import { GiftcardArt } from './giftcard';
+import { Wordmark } from './brand';
+import { Reveal } from './reveal';
 
 /** La página pública del comercio: comprar una gift card en pasos. Se usa tal
  *  cual en /:slug y como vista previa en vivo del wizard (ahí no es interactiva,
  *  se queda en el primer paso). El color y el logo son los del comercio. */
 @Component({
   selector: 'app-storefront',
-  imports: [FormsModule, BsPipe, GiftcardArt],
+  imports: [FormsModule, BsPipe, GiftcardArt, Wordmark, Reveal],
   template: `
-    <div class="storefront flex h-full flex-col bg-base-100 text-base-content">
-      <!-- portada con el color de marca -->
-      <div class="relative aspect-[16/7] w-full" [style.background-color]="b().color">
-        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_20%,white,transparent_60%)]"></div>
-      </div>
+    <div class="storefront flex min-h-full flex-col bg-base-100 text-base-content">
 
-      <div class="flex-1 p-5">
-        <div class="-mt-12 flex items-end gap-3">
-          <div class="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl border-4 border-base-100 bg-base-200 text-[10px] text-base-content/40 shadow-sm">
+      <!-- barra superior -->
+      <header class="sticky top-0 z-30 border-b border-base-300 bg-base-100/85 backdrop-blur">
+        <div class="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3 sm:px-8">
+          <div class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl border border-base-300 bg-base-200 text-[9px] text-base-content/40">
             @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> } @else { logo }
           </div>
-          <div class="min-w-0 pb-1">
-            <p class="truncate text-lg font-semibold leading-tight">{{ b().name || 'Tu comercio' }}</p>
-            @if (b().slug) { <p class="truncate text-xs text-base-content/50">giftcards.bo/{{ b().slug }}</p> }
+          <p class="min-w-0 flex-1 truncate font-semibold tracking-tight">{{ b().name || 'Tu comercio' }}</p>
+          <span class="hidden text-xs text-base-content/45 sm:block">giftcards.bo/{{ b().slug || 'tu-link' }}</span>
+        </div>
+      </header>
+
+      <!-- hero -->
+      <section class="relative flex-1 overflow-hidden">
+        <div class="dotgrid pointer-events-none absolute inset-0" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
+             [style.background-color]="b().color" aria-hidden="true"></div>
+
+        <div class="relative mx-auto grid max-w-6xl gap-8 px-5 py-9 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-12 lg:py-16">
+
+          <!-- pitch (debajo de la compra en móvil) -->
+          <div reveal class="order-2 lg:order-1">
+            <span class="inline-flex items-center gap-2 rounded-full border border-base-300 px-3 py-1 text-xs font-medium text-base-content/60">
+              <span class="size-2 rounded-full" [style.background-color]="b().color"></span> Gift card digital
+            </span>
+            <h1 class="mt-4 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:text-[3.75rem] lg:leading-[0.95]">
+              Regalá una gift card de
+              <span class="relative inline-block" [style.color]="b().color">
+                {{ b().name || 'tu comercio' }}
+                <svg class="subrayado absolute -bottom-1.5 left-0 w-full" height="14"
+                     viewBox="0 0 200 14" preserveAspectRatio="none" fill="none" aria-hidden="true">
+                  <path d="M3 9.5C42 4 86 2.6 130 4.2c25 .9 48 2.6 67 5.3"
+                        stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </h1>
+            <p class="mt-6 max-w-md text-lg text-base-content/70">
+              {{ b().description || 'Cuenta en una línea qué ofreces.' }}
+            </p>
+            <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-base-content/60">
+              @for (v of trust(); track v) {
+                <li class="inline-flex items-center gap-1.5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4"
+                       [style.color]="b().color">
+                    <path d="M4 12.5l5 5 11-11" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {{ v }}
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- tarjeta de compra -->
+          <div reveal="1" class="relative order-1 lg:order-2">
+            <div class="pointer-events-none absolute -inset-3 rounded-[2rem] opacity-20 blur-2xl"
+                 [style.background-color]="b().color" aria-hidden="true"></div>
+
+            <div class="relative rounded-3xl border border-base-300 bg-base-100 p-5 shadow-xl sm:p-7">
+
+              <!-- ── compra terminada ── -->
+              @if (issuedCard(); as card) {
+                <p class="text-center text-sm font-medium text-base-content/70">🎉 ¡Tu gift card está lista!</p>
+                <div class="mt-3"><app-giftcard-art [card]="card" [business]="b()" /></div>
+                <p class="mt-5 text-center text-xs uppercase tracking-wider text-base-content/50">Enviásela a quien la recibe</p>
+                <div class="mt-2 grid grid-cols-2 gap-2">
+                  <a class="btn gap-2 text-white" style="background-color:#25D366;border-color:#25D366"
+                     [href]="waHref()" target="_blank" rel="noopener">WhatsApp</a>
+                  <a class="btn btn-outline gap-2" [href]="mailHref()">Correo</a>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm mt-2 w-full" (click)="copy()">
+                  {{ copied() ? '¡Link copiado!' : 'Copiar link' }}
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm mt-1 w-full" (click)="reset()">Comprar otra</button>
+
+              <!-- ── pasos de compra ── -->
+              } @else {
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50">Comprar gift card</p>
+                  @if (interactive()) { <p class="text-xs text-base-content/40">Paso {{ view() + 1 }} de 3</p> }
+                </div>
+                @if (interactive()) {
+                  <div class="mt-3 flex items-center gap-1.5">
+                    @for (i of [0, 1, 2]; track i) {
+                      <span class="h-1.5 flex-1 rounded-full transition-colors"
+                            [style.background-color]="i <= step() ? b().color : 'var(--fallback-b3,#e5e5e5)'"></span>
+                    }
+                  </div>
+                }
+
+                @switch (view()) {
+                  @case (0) {
+                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Elegí el monto</p>
+                    @if (amounts().length) {
+                      <div class="mt-2 grid grid-cols-3 gap-2">
+                        @for (a of amounts(); track a) {
+                          <button type="button" (click)="pick(a)"
+                            class="btn h-12 font-semibold normal-case transition-transform active:scale-95"
+                            [class.btn-outline]="amount !== a"
+                            [style.background-color]="amount === a ? b().color : ''"
+                            [style.color]="amount === a ? onBrand() : ''"
+                            [style.border-color]="amount === a ? b().color : ''">
+                            {{ a | bs }}
+                          </button>
+                        }
+                      </div>
+                    }
+                    <input type="number" min="1" class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="amount" name="amount"
+                           [placeholder]="amounts().length ? 'Otro monto (Bs)' : 'Monto de la gift card (Bs)'">
+                    <button type="button" class="btn mt-4 h-12 w-full border-none text-base shadow-sm"
+                            [disabled]="!amount || amount < 1"
+                            [style.background-color]="b().color" [style.color]="onBrand()"
+                            (click)="next()">Continuar</button>
+                    <p class="mt-3 text-center text-xs text-base-content/50">
+                      Vence en {{ b().validityMonths }} meses · pago coordinado con el comercio
+                    </p>
+                  }
+
+                  @case (1) {
+                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">¿Para quién es?</p>
+                    <input class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="to" name="to" placeholder="Nombre de quien la recibe">
+                    <input class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="from" name="from"
+                           placeholder="De parte de… (opcional)">
+                    <p class="mt-1 text-xs text-base-content/50">Dejalo vacío si querés que el regalo sea anónimo.</p>
+                    <div class="mt-4 flex gap-2">
+                      <button type="button" class="btn btn-ghost h-12 flex-1" (click)="back()">Atrás</button>
+                      <button type="button" class="btn h-12 flex-1 border-none" [disabled]="!to.trim()"
+                              [style.background-color]="b().color" [style.color]="onBrand()"
+                              (click)="next()">Continuar</button>
+                    </div>
+                  }
+
+                  @case (2) {
+                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Revisá y confirmá</p>
+                    <dl class="mt-2 divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
+                      <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Monto</dt><dd class="text-lg font-bold tabular-nums" [style.color]="b().color">{{ amount | bs }}</dd></div>
+                      <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Para</dt><dd class="font-medium">{{ to }}</dd></div>
+                      @if (from.trim()) {
+                        <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">De parte de</dt><dd>{{ from }}</dd></div>
+                      }
+                      <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Vence</dt><dd>{{ b().validityMonths }} meses desde hoy</dd></div>
+                    </dl>
+                    <div class="mt-4 flex gap-2">
+                      <button type="button" class="btn btn-ghost h-12 flex-1" (click)="back()" [disabled]="busy()">Atrás</button>
+                      <button type="button" class="btn h-12 flex-1 border-none" [disabled]="busy()"
+                              [style.background-color]="b().color" [style.color]="onBrand()"
+                              (click)="buy()">{{ busy() ? 'Emitiendo…' : 'Comprar' }}</button>
+                    </div>
+                    @if (error()) { <p class="mt-2 text-center text-sm text-error">{{ error() }}</p> }
+                  }
+                }
+              }
+            </div>
           </div>
         </div>
+      </section>
 
-        <p class="mt-3 text-sm text-base-content/70">
-          {{ b().description || 'Cuenta en una línea qué ofreces.' }}
-        </p>
-
-        <!-- ── compra terminada: la gift card lista para compartir ── -->
-        @if (issuedCard(); as card) {
-          <div class="mt-6">
-            <p class="text-center text-sm font-medium text-base-content/70">🎉 ¡Tu gift card está lista!</p>
-            <div class="mt-3"><app-giftcard-art [card]="card" [business]="b()" /></div>
-
-            <p class="mt-5 text-center text-xs uppercase tracking-wider text-base-content/50">Enviásela a quien la recibe</p>
-            <div class="mt-2 grid grid-cols-2 gap-2">
-              <a class="btn gap-2 text-white" style="background-color:#25D366;border-color:#25D366"
-                 [href]="waHref()" target="_blank" rel="noopener">WhatsApp</a>
-              <a class="btn btn-outline gap-2" [href]="mailHref()">Correo</a>
-            </div>
-            <button type="button" class="btn btn-ghost btn-sm mt-2 w-full" (click)="copy()">
-              {{ copied() ? '¡Link copiado!' : 'Copiar link' }}
-            </button>
-            <button type="button" class="btn btn-ghost btn-sm mt-1 w-full" (click)="reset()">Comprar otra</button>
-          </div>
-
-        <!-- ── pasos de compra ── -->
-        } @else {
-          @if (interactive()) {
-            <div class="mt-6 flex items-center gap-1.5">
-              @for (i of [0, 1, 2]; track i) {
-                <span class="h-1.5 flex-1 rounded-full transition-colors"
-                      [style.background-color]="i <= step() ? b().color : 'var(--fallback-b3,#e5e5e5)'"></span>
-              }
-            </div>
-          }
-
-          @switch (view()) {
-            <!-- paso 1: monto -->
-            @case (0) {
-              <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Elegí el monto</p>
-              @if (amounts().length) {
-                <div class="mt-2 grid grid-cols-3 gap-2">
-                  @for (a of amounts(); track a) {
-                    <button type="button" (click)="pick(a)"
-                      class="btn font-semibold normal-case"
-                      [class.btn-outline]="amount !== a"
-                      [style.background-color]="amount === a ? b().color : ''"
-                      [style.color]="amount === a ? onBrand() : ''"
-                      [style.border-color]="amount === a ? b().color : ''">
-                      {{ a | bs }}
-                    </button>
-                  }
-                </div>
-              }
-              <input type="number" min="1" class="input input-bordered mt-2 w-full" [(ngModel)]="amount" name="amount"
-                     [placeholder]="amounts().length ? 'Otro monto (Bs)' : 'Monto de la gift card (Bs)'">
-
-              <button type="button" class="btn mt-4 w-full border-none"
-                      [disabled]="!amount || amount < 1"
-                      [style.background-color]="b().color" [style.color]="onBrand()"
-                      (click)="next()">Continuar</button>
-              <p class="mt-3 text-center text-xs text-base-content/50">
-                Vence en {{ b().validityMonths }} meses · términos del comercio
-              </p>
-            }
-
-            <!-- paso 2: para quién / de parte de -->
-            @case (1) {
-              <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">¿Para quién es?</p>
-              <input class="input input-bordered mt-2 w-full" [(ngModel)]="to" name="to" placeholder="Nombre de quien la recibe">
-              <input class="input input-bordered mt-2 w-full" [(ngModel)]="from" name="from"
-                     placeholder="De parte de… (opcional)">
-              <p class="mt-1 text-xs text-base-content/50">Dejalo vacío si querés que el regalo sea anónimo.</p>
-
-              <div class="mt-4 flex gap-2">
-                <button type="button" class="btn btn-ghost flex-1" (click)="back()">Atrás</button>
-                <button type="button" class="btn flex-1 border-none" [disabled]="!to.trim()"
-                        [style.background-color]="b().color" [style.color]="onBrand()"
-                        (click)="next()">Continuar</button>
-              </div>
-            }
-
-            <!-- paso 3: revisar y comprar -->
-            @case (2) {
-              <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Revisá y confirmá</p>
-              <dl class="mt-2 divide-y divide-base-200 rounded-box border border-base-300">
-                <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Monto</dt><dd class="font-semibold tabular-nums">{{ amount | bs }}</dd></div>
-                <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Para</dt><dd>{{ to }}</dd></div>
-                @if (from.trim()) {
-                  <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">De parte de</dt><dd>{{ from }}</dd></div>
-                }
-                <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Vence</dt><dd>{{ b().validityMonths }} meses desde hoy</dd></div>
-              </dl>
-
-              <div class="mt-4 flex gap-2">
-                <button type="button" class="btn btn-ghost flex-1" (click)="back()" [disabled]="busy()">Atrás</button>
-                <button type="button" class="btn flex-1 border-none" [disabled]="busy()"
-                        [style.background-color]="b().color" [style.color]="onBrand()"
-                        (click)="buy()">{{ busy() ? 'Emitiendo…' : 'Comprar' }}</button>
-              </div>
-              @if (error()) { <p class="mt-2 text-center text-sm text-error">{{ error() }}</p> }
-              <p class="mt-3 text-center text-xs text-base-content/50">
-                El pago se coordina con el comercio.
-              </p>
-            }
-          }
-        }
-      </div>
+      <!-- footer -->
+      <footer class="border-t border-base-300">
+        <div class="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-7 text-center sm:px-8">
+          @if (b().terms) { <p class="max-w-2xl text-xs leading-relaxed text-base-content/50">{{ b().terms }}</p> }
+          <p class="flex items-center gap-1.5 text-xs text-base-content/40">
+            Hecho con <app-wordmark />
+          </p>
+        </div>
+      </footer>
     </div>
   `,
 })
@@ -149,6 +195,11 @@ export class Storefront {
   readonly b = computed(() => this.business() ?? this.store.business());
   readonly amounts = computed(() => this.b().suggestedAmounts ?? []);
   readonly onBrand = computed(() => onBrand(this.b().color));
+  readonly trust = computed(() => [
+    'Un código al instante',
+    'Se canjea con QR o código',
+    `Vence en ${this.b().validityMonths} meses`,
+  ]);
 
   // ── compra por pasos ───────────────────────────────────────────────────────
   readonly step = signal(0);
@@ -207,13 +258,10 @@ export class Storefront {
   imports: [Storefront],
   template: `
     @if (page.isLoading()) {
-      <div class="grid min-h-dvh place-items-center"><span class="loading loading-spinner"></span></div>
+      <div class="grid min-h-dvh place-items-center"><span class="loading loading-spinner loading-lg text-primary"></span></div>
     } @else if (page.hasValue() && page.value(); as p) {
-      <div class="storefront min-h-dvh bg-base-200">
-        <div class="mx-auto min-h-dvh max-w-md bg-base-100 shadow-sm">
-          <app-storefront [business]="p.tenant.business"
-                          [interactive]="true" [tenantId]="p.tenant.id" />
-        </div>
+      <div class="storefront min-h-dvh">
+        <app-storefront [business]="p.tenant.business" [interactive]="true" [tenantId]="p.tenant.id" />
       </div>
     } @else {
       <div class="grid min-h-dvh place-items-center p-6 text-center">

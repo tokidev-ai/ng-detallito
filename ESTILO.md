@@ -179,6 +179,13 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   `business.suggestedAmounts` (números), botones en el storefront; el cliente además
   escribe un monto libre, así que la lista puede estar vacía y la página igual vende.
   El dueño los edita en "Editar página"; el onboarding son 3 pasos (Marca, Banco, Publicar).
+- **La página pública (`storefront.ts`) es una landing del comercio**, no una tarjetita:
+  barra superior, hero de dos columnas (pitch a la izquierda con titular grande + subrayado
+  a mano en el color del comercio + checks; tarjeta de compra a la derecha con glow de marca),
+  footer con términos + "Hecho con GiftKBol". En móvil la compra va primero (`order-1`), el
+  pitch debajo. Reutiliza `Reveal`, `Wordmark`, `.dotgrid`, `.subrayado`. Todo el acento
+  (subrayado, botones, progreso, glow) usa `business.color`; el texto sobre color, `onBrand`.
+  La preview del panel/onboarding renderiza el mismo componente angosto → muestra el móvil.
 - **Compartir la gift card = link, no imagen adjunta.** Cada carta tiene su página
   pública `/{slug}/g/{code}` (`giftcard.ts`) con diseño de marca (logo, color, QR que
   apunta a esa misma URL). WhatsApp (`wa.me`) y correo (`mailto:`) mandan ese link.
