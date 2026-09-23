@@ -198,7 +198,10 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 - **RBAC:** cada tab del shell tiene un `perm`; `Store.can(perm)` decide (el owner puede
   todo, `isOwner` por `ownerUid == uid`; el resto por `currentMember().perms[perm]`, buscado
   por email en `staff()`). El shell muestra solo los tabs permitidos y redirige si caés en
-  uno que no podés. En Equipo el dueño agrega/quita miembros y reparte permisos agrupados
-  por tab. Pendiente de infra (no hecho aún): que un empleado agregado por email pueda
-  loguearse y acceder — hoy la membresía es `memberUids` (uid), hay que pasarla a email
-  (o invitación) y desplegar reglas que exijan los permisos. La UI oculta; las Rules mandan.
+  uno que no podés. En Equipo el dueño agrega/quita miembros y reparte permisos por tab.
+- **Membresía por correo, no por uid.** `Tenant.memberEmails` (incluye al dueño);
+  "mis comercios" se consulta por `where('memberEmails','array-contains', miEmail)`. Agregar
+  un empleado por email lo mete en `memberEmails` (arrayUnion) → puede loguearse con esa
+  cuenta Google y entrar, sin sincronizar uids. Reglas: `isMember` por correo, `hasPerm`
+  lee el doc de `staff` por correo; tocar `memberEmails` o escribir `staff` exige
+  `manageStaff` (o ser owner, que cubre el arranque). La UI oculta; las Rules mandan.
