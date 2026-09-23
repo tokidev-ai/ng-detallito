@@ -25,17 +25,48 @@ const TABS: { id: CardState; label: string }[] = [
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div role="tablist" class="tabs tabs-box w-fit">
       @for (t of tabs; track t.id) {
-        <button type="button" role="tab" class="tab" [class.tab-active]="tab() === t.id"
-                (click)="tab.set(t.id)">{{ t.label }} ({{ count(t.id) }})</button>
+        <button type="button" role="tab" class="tab" [class.tab-active]="section() === t.id"
+                (click)="section.set(t.id)">{{ t.label }} ({{ count(t.id) }})</button>
       }
+      <button type="button" role="tab" class="tab" [class.tab-active]="section() === 'montos'"
+              (click)="section.set('montos')">Montos sugeridos</button>
     </div>
-    <div class="flex items-center gap-2">
-      <app-redeem />
-      <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
-    </div>
+    @if (section() !== 'montos') {
+      <div class="flex items-center gap-2">
+        <app-redeem />
+        <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
+      </div>
+    }
   </div>
 
-  <!-- buscador: aplica a las tres pestañas -->
+  <!-- ── Montos sugeridos ── -->
+  @if (section() === 'montos') {
+    <div class="mt-5 max-w-xl rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+      <h2 class="text-lg font-medium">Montos sugeridos</h2>
+      <p class="mt-1 text-sm text-base-content/55">
+        Aparecen como botones en tu página. El cliente igual puede escribir un monto libre,
+        así que podés dejarlo vacío.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        @for (a of s.business().suggestedAmounts; track a) {
+          <span class="badge badge-lg gap-2 py-3">
+            {{ a | bs }}
+            <button type="button" class="text-base-content/50 hover:text-error" aria-label="Quitar"
+                    (click)="removeAmount(a)">✕</button>
+          </span>
+        } @empty {
+          <span class="text-sm text-base-content/45">Sin montos sugeridos todavía.</span>
+        }
+      </div>
+      <div class="mt-3 flex gap-2">
+        <input type="number" min="1" class="input input-bordered input-sm w-32" [(ngModel)]="newAmount"
+               name="newAmount" placeholder="Bs" (keyup.enter)="addAmount()">
+        <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
+      </div>
+    </div>
+  } @else {
+
+  <!-- buscador: aplica a las tres pestañas de estado -->
   <label class="relative mt-4 block">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
          class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-base-content/40">
@@ -50,7 +81,7 @@ const TABS: { id: CardState; label: string }[] = [
   </label>
 
   <!-- filtro de fecha, solo en canjeadas -->
-  @if (tab() === 'canjeada') {
+  @if (section() === 'canjeada') {
     <div class="mt-4 flex flex-wrap items-end gap-3">
       <label class="form-control">
         <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Desde</span>
@@ -183,12 +214,14 @@ const TABS: { id: CardState; label: string }[] = [
       </div>
     </div>
   }
+  }
   `,
 })
 export class Emitidas {
   readonly s = inject(Store);
   readonly tabs = TABS;
-  readonly tab = signal<CardState>('activa');
+  /** Las 3 pestañas de estado + una de configuración (montos sugeridos). */
+  readonly section = signal<CardState | 'montos'>('activa');
   readonly state = (c: GiftCard) => cardState(c);
   count(t: CardState) { return this.s.cards().filter(c => cardState(c) === t).length; }
 
@@ -200,14 +233,27 @@ export class Emitidas {
   /** Método, no computed: depende de campos de texto planos (search/desde/hasta),
    *  así reevalúa en cada detección de cambios en vez de quedar cacheado. */
   visible(): GiftCard[] {
-    let list = this.s.cards().filter(c => cardState(c) === this.tab());
-    if (this.tab() === 'canjeada') {
+    let list = this.s.cards().filter(c => cardState(c) === this.section());
+    if (this.section() === 'canjeada') {
       list = list.filter(c =>
         (!this.desde || c.expires >= this.desde) && (!this.hasta || c.expires <= this.hasta));
     }
     const q = this.search.trim().toLowerCase();
     if (q) list = list.filter(c => c.code.toLowerCase().includes(q) || c.to.toLowerCase().includes(q));
     return list;
+  }
+
+  // ── montos sugeridos (se reflejan en la página del cliente) ──────────────────
+  newAmount: number | null = null;
+  addAmount() {
+    const a = this.newAmount;
+    if (!a || a <= 0) return;
+    const list = this.s.business().suggestedAmounts;
+    if (!list.includes(a)) this.s.saveBusiness({ suggestedAmounts: [...list, a].sort((x, y) => x - y) });
+    this.newAmount = null;
+  }
+  removeAmount(a: number) {
+    this.s.saveBusiness({ suggestedAmounts: this.s.business().suggestedAmounts.filter(x => x !== a) });
   }
 
   // ── formulario ─────────────────────────────────────────────────────────────
@@ -259,7 +305,7 @@ export class Emitidas {
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule, Storefront, BsPipe],
+  imports: [FormsModule, Storefront],
   template: `
   <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
 
@@ -306,30 +352,6 @@ export class Emitidas {
             </label>
           </div>
         </fieldset>
-      </section>
-
-      <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-        <h2 class="text-lg font-medium">Montos sugeridos</h2>
-        <p class="mt-1 text-sm text-base-content/55">
-          Aparecen como botones en tu página. El cliente igual puede escribir un monto libre,
-          así que podés dejarlo vacío.
-        </p>
-        <div class="mt-4 flex flex-wrap gap-2">
-          @for (a of b().suggestedAmounts; track a) {
-            <span class="badge badge-lg gap-2 py-3">
-              {{ a | bs }}
-              <button type="button" class="text-base-content/50 hover:text-error" aria-label="Quitar"
-                      (click)="removeAmount(a)">✕</button>
-            </span>
-          } @empty {
-            <span class="text-sm text-base-content/45">Sin montos sugeridos todavía.</span>
-          }
-        </div>
-        <div class="mt-3 flex gap-2">
-          <input type="number" min="1" class="input input-bordered input-sm w-32" [(ngModel)]="newAmount"
-                 name="newAmount" placeholder="Bs" (keyup.enter)="addAmount()">
-          <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
-        </div>
       </section>
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
@@ -401,7 +423,6 @@ export class Marca {
   private readonly router = inject(Router);
   readonly b = this.s.business;
   readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
-  newAmount: number | null = null;
 
   readonly confirmingDelete = signal(false);
   readonly deleting = signal(false);
@@ -426,18 +447,6 @@ export class Marca {
     // ponytail: objectURL, no Storage: se ve al instante y no sobrevive al reload.
     // Cuando entre Firebase Storage se sube aquí y se guarda la URL real.
     if (file) this.s.saveBusiness({ logoUrl: URL.createObjectURL(file) });
-  }
-
-  addAmount() {
-    const a = this.newAmount;
-    if (!a || a <= 0) return;
-    const list = this.b().suggestedAmounts;
-    if (!list.includes(a)) this.s.saveBusiness({ suggestedAmounts: [...list, a].sort((x, y) => x - y) });
-    this.newAmount = null;
-  }
-
-  removeAmount(a: number) {
-    this.s.saveBusiness({ suggestedAmounts: this.b().suggestedAmounts.filter(x => x !== a) });
   }
 }
 
