@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CardState, GiftCard, Perm, Store, cardState } from '../data';
 import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
 import { Storefront } from '../storefront';
+import { RedeemDialog } from './redeem';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
 const TABS: { id: CardState; label: string }[] = [
@@ -17,7 +18,7 @@ const TABS: { id: CardState; label: string }[] = [
  *  escribe la subcolección `cards`; `code` es la identidad y no se edita. */
 @Component({
   selector: 'app-emitidas',
-  imports: [FormsModule, BsPipe, FechaPipe, Status],
+  imports: [FormsModule, BsPipe, FechaPipe, Status, RedeemDialog],
   template: `
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div role="tablist" class="tabs tabs-box w-fit">
@@ -26,7 +27,10 @@ const TABS: { id: CardState; label: string }[] = [
                 (click)="tab.set(t.id)">{{ t.label }} ({{ count(t.id) }})</button>
       }
     </div>
-    <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
+    <div class="flex items-center gap-2">
+      <app-redeem />
+      <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
+    </div>
   </div>
 
   <!-- filtro de fecha, solo en canjeadas -->
@@ -105,8 +109,13 @@ const TABS: { id: CardState; label: string }[] = [
             <td class="text-base-content/60">{{ c.expires | fecha }}</td>
             <td><app-status [status]="state(c)" /></td>
             <td class="text-right whitespace-nowrap">
-              <a class="btn btn-ghost btn-xs" [href]="waHref(c)" target="_blank" rel="noopener" title="Enviar por WhatsApp">WhatsApp</a>
-              <a class="btn btn-ghost btn-xs" [href]="mailHref(c)" title="Enviar por correo">correo</a>
+              <div class="dropdown dropdown-end">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-xs">enviar ▾</div>
+                <ul tabindex="0" class="dropdown-content menu z-10 w-36 rounded-box border border-base-300 bg-base-100 p-1 shadow-lg">
+                  <li><a [href]="waHref(c)" target="_blank" rel="noopener">WhatsApp</a></li>
+                  <li><a [href]="mailHref(c)">Correo</a></li>
+                </ul>
+              </div>
               <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
               <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
             </td>
@@ -133,9 +142,14 @@ const TABS: { id: CardState; label: string }[] = [
           <p class="text-2xl font-semibold tabular-nums">{{ c.balance | bs }}</p>
           <p class="text-sm text-base-content/50">de {{ c.value | bs }} · vence {{ c.expires | fecha }}</p>
         </div>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <a class="btn btn-outline btn-xs" [href]="waHref(c)" target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn btn-outline btn-xs" [href]="mailHref(c)">correo</a>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-outline btn-xs">enviar ▾</div>
+            <ul tabindex="0" class="dropdown-content menu z-10 w-36 rounded-box border border-base-300 bg-base-100 p-1 shadow-lg">
+              <li><a [href]="waHref(c)" target="_blank" rel="noopener">WhatsApp</a></li>
+              <li><a [href]="mailHref(c)">Correo</a></li>
+            </ul>
+          </div>
           <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
           <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
         </div>

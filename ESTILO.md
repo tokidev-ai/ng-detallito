@@ -188,3 +188,9 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   si el comercio está publicado — para abrir el regalo por código — y `create` público
   validado para el checkout (código == id, saldo == valor, valor > 0). Sin pago aún:
   cualquiera puede crear; en producción va detrás de una Cloud Function/pasarela.
+- **Canje (`redeem.ts`):** botón "Canjear" en Gift cards → escanear QR con la cámara
+  (`BarcodeDetector` nativo, solo Chromium; Safari cae al código a mano) o teclear el
+  código. Del QR (URL `.../g/CODE`) o del input se saca el código, se busca en `cards()`
+  y `Store.redeem` descuenta el saldo + agrega el canje en una transacción (dos cajas no
+  pisan el mismo saldo). Va autenticado, las reglas ya lo permiten.
+- **Enviar = un dropdown** (WhatsApp / Correo) por carta, no dos botones sueltos.

@@ -2,7 +2,7 @@ import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   Firestore, collection, collectionData, deleteDoc, doc, getDoc, getDocs,
-  query, setDoc, updateDoc, where,
+  query, runTransaction, setDoc, updateDoc, where,
 } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
 import { AuthService } from './auth';
@@ -189,6 +189,23 @@ export class Store {
     if (id) await deleteDoc(doc(this.db, 'tenants', id, 'cards', code));
   }
 
+  /** Canje: descuenta del saldo y agrega el canje, en una transacción para que
+   *  dos cajas no descuenten sobre el mismo saldo. Los canjes son append-only. */
+  async redeem(code: string, amount: number) {
+    const id = this.currentId();
+    if (!id) throw new Error('sin comercio');
+    const by = (this.auth.user()?.email ?? '').split('@')[0] || 'staff';
+    const cardRef = doc(this.db, 'tenants', id, 'cards', code);
+    await runTransaction(this.db, async tx => {
+      const snap = await tx.get(cardRef);
+      if (!snap.exists()) throw new Error('Esa gift card no existe.');
+      const card = snap.data() as GiftCard;
+      if (amount <= 0 || amount > card.balance) throw new Error('Monto inválido para el saldo disponible.');
+      tx.update(cardRef, { balance: card.balance - amount });
+      tx.set(doc(collection(this.db, 'tenants', id, 'redemptions')), { by, code, amount, at: nowStamp() });
+    });
+  }
+
   /** Emisión desde la página pública: sin sesión, con el tenant explícito.
    *  ponytail: escribe la carta directo, sin pago ni verificación. Antes de
    *  producción, esto va detrás de la pasarela de pago y de reglas que solo
@@ -227,6 +244,12 @@ export class Store {
 }
 
 const liveOf = (cards: GiftCard[]) => cards.filter(c => cardState(c) === 'activa');
+
+/** Sello `dd/mm HH:mm` para el registro de canje, en hora local. */
+function nowStamp(d = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 // helper local: signal -> observable sin arrastrar toObservable a cada archivo
 import { toObservable } from '@angular/core/rxjs-interop';
