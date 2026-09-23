@@ -212,6 +212,11 @@ export class Canjes { readonly s = inject(Store); }
   selector: 'app-catalogo',
   imports: [FormsModule, BsPipe],
   template: `
+  <p class="mb-4 max-w-2xl text-sm text-base-content/60">
+    Los montos y servicios que tus clientes ven en tu página. Sin al menos uno,
+    tu página no puede vender nada.
+  </p>
+
   <ul class="space-y-2">
     @for (p of s.products(); track p.id) {
       <li class="flex flex-wrap items-center gap-3 rounded-box border border-base-300 bg-base-100 p-4">
@@ -309,49 +314,6 @@ export class Catalogo {
 export class Vigencia {
   readonly s = inject(Store);
   readonly b = this.s.business;
-}
-
-/** Gift cards: todo lo que gira alrededor de ellas vive en una sola pestaña —
- *  lo que ya se vendió, lo que se ofrece y las reglas con las que se venden
- *  (vigencia, términos). Antes esto último vivía suelto en "Marca", que es
- *  branding visual, no lógica de negocio; ahora está donde se lo busca. */
-@Component({
-  selector: 'app-gift-cards',
-  imports: [Emitidas, Catalogo, Vigencia],
-  template: `
-  <div role="tablist" class="tabs tabs-box w-fit">
-    @for (v of vistas; track v.id) {
-      <button type="button" role="tab" class="tab" [class.tab-active]="vista() === v.id"
-              (click)="vista.set(v.id)">{{ v.label }}</button>
-    }
-  </div>
-
-  <div class="mt-5">
-    @switch (vista()) {
-      @case ('emitidas') {
-        <app-emitidas />
-      }
-      @case ('catalogo') {
-        <p class="mb-4 max-w-2xl text-sm text-base-content/60">
-          Los montos y servicios que tus clientes ven en tu página. Sin al menos uno,
-          tu página no puede vender nada.
-        </p>
-        <app-catalogo />
-      }
-      @case ('vigencia') {
-        <app-vigencia />
-      }
-    }
-  </div>
-  `,
-})
-export class GiftCards {
-  readonly vistas = [
-    { id: 'emitidas' as const, label: 'Vendidas' },
-    { id: 'catalogo' as const, label: 'Lo que vendes' },
-    { id: 'vigencia' as const, label: 'Vigencia y términos' },
-  ];
-  readonly vista = signal<'emitidas' | 'catalogo' | 'vigencia'>('emitidas');
 }
 
 @Component({
