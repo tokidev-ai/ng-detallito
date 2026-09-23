@@ -18,13 +18,13 @@ import { BsPipe } from '../ui';
         <a routerLink="/" class="flex items-center gap-2">
           <app-wordmark />
         </a>
-        <span class="badge badge-sm border-0 text-white" style="background-color:#e8694b">interno</span>
+        <span class="badge badge-sm badge-primary">interno</span>
         <a routerLink="/app" class="btn btn-ghost btn-sm ms-auto">Mi panel de comercio</a>
         <button type="button" class="btn btn-ghost btn-sm" (click)="salir()">Salir</button>
       </nav>
     </header>
 
-    <div class="brand-glow">
+    <div class="bg-base-200">
       <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">Panel de la startup</h1>
         <p class="mt-2 text-base-content/60">Todos los comercios y el dinero que pasa por nuestra cuenta.</p>

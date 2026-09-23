@@ -1,25 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from './auth';
-import { Mark } from './brand';
+import { Wordmark } from './brand';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, Mark],
+  imports: [RouterLink, Wordmark],
   template: `
-  <div class="grid min-h-dvh place-items-center p-4 brand-glow">
+  <div class="grid min-h-dvh place-items-center p-4">
     <div class="w-full max-w-md">
-      <div class="overflow-hidden rounded-box border border-base-300 bg-base-100">
-        <div class="h-1.5" style="background-color:#e8694b"></div>
-
+      <div class="rounded-box border border-base-300 bg-base-100 shadow-sm">
         <div class="p-8 sm:p-10">
-          <div class="flex items-center gap-3">
-            <app-mark [size]="34" />
-            <div>
-              <h1 class="text-2xl font-semibold tracking-tight">GiftKBol</h1>
-              <p class="text-sm text-base-content/55">Gift cards para tu negocio</p>
-            </div>
-          </div>
+          <app-wordmark size="lg" />
+          <p class="mt-1 text-sm text-base-content/55">Gift cards para tu negocio</p>
 
           <p class="mt-7 text-base-content/70">
             Entrá para administrar tu comercio: tu página, tus productos, tus ventas y los canjes.
@@ -49,7 +42,7 @@ import { Mark } from './brand';
 
           <p class="mt-7 border-t border-base-300 pt-5 text-sm text-base-content/50">
             ¿Todavía no tenés comercio?
-            <a routerLink="/onboarding" class="link link-hover font-medium" style="color:#e8694b">Creá el tuyo</a>
+            <a routerLink="/onboarding" class="font-medium text-primary hover:underline">Creá el tuyo</a>
             — toma diez minutos.
           </p>
         </div>

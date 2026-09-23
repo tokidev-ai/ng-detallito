@@ -265,7 +265,7 @@ export class Productos {
 export class Marca {
   readonly s = inject(Store);
   readonly b = this.s.business;
-  readonly swatches = ['#1c1b18', '#3b7d6e', '#a94434', '#3b6ea5', '#b07d22', '#951fd2'];
+  readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
 
   onLogo(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];

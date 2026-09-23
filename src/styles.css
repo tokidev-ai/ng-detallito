@@ -1,127 +1,85 @@
 @import "tailwindcss";
-@plugin "daisyui" { themes: detallito --default; }
+@plugin "daisyui" { themes: gkb --default; }
 
 /* ─────────────────────────────────────────────────────────────
-   PALETA — tokidev. Extraída del arte de marca:
-   fondo #121134, violeta #2D1156→#361160, símbolo #E8694B,
-   gradiente #E5794F → #C24A85 → #951FD2.
+   Tema claro, en la línea de shadcn: escala de grises zinc,
+   superficies blancas, bordes finos y un solo color de marca.
+   Naranja es lo ÚNICO que llama la atención — todo lo demás es
+   neutro, y por eso funciona.
    ───────────────────────────────────────────────────────────── */
 @plugin "daisyui/theme" {
-  name: "detallito";
+  name: "gkb";
   default: true;
-  color-scheme: dark;
+  color-scheme: light;
 
-  --color-base-100: #181642;   /* tarjetas y superficies */
-  --color-base-200: #121134;   /* fondo */
-  --color-base-300: #2a2359;   /* bordes y separadores */
-  --color-base-content: #f2f0fb;
+  --color-base-100: #ffffff;   /* tarjetas, inputs, barras */
+  --color-base-200: #fafafa;   /* fondo de página (zinc-50) */
+  --color-base-300: #e4e4e7;   /* bordes y separadores (zinc-200) */
+  --color-base-content: #09090b;
 
-  --color-primary: #951fd2;
+  --color-primary: #ea580c;    /* orange-600 */
   --color-primary-content: #ffffff;
-  --color-secondary: #c24a85;
-  --color-secondary-content: #ffffff;
-  --color-accent: #e8694b;
-  --color-accent-content: #1a0d08;
-  --color-neutral: #241f4f;
-  --color-neutral-content: #f2f0fb;
+  --color-secondary: #f4f4f5;  /* zinc-100: el botón "secundario" de shadcn */
+  --color-secondary-content: #18181b;
+  --color-accent: #fff7ed;     /* orange-50, para fondos teñidos */
+  --color-accent-content: #9a3412;
+  --color-neutral: #18181b;
+  --color-neutral-content: #fafafa;
 
-  --color-info: #4aa3e8;
-  --color-info-content: #06131f;
-  --color-success: #3fbd82;
-  --color-success-content: #04170e;
-  --color-warning: #e0a13a;
-  --color-warning-content: #1c1204;
-  --color-error: #e2504a;
+  --color-info: #0369a1;
+  --color-info-content: #ffffff;
+  --color-success: #15803d;
+  --color-success-content: #ffffff;
+  --color-warning: #b45309;
+  --color-warning-content: #ffffff;
+  --color-error: #dc2626;
   --color-error-content: #ffffff;
 
-  --radius-selector: 0.75rem;
-  --radius-field: 0.625rem;
-  --radius-box: 1rem;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
   --border: 1px;
+  --depth: 0;
+  --noise: 0;
 }
 
 @theme {
-  --color-brand-orange: #e5794f;
-  --color-brand-pink: #c24a85;
-  --color-brand-violet: #951fd2;
-  --color-brand-deep: #2d1156;
+  --color-muted: #71717a;      /* zinc-500: el texto secundario de shadcn */
 }
 
 html { -webkit-text-size-adjust: 100%; }
-body { @apply bg-base-200 text-base-content antialiased; }
 
-/* Colores planos de la paleta, sin degradados. */
-.brand-text { color: #e8694b; }
-.brand-fill { background-color: #951fd2; color: #fff; }
-.brand-fill:hover { background-color: #a62ce3; }
-.brand-fill:active { background-color: #8318bb; }
+body {
+  @apply bg-base-200 text-base-content antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
 
-/* El fondo violeta profundo del arte, plano. */
-.brand-glow { background-color: #180f38; }
+/* Anillo de foco como el de shadcn: un halo, no un borde grueso. */
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* La página del comercio es del comercio: neutra, para que lo único que
+   tiña sea SU color de marca y no el naranja nuestro. */
+.storefront {
+  --color-primary: #18181b;
+  --color-primary-content: #ffffff;
+}
 
 /* ── movimiento ──────────────────────────────────────────────────────────────
-   Todo se apaga con prefers-reduced-motion; nada acá es información, solo
-   entrada. Si el navegador no ejecuta el observer, los elementos quedan
-   visibles: .reveal parte opaco y la clase solo lo anima. */
-@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
-@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+   Entrada nada más; se apaga entero con prefers-reduced-motion. */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-.reveal { animation: rise .7s cubic-bezier(.22,.8,.3,1) both; }
-.reveal-1 { animation-delay: .08s; }
-.reveal-2 { animation-delay: .16s; }
-.reveal-3 { animation-delay: .24s; }
-.reveal-4 { animation-delay: .32s; }
-.floaty { animation: floaty 7s ease-in-out infinite; }
+.reveal { animation: rise .55s cubic-bezier(.22,.8,.3,1) both; }
+.reveal-1 { animation-delay: .06s; }
+.reveal-2 { animation-delay: .12s; }
+.reveal-3 { animation-delay: .18s; }
+.reveal-4 { animation-delay: .24s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .floaty { animation: none !important; }
+  .reveal { animation: none !important; }
 }
 
 /* la bottom nav móvil es fija: que el contenido no quede debajo */
 .pb-safe { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
-
-/* ── superficies claras ──────────────────────────────────────────────────────
-   Dos casos y son distintos a propósito:
-
-   .surface-light  el onboarding. Formulario largo, con la vista previa clara al
-                   lado; en oscuro cansa y desentona con lo que está armando.
-                   Conserva los colores de marca en primary / secondary / accent.
-
-   .storefront     la página del comercio. Neutra de verdad: acá el ÚNICO color
-                   que tiñe es el del comercio. Si le metemos nuestro violeta,
-                   todos los comercios se ven iguales.
-   ──────────────────────────────────────────────────────────────────────────── */
-.surface-light {
-  color-scheme: light;
-  --color-base-100: #ffffff;
-  --color-base-200: #f6f4fa;
-  --color-base-300: #e4dfee;
-  --color-base-content: #1b1930;
-
-  --color-primary: #8a1ac2;
-  --color-primary-content: #ffffff;
-  --color-secondary: #b8407c;
-  --color-secondary-content: #ffffff;
-  --color-accent: #d4552f;
-  --color-neutral: #241f4f;
-  --color-neutral-content: #f5f3fa;
-
-  --color-info: #2f6fa8;
-  --color-success: #2f7d55;
-  --color-warning: #8a5a12;
-  --color-error: #b23a33;
-  --color-info-content: #ffffff;
-  --color-success-content: #ffffff;
-  --color-warning-content: #ffffff;
-  --color-error-content: #ffffff;
-}
-
-.storefront {
-  color-scheme: light;
-  --color-base-100: #ffffff;
-  --color-base-200: #f6f5f2;
-  --color-base-300: #e4e2db;
-  --color-base-content: #1c1b18;
-  --color-primary: #1c1b18;
-  --color-primary-content: #ffffff;
-}

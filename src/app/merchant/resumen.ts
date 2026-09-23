@@ -17,7 +17,7 @@ import { BsPipe, Stat } from '../ui';
           de {{ s.liveCards() }} gift cards vivas · vence la más próxima el {{ s.nextExpiry() }}
         </p>
 
-        <div class="mt-4 flex h-3 overflow-hidden rounded-full bg-base-200">
+        <div class="mt-4 flex h-2.5 overflow-hidden rounded-full bg-base-300">
           @for (seg of mix(); track seg.label) {
             <div [style.width.%]="seg.pct" [class]="seg.cls" [title]="seg.label"></div>
           }
@@ -46,13 +46,13 @@ import { BsPipe, Stat } from '../ui';
           @for (m of s.monthly(); track $index) {
             <div class="flex h-full flex-1 items-end gap-1">
               <div class="flex-1 rounded-t-sm bg-primary" [style.height.%]="pct(m.sold)" [title]="'vendido ' + (m.sold | bs)"></div>
-              <div class="flex-1 rounded-t-sm bg-base-300" [style.height.%]="pct(m.redeemed)" [title]="'canjeado ' + (m.redeemed | bs)"></div>
+              <div class="flex-1 rounded-t-sm bg-[#d4d4d8]" [style.height.%]="pct(m.redeemed)" [title]="'canjeado ' + (m.redeemed | bs)"></div>
             </div>
           }
         </div>
         <ul class="mt-3 flex gap-4 text-sm text-base-content/60">
           <li class="flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-primary"></span>vendido</li>
-          <li class="flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-base-300"></span>canjeado</li>
+          <li class="flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-[#d4d4d8]"></span>canjeado</li>
         </ul>
       </section>
     </div>
@@ -85,9 +85,10 @@ export class Resumen {
     const n = live.length || 1;
     const count = (f: (s: string) => boolean) => (live.filter(c => f(c.status)).length / n) * 100;
     return [
-      { label: 'activas', pct: count(s => s === 'activa' || s === 'pagada'), cls: 'bg-primary' },
-      { label: 'parciales', pct: count(s => s === 'parcial'), cls: 'bg-secondary' },
-      { label: 'por vencer', pct: 12, cls: 'bg-base-300' },
+      // sobre blanco, zinc-100 no se ve: la escala va de naranja a gris medio
+      { label: 'activas', pct: count(s => s === 'activa' || s === 'pagada'), cls: 'bg-[#ea580c]' },
+      { label: 'parciales', pct: count(s => s === 'parcial'), cls: 'bg-[#fdba74]' },
+      { label: 'por vencer', pct: 12, cls: 'bg-[#d4d4d8]' },
     ];
   });
 }

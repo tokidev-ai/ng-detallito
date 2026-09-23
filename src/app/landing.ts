@@ -10,19 +10,16 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
 
 const VALUES = [
   {
-    color: '#e8694b',
     title: 'Tu página, tu link',
     body: 'Tu logo, tu color, tus productos. giftcards.bo/tu-negocio, listo para el estado de WhatsApp.',
     icon: 'M4 5h16v14H4zM4 9h16',
   },
   {
-    color: '#c24a85',
     title: 'Cobrás por adelantado',
     body: 'Tu cliente paga por QR y recibe la gift card por email. La plata entra hoy.',
     icon: 'M12 3v18M8 7h6a3 3 0 0 1 0 6h-4a3 3 0 0 0 0 6h6',
   },
   {
-    color: '#951fd2',
     title: 'Sabés lo que debés',
     body: 'Separamos lo cobrado de lo que todavía tenés que entregar. Nadie más te lo dice.',
     icon: 'M3 12h4l3 8 4-16 3 8h4',
@@ -35,22 +32,22 @@ const VALUES = [
   template: `
   <div class="min-h-dvh bg-base-200">
 
-    <header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-200/85 backdrop-blur">
+    <header class="sticky top-0 z-40 border-b border-base-300 bg-base-100/80 backdrop-blur">
       <nav class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
         <a routerLink="/" class="flex-1"><app-wordmark /></a>
         <a routerLink="/login" class="btn btn-ghost btn-sm">Entrar</a>
-        <a routerLink="/onboarding" class="btn btn-sm border-0 brand-fill">Crear mi comercio</a>
+        <a routerLink="/onboarding" class="btn btn-sm btn-primary">Crear mi comercio</a>
       </nav>
     </header>
 
     <!-- ── hero ────────────────────────────────────────────── -->
-    <section class="overflow-hidden brand-glow">
+    <section class="overflow-hidden border-b border-base-300 bg-base-100">
       <div class="mx-auto grid max-w-6xl items-center gap-14 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:py-20">
 
         <div>
           <h1 reveal class="text-[2.6rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl">
             La página de tu negocio,<br>
-            <span class="brand-text">vendiendo gift cards</span><br>desde hoy.
+            <span class="text-primary">vendiendo gift cards</span><br>desde hoy.
           </h1>
 
           <p reveal="1" class="mt-6 max-w-xl text-lg text-base-content/70">
@@ -59,14 +56,14 @@ const VALUES = [
           </p>
 
           <div reveal="2" class="mt-8 flex flex-wrap items-center gap-3">
-            <a routerLink="/onboarding" class="btn btn-lg border-0 brand-fill">Crear mi comercio</a>
+            <a routerLink="/onboarding" class="btn btn-lg btn-primary">Crear mi comercio</a>
             <a routerLink="/login" class="btn btn-lg btn-ghost">Ya tengo cuenta</a>
           </div>
 
           <dl reveal="3" class="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-base-300 pt-6">
             @for (n of numeros; track n.k) {
               <div>
-                <dt class="text-2xl font-semibold tabular-nums" [style.color]="n.color">{{ n.k }}</dt>
+                <dt class="text-2xl font-semibold tabular-nums">{{ n.k }}</dt>
                 <dd class="mt-0.5 text-sm text-base-content/55">{{ n.v }}</dd>
               </div>
             }
@@ -74,9 +71,9 @@ const VALUES = [
         </div>
 
         <!-- la página que le va a quedar al comercio -->
-        <div reveal="2" class="relative mx-auto w-full max-w-[310px] lg:max-w-[340px]">
-          <div class="floaty">
-            <div class="overflow-hidden rounded-[2rem] border border-base-300 bg-base-100 shadow-2xl">
+        <div reveal="2" class="relative mx-auto mb-10 w-full max-w-[310px] lg:mb-0 lg:max-w-[340px]">
+          <div>
+            <div class="overflow-hidden rounded-[1.75rem] border border-base-300 bg-base-100 shadow-lg">
               <div class="relative h-24" style="background-color:#3b7d6e">
                 <div class="absolute inset-x-0 -bottom-7 px-5">
                   <span class="grid size-14 place-items-center rounded-2xl border-4 border-base-100 text-lg font-semibold text-white"
@@ -104,7 +101,7 @@ const VALUES = [
           </div>
 
           <div reveal="4"
-               class="absolute -bottom-9 -left-6 w-48 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl lg:-left-14">
+               class="absolute -bottom-14 -left-4 w-48 rounded-box border border-base-300 bg-base-100 p-3 shadow-md lg:-left-16">
             <p class="text-[11px] uppercase tracking-wider text-base-content/40">Canje registrado</p>
             <p class="mt-1 text-2xl font-semibold tabular-nums">−Bs 120</p>
             <p class="text-xs text-base-content/50">quedan Bs 130 · 4821-KQ7</p>
@@ -114,14 +111,14 @@ const VALUES = [
     </section>
 
     <!-- ── comercios ───────────────────────────────────────── -->
-    <section class="border-y border-base-300 bg-base-100/40">
+    <section class="border-b border-base-300">
       <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <p class="text-center text-xs uppercase tracking-wider text-base-content/40">
           Spas, barberías, restaurantes, gimnasios y tiendas ya venden así
         </p>
         <ul reveal="1" class="mt-5 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
           @for (l of logos; track l) {
-            <li class="text-lg font-semibold tracking-tight text-base-content/35">{{ l }}</li>
+            <li class="text-lg font-semibold tracking-tight text-base-content/30">{{ l }}</li>
           }
         </ul>
       </div>
@@ -132,8 +129,8 @@ const VALUES = [
       <div class="grid gap-5 md:grid-cols-3">
         @for (v of values; track v.title; let i = $index) {
           <div [reveal]="i + 1" class="min-w-0 rounded-box border border-base-300 bg-base-100 p-6">
-            <span class="grid size-11 place-items-center rounded-field" [style.background-color]="v.color">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" class="size-6">
+            <span class="grid size-11 place-items-center rounded-field bg-accent text-accent-content">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="size-6">
                 <path [attr.d]="v.icon" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </span>
@@ -145,11 +142,11 @@ const VALUES = [
     </section>
 
     <!-- ── precio y cierre ─────────────────────────────────── -->
-    <section class="border-t border-base-300 brand-glow">
+    <section class="border-t border-base-300 bg-base-100">
       <div reveal class="mx-auto flex max-w-6xl flex-wrap items-center gap-8 px-4 py-14 sm:px-6">
         <div class="min-w-0 flex-1">
           <p class="text-5xl font-semibold tracking-tight sm:text-6xl">
-            <span class="brand-text">5%</span>
+            <span class="text-primary">5%</span>
             <span class="ms-3 align-middle text-lg font-normal text-base-content/60">por venta</span>
           </p>
           <p class="mt-3 max-w-xl text-base-content/70">
@@ -157,13 +154,13 @@ const VALUES = [
             Toma unos diez minutos dejar tu página lista.
           </p>
         </div>
-        <a routerLink="/onboarding" class="btn btn-lg border-0 brand-fill">Crear mi comercio</a>
+        <a routerLink="/onboarding" class="btn btn-lg btn-primary">Crear mi comercio</a>
       </div>
     </section>
 
     <footer class="border-t border-base-300">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-7 text-sm text-base-content/45 sm:px-6">
-        <app-wordmark [size]="20" />
+        <app-wordmark />
         <span class="ms-auto">La Paz, Bolivia</span>
       </div>
     </footer>
@@ -180,9 +177,9 @@ export class Landing {
     { label: 'Otro monto', on: false },
   ];
   readonly numeros = [
-    { k: '5%', v: 'por venta, nada más', color: '#e8694b' },
-    { k: '10 min', v: 'y tu página está lista', color: '#c24a85' },
-    { k: 'Bs 0', v: 'de mensualidad', color: '#951fd2' },
+    { k: '5%', v: 'por venta, nada más' },
+    { k: '10 min', v: 'y tu página está lista' },
+    { k: 'Bs 0', v: 'de mensualidad' },
   ];
   readonly shops = inject(Store).publishedTenants();
 }

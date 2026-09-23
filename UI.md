@@ -136,32 +136,41 @@ Producción: **https://giftcards-bo.web.app**
 
 ## 4. Marca
 
-La app se llama **GiftKBol**. Colores **planos** de la paleta, sin degradados:
-violeta `#951FD2` para los CTA, naranja `#E8694B` para acentos y texto destacado,
-magenta `#C24A85` de apoyo, fondo `#121134` / `#180F38`.
+Tema **claro**, en la línea de shadcn: escala de grises zinc, superficies blancas,
+bordes de 1px, radio 0.5rem y sombras apenas perceptibles. **Naranja `#ea580c`
+(orange-600) es el único color de marca** — todo lo demás es neutro, y por eso el
+naranja se ve. Sin logo: la marca es la palabra, `Gift` + `KBol` en naranja.
 
-La landing es un **one-pager** con animaciones de entrada (`reveal`, apagadas con
-`prefers-reduced-motion` y con timeout de respaldo: en una pestaña de fondo el
-IntersectionObserver no dispara y nadie puede quedarse con la página en blanco).
-Los nombres de comercios en la tira de logos son **inventados**: poner marcas
-reales como clientes sería un aval falso.
+| Token | Valor | Para qué |
+|---|---|---|
+| `base-100` | `#ffffff` | tarjetas, inputs, barras |
+| `base-200` | `#fafafa` | fondo de página (zinc-50) |
+| `base-300` | `#e4e4e7` | bordes y separadores (zinc-200) |
+| `base-content` | `#09090b` | texto |
+| `primary` | `#ea580c` | acciones, acentos |
+| `secondary` | `#f4f4f5` | el botón secundario de shadcn |
+| `accent` | `#fff7ed` | fondos teñidos de naranja |
 
-Paleta tomada del arte de tokidev: fondo `#121134`, violeta `#2D1156`→`#361160`,
-naranja del símbolo `#E8694B`, y el gradiente `#E5794F → #C24A85 → #951FD2`.
-Todo vive en un bloque al principio de `src/styles.css`, más `.brand-text`,
-`.brand-fill` y `.brand-glow`.
+Todo vive en un bloque de `src/styles.css`. Los componentes usan solo tokens de
+daisyUI, así que cambiar la paleta no toca ninguna plantilla.
 
-Dos superficies claras, por motivos distintos:
+> `ponytail:` sin modo oscuro. Se pidió claro; agregarlo ahora sería mantener dos
+> paletas para una que nadie miró todavía.
 
-- `.surface-light` — el **onboarding**. Es un formulario largo y el comercio está mirando
-  al lado la vista previa de su página, que es clara; en oscuro cansa y desentona.
-  Conserva los colores de marca en primary / secondary / accent y el gradiente en los CTA.
-- `.storefront` — la **página del comercio**, neutra de verdad.
+**La página del comercio (`/:slug`) NO lleva nuestro naranja.** El scope `.storefront`
+le pone un primary neutro para que lo único que tiña sea el color del comercio: si le
+metiéramos el naranja, todos los comercios se verían iguales.
 
-**La página del comercio (`/:slug`) NO lleva nuestra marca.** Va sobre una superficie
-neutra (`.storefront`) para que lo único que tiña sea el color del comercio. Si le
-pusiéramos el morado, todos los comercios se verían iguales y se cae la premisa del
-producto. El morado es de la plataforma y se queda del lado de adentro.
+### Pantallas de venta
+
+`/` es la landing pública, un **one-pager** con animaciones de entrada (`reveal`,
+apagadas con `prefers-reduced-motion` y con timeout de respaldo: en una pestaña de
+fondo el IntersectionObserver no dispara). Los nombres de la tira de comercios son
+**inventados**: poner marcas reales como clientes sería un aval falso.
+
+`/app` es la puerta del comercio. **Con comercios entra directo al panel del primero**;
+el selector para cambiar o crear otro vive en la barra del panel. **Sin ninguno** muestra
+el pitch y empuja a crear el primero.
 
 ### Los dos paneles
 

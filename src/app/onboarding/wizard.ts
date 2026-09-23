@@ -7,7 +7,7 @@ import { Wordmark } from '../brand';
 import { BsPipe } from '../ui';
 
 const STEPS = ['Marca', 'Productos', 'Vigencia y términos', 'Datos bancarios', 'Publicar'] as const;
-const SWATCHES = ['#1c1b18', '#6b6960', '#3b7d6e', '#a94434', '#3b6ea5', '#b07d22'];
+const SWATCHES = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
 
 export const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -17,7 +17,7 @@ export const slugify = (s: string) =>
   selector: 'app-onboarding',
   imports: [FormsModule, RouterLink, Storefront, BsPipe, Wordmark],
   template: `
-  <div class="surface-light min-h-dvh bg-base-200 text-base-content">
+  <div class="min-h-dvh bg-base-200 text-base-content">
     <header class="border-b border-base-300 bg-base-100">
       <nav class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
         <a routerLink="/app"><app-wordmark /></a>
@@ -37,8 +37,7 @@ export const slugify = (s: string) =>
               <li class="flex items-center gap-2">
                 <button type="button" (click)="goTo(i)" [disabled]="i > furthest()"
                   class="btn btn-sm rounded-full font-normal normal-case"
-                  [class.brand-fill]="i === step()"
-                  [class.border-0]="i === step()"
+                  [class.btn-primary]="i === step()"
                   [class.btn-outline]="i !== step() && i <= furthest()"
                   [class.btn-ghost]="i > furthest()">
                   <span class="tabular-nums opacity-60">{{ i + 1 }}</span> {{ s }}
@@ -223,7 +222,7 @@ export const slugify = (s: string) =>
                 <p class="mt-1 break-all font-mono">giftcards.bo/{{ draft().slug || '…' }}</p>
               </div>
 
-              <button type="button" class="btn mt-5 w-full border-0 brand-fill sm:w-auto"
+              <button type="button" class="btn btn-primary mt-5 w-full sm:w-auto"
                       [disabled]="!canPublish()" (click)="publish()">
                 @if (publishing()) { <span class="loading loading-spinner loading-sm"></span> }
                 Publicar mi página
@@ -239,7 +238,7 @@ export const slugify = (s: string) =>
           <div class="mt-8 flex justify-end gap-2">
             <button type="button" class="btn btn-ghost" [disabled]="step() === 0" (click)="back()">Atrás</button>
             @if (step() < steps.length - 1) {
-              <button type="button" class="btn border-0 brand-fill" (click)="next()">Guardar y seguir</button>
+              <button type="button" class="btn btn-primary" (click)="next()">Guardar y seguir</button>
             }
           </div>
         </section>
