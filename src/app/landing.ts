@@ -17,9 +17,10 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
     <header class="sticky top-0 z-40 border-b border-base-300 bg-base-100/80 backdrop-blur">
       <nav class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
         <a routerLink="/" class="flex-1"><app-wordmark /></a>
+        <!-- En móvil el hero no lleva botones: el CTA vive acá y la barra es fija,
+             así que te acompaña todo el scroll. -->
+        <a routerLink="/onboarding" class="btn btn-sm btn-primary">Crear mi comercio</a>
         <a routerLink="/login" class="btn btn-ghost btn-sm">Entrar</a>
-        <!-- en móvil el CTA de la barra duplica el del hero, que está a un dedo -->
-        <a routerLink="/onboarding" class="btn btn-sm btn-primary hidden sm:inline-flex">Crear mi comercio</a>
       </nav>
     </header>
 
@@ -33,9 +34,19 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
       <div class="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:py-20">
 
         <div>
-          <h1 reveal
-              class="text-[2.35rem] font-semibold leading-[1.04] tracking-[-0.035em] text-balance
-                     sm:text-5xl lg:text-[4.25rem] lg:leading-[0.98]">
+          <p reveal
+             class="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-accent
+                    px-3.5 py-1.5 text-sm font-medium text-accent-content">
+            <span class="relative flex size-2">
+              <span class="latido absolute inline-flex size-full rounded-full bg-primary opacity-70"></span>
+              <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
+            </span>
+            Tu página puede estar lista hoy mismo
+          </p>
+
+          <h1 reveal="1"
+              class="text-[2.75rem] font-extrabold leading-[0.98] tracking-[-0.045em] text-balance
+                     sm:text-6xl lg:text-[4.75rem] lg:leading-[0.95]">
             Tu negocio vendiendo
             <span class="relative inline-block whitespace-nowrap text-primary">
               gift cards
@@ -48,17 +59,18 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
             desde hoy.
           </h1>
 
-          <p reveal="1" class="mt-4 max-w-xl text-base text-base-content/70 sm:mt-6 sm:text-lg">
+          <p reveal="2" class="mt-5 max-w-xl text-base text-base-content/70 sm:mt-6 sm:text-lg">
             Te armamos una página con tus productos y tu marca, en un link propio.
             Tus clientes compran ahí mismo y tú cobras por adelantado.
           </p>
 
-          <div reveal="2" class="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-            <a routerLink="/onboarding" class="btn btn-lg btn-primary w-full sm:w-auto">Crear mi comercio</a>
-            <a routerLink="/login" class="btn btn-lg btn-ghost w-full sm:w-auto">Ya tengo cuenta</a>
+          <div reveal="3" class="mt-8 hidden flex-wrap items-center gap-3 lg:flex">
+            <a routerLink="/onboarding" class="btn btn-lg btn-primary">Crear mi comercio</a>
+            <a routerLink="/login" class="btn btn-lg btn-ghost">Ya tengo cuenta</a>
           </div>
 
-          <p reveal="3" class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-base-content/50">
+          <p reveal="4" class="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-sm
+                    text-base-content/55 lg:mt-4 lg:justify-start">
             <span class="inline-flex items-center gap-1.5">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4 text-primary">
                 <path d="M4 12.5l5 5 11-11" stroke-linecap="round" stroke-linejoin="round"/>
@@ -154,15 +166,14 @@ const LOGOS = ['Casa Bonita', 'Andina Café', 'Kantuta Spa', 'Nuvo Fitness', 'Ó
     </section>
 
     <!-- ── cierre ──────────────────────────────────────────── -->
-    <section class="border-t border-base-300 bg-base-100">
+    <section class="hidden border-t border-base-300 bg-base-100 lg:block">
       <div reveal class="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-12 sm:flex-row sm:flex-wrap sm:items-center sm:gap-8 sm:px-6 sm:py-14">
         <div class="min-w-0 sm:flex-1">
           <h2 class="text-2xl font-semibold tracking-tight text-balance sm:text-3xl lg:text-4xl">
-            Tu página puede estar lista <span class="text-primary">hoy mismo</span>.
+            ¿Arrancamos? <span class="text-primary">Son diez minutos</span>.
           </h2>
           <p class="mt-3 max-w-xl text-base-content/70">
-            Toma unos diez minutos: tu marca, lo que vendes y listo. Después compartes el link
-            y empiezas a recibir pedidos.
+            Tu marca, lo que vendes y listo. Después compartes el link y empiezas a recibir pedidos.
           </p>
         </div>
         <a routerLink="/onboarding" class="btn btn-lg btn-primary w-full sm:w-auto">Crear mi comercio</a>

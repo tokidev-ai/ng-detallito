@@ -202,9 +202,13 @@ el producto asomando. En un teléfono entran unos 640px útiles antes del primer
 si el botón no entra ahí, la landing no vende. Medido: el CTA del hero queda dentro de
 la primera pantalla de 844px, con 48px de alto de área táctil.
 
-Tres decisiones que solo aplican en móvil:
+Seis decisiones que solo aplican en móvil:
 
-- **La barra superior oculta su CTA**, porque duplica el del hero que está a un dedo.
+- **El hero no lleva botones.** El CTA vive en la barra, que es fija: te acompaña todo
+  el scroll en vez de quedarse atrás en la primera pantalla.
+- **El cierre no se muestra.** Su mensaje subió al hero como anuncio, arriba del titular.
+- **Los verificados van centrados.**
+
 - **La tarjeta de canje deja de flotar** (`static` en vez de `absolute`): flotando
   tapaba el botón del mockup.
 - **Las cifras bajan debajo del producto.** Son apoyo, no anzuelo. Se renderizan en dos
@@ -281,9 +285,13 @@ el producto asomando. En un teléfono entran unos 640px útiles antes del primer
 si el botón no entra ahí, la landing no vende. Medido: el CTA del hero queda dentro de
 la primera pantalla de 844px, con 48px de alto de área táctil.
 
-Tres decisiones que solo aplican en móvil:
+Seis decisiones que solo aplican en móvil:
 
-- **La barra superior oculta su CTA**, porque duplica el del hero que está a un dedo.
+- **El hero no lleva botones.** El CTA vive en la barra, que es fija: te acompaña todo
+  el scroll en vez de quedarse atrás en la primera pantalla.
+- **El cierre no se muestra.** Su mensaje subió al hero como anuncio, arriba del titular.
+- **Los verificados van centrados.**
+
 - **La tarjeta de canje deja de flotar** (`static` en vez de `absolute`): flotando
   tapaba el botón del mockup.
 - **Las cifras bajan debajo del producto.** Son apoyo, no anzuelo. Se renderizan en dos
