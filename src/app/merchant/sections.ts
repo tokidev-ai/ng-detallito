@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CardState, GiftCard, Perm, Store, cardState } from '../data';
 import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
@@ -33,6 +33,20 @@ const TABS: { id: CardState; label: string }[] = [
       <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
     </div>
   </div>
+
+  <!-- buscador: aplica a las tres pestañas -->
+  <label class="relative mt-4 block">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-base-content/40">
+      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+    </svg>
+    <input class="input input-bordered input-sm w-full ps-9 sm:w-80" [(ngModel)]="search" name="q"
+           placeholder="Buscar por código o destinatario">
+    @if (search) {
+      <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content"
+              aria-label="Limpiar" (click)="search = ''">✕</button>
+    }
+  </label>
 
   <!-- filtro de fecha, solo en canjeadas -->
   @if (tab() === 'canjeada') {
@@ -180,13 +194,20 @@ export class Emitidas {
   // filtro de fecha (solo canjeadas), ISO yyyy-mm-dd para comparar como texto
   desde = '';
   hasta = '';
+  search = '';
 
-  readonly visible = computed(() => {
-    const list = this.s.cards().filter(c => cardState(c) === this.tab());
-    if (this.tab() !== 'canjeada') return list;
-    return list.filter(c =>
-      (!this.desde || c.expires >= this.desde) && (!this.hasta || c.expires <= this.hasta));
-  });
+  /** Método, no computed: depende de campos de texto planos (search/desde/hasta),
+   *  así reevalúa en cada detección de cambios en vez de quedar cacheado. */
+  visible(): GiftCard[] {
+    let list = this.s.cards().filter(c => cardState(c) === this.tab());
+    if (this.tab() === 'canjeada') {
+      list = list.filter(c =>
+        (!this.desde || c.expires >= this.desde) && (!this.hasta || c.expires <= this.hasta));
+    }
+    const q = this.search.trim().toLowerCase();
+    if (q) list = list.filter(c => c.code.toLowerCase().includes(q) || c.to.toLowerCase().includes(q));
+    return list;
+  }
 
   // ── formulario ─────────────────────────────────────────────────────────────
   readonly formOpen = signal(false);
