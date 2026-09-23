@@ -190,25 +190,6 @@ export class Emitidas {
 }
 
 @Component({
-  selector: 'app-canjes',
-  imports: [BsPipe],
-  template: `
-  <ul class="divide-y divide-base-200 rounded-box border border-base-300 bg-base-100">
-    @for (r of s.redemptions(); track r.at) {
-      <li class="flex flex-wrap items-center gap-x-3 gap-y-1 p-4">
-        <span class="font-mono">{{ r.code }}</span>
-        <span class="text-base-content/60">{{ r.by }}</span>
-        <span class="text-sm text-base-content/50">{{ r.at }}</span>
-        <span class="ms-auto tabular-nums font-medium">−{{ r.amount | bs }}</span>
-      </li>
-    }
-  </ul>
-  <p class="mt-3 text-sm text-warning">append-only: aquí no se edita nada, solo se agregan canjes.</p>
-  `,
-})
-export class Canjes { readonly s = inject(Store); }
-
-@Component({
   selector: 'app-catalogo',
   imports: [FormsModule, BsPipe],
   template: `
@@ -460,26 +441,3 @@ export class Equipo {
   toggle(email: string, key: Perm) { this.s.togglePerm(email, key); }
 }
 
-@Component({
-  selector: 'app-cobros',
-  imports: [BsPipe],
-  template: `
-  <div class="grid gap-4 sm:grid-cols-2">
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 sm:p-6">
-      <p class="text-xs uppercase tracking-wider text-base-content/50">A depositarte (30/09)</p>
-      <p class="mt-1 text-4xl font-semibold tabular-nums">{{ s.netToCollect() | bs }}</p>
-      <p class="mt-1 text-sm text-base-content/60">bruto {{ s.soldThisMonth() | bs }} − comisión 5%</p>
-    </div>
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 sm:p-6">
-      <p class="text-xs uppercase tracking-wider text-base-content/50">Cuenta de depósito</p>
-      <dl class="mt-2 space-y-1 text-sm">
-        <div class="flex justify-between gap-3"><dt class="text-base-content/50">Banco</dt><dd>{{ s.business().bank.bank }}</dd></div>
-        <div class="flex justify-between gap-3"><dt class="text-base-content/50">Cuenta</dt><dd class="font-mono">{{ s.business().bank.account }}</dd></div>
-        <div class="flex justify-between gap-3"><dt class="text-base-content/50">Titular</dt><dd>{{ s.business().bank.holder }}</dd></div>
-        <div class="flex justify-between gap-3"><dt class="text-base-content/50">NIT</dt><dd class="font-mono">{{ s.business().bank.nit }}</dd></div>
-      </dl>
-    </div>
-  </div>
-  `,
-})
-export class Cobros { readonly s = inject(Store); }

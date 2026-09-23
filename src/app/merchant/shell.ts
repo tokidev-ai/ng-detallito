@@ -7,14 +7,12 @@ interface Tab { path: string; label: string; short: string; icon: string }
 
 /** Los 4 primeros van a la barra inferior en móvil; el resto cae en "Más". */
 const TABS: Tab[] = [
-  { path: 'resumen',    label: 'Resumen',    short: 'Resumen',  icon: 'M3 12h4l3 8 4-16 3 8h4' },
-  { path: 'gift-cards', label: 'Gift cards', short: 'Cards',    icon: 'M3 7h18v10H3zM3 11h18' },
-  { path: 'productos',  label: 'Productos',  short: 'Productos', icon: 'M4 7l8-4 8 4-8 4zM4 7v10l8 4 8-4V7M12 11v10' },
-  { path: 'vigencia',   label: 'Vigencia',   short: 'Vigencia', icon: 'M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
-  { path: 'canjes',     label: 'Canjes',     short: 'Canjes',   icon: 'M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4' },
-  { path: 'marca',      label: 'Marca',      short: 'Marca',    icon: 'M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.9-5.3-2.8-5.3 2.8 1-5.9L3.5 9.2l5.9-.9z' },
-  { path: 'equipo',     label: 'Equipo',     short: 'Equipo',   icon: 'M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6' },
-  { path: 'cobros',     label: 'Cobros',     short: 'Cobros',   icon: 'M3 6h18v12H3zM3 10h18' },
+  { path: 'resumen',    label: 'Dashboard',      short: 'Dashboard', icon: 'M3 12h4l3 8 4-16 3 8h4' },
+  { path: 'gift-cards', label: 'Gift cards',     short: 'Cards',     icon: 'M3 7h18v10H3zM3 11h18' },
+  { path: 'productos',  label: 'Productos',      short: 'Productos', icon: 'M4 7l8-4 8 4-8 4zM4 7v10l8 4 8-4V7M12 11v10' },
+  { path: 'vigencia',   label: 'Vigencia',       short: 'Vigencia',  icon: 'M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
+  { path: 'marca',      label: 'Editar página',  short: 'Página',    icon: 'M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.9-5.3-2.8-5.3 2.8 1-5.9L3.5 9.2l5.9-.9z' },
+  { path: 'equipo',     label: 'Equipo',         short: 'Equipo',    icon: 'M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6' },
 ];
 
 @Component({

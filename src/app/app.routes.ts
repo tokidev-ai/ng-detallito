@@ -28,10 +28,8 @@ export const routes: Routes = [
       { path: 'gift-cards', loadComponent: () => import('./merchant/sections').then(m => m.Emitidas) },
       { path: 'productos', loadComponent: () => import('./merchant/sections').then(m => m.Catalogo) },
       { path: 'vigencia', loadComponent: () => import('./merchant/sections').then(m => m.Vigencia) },
-      { path: 'canjes', loadComponent: () => import('./merchant/sections').then(m => m.Canjes) },
       { path: 'marca', loadComponent: () => import('./merchant/sections').then(m => m.Marca) },
       { path: 'equipo', loadComponent: () => import('./merchant/sections').then(m => m.Equipo) },
-      { path: 'cobros', loadComponent: () => import('./merchant/sections').then(m => m.Cobros) },
     ],
   },
 
