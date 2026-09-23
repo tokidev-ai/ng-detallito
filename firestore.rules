@@ -2,9 +2,10 @@ rules_version = '2';
 
 // Aislamiento multitenant. La UI oculta; esto es lo que manda.
 //
-// ponytail: la membresía vive en `memberUids` del propio doc del tenant, no en
-// custom claims. Evita una Cloud Function y un deploy por cada alta de empleado.
-// Si algún día hay cientos de empleados por comercio, esto pasa a claims.
+// ponytail: la membresía vive en `memberEmails` del propio doc del tenant (por
+// correo, no por uid): agregar un empleado por email alcanza para que entre, sin
+// custom claims ni sincronizar uids. Si algún día hay cientos de empleados por
+// comercio, esto pasa a claims.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -12,12 +13,22 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function myEmail() {
+      return request.auth.token.email;
+    }
+
     function tenant(tenantId) {
       return get(/databases/$(database)/documents/tenants/$(tenantId)).data;
     }
 
     function isMember(tenantId) {
-      return signedIn() && request.auth.uid in tenant(tenantId).memberUids;
+      return signedIn() && myEmail() in tenant(tenantId).memberEmails;
+    }
+
+    // ¿tiene el permiso `p`? Lee su doc de staff (clave = su correo).
+    function hasPerm(tenantId, p) {
+      return isMember(tenantId)
+             && get(/databases/$(database)/documents/tenants/$(tenantId)/staff/$(myEmail())).data.perms[p] == true;
     }
 
     // Superadmin = nosotros, la startup. Un doc por uid, otorgado a mano.
@@ -41,19 +52,21 @@ service cloud.firestore {
       // Leer el propio doc del tenant no puede usar get(): en una query las reglas
       // se evalúan por documento y `resource` ya trae todo. get() acá rompe el list.
       allow get, list: if resource.data.business.published == true
-                       || (request.auth != null && request.auth.uid in resource.data.memberUids)
+                       || (request.auth != null && myEmail() in resource.data.memberEmails)
                        || isSuperadmin();
 
       // el alta la hace el propio dueño y se pone a sí mismo como único miembro
       allow create: if signedIn()
                     && request.resource.data.ownerUid == request.auth.uid
-                    && request.resource.data.memberUids == [request.auth.uid]
+                    && request.resource.data.memberEmails == [myEmail()]
                     && request.resource.data.business.slug == tenantId;
 
-      // nadie se agrega solo a un comercio ajeno: memberUids y ownerUid los toca el owner
+      // el ownerUid no cambia nunca; la lista de miembros solo la toca quien
+      // administra el equipo (owner incluido, que tiene manageStaff).
       allow update: if isMember(tenantId)
                     && request.resource.data.ownerUid == resource.data.ownerUid
-                    && (request.resource.data.memberUids == resource.data.memberUids || isOwner(tenantId));
+                    && (request.resource.data.memberEmails == resource.data.memberEmails
+                        || isOwner(tenantId) || hasPerm(tenantId, 'manageStaff'));
 
       allow delete: if isOwner(tenantId);
 
@@ -82,7 +95,7 @@ service cloud.firestore {
       }
       match /staff/{email} {
         allow read: if isMember(tenantId);
-        allow write: if isOwner(tenantId);
+        allow write: if isOwner(tenantId) || hasPerm(tenantId, 'manageStaff');
       }
     }
   }

@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  Firestore, collection, collectionData, deleteDoc, doc, getDoc, getDocs,
+  Firestore, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, getDoc, getDocs,
   query, runTransaction, setDoc, updateDoc, where,
 } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
@@ -39,7 +39,9 @@ export interface Tenant {
   id: string;
   business: Business;
   ownerUid: string;
-  memberUids: string[];
+  /** Membresía por correo: agregar un empleado por email basta para que entre,
+   *  sin sincronizar uids. El dueño va incluido. */
+  memberEmails: string[];
   soldThisMonth: number;
   /** Firestore no permite arrays de arrays: cada mes es un objeto. */
   monthly: MonthPoint[];
@@ -66,11 +68,11 @@ export class Store {
   readonly commissionRate = 0.05;
   readonly currentId = signal<string | null>(null);
 
-  // ── los comercios de esta persona ──────────────────────────────────────────
-  private readonly myTenants$: Observable<Tenant[]> = toObservable$(() => this.auth.uid()).pipe(
-    switchMap(uid => uid
+  // ── los comercios de esta persona (por su correo) ───────────────────────────
+  private readonly myTenants$: Observable<Tenant[]> = toObservable$(() => this.auth.user()?.email ?? null).pipe(
+    switchMap(email => email
       ? collectionData(
-          query(collection(this.db, 'tenants'), where('memberUids', 'array-contains', uid)),
+          query(collection(this.db, 'tenants'), where('memberEmails', 'array-contains', email)),
           { idField: 'id' }) as Observable<Tenant[]>
       : of([])),
   );
@@ -240,13 +242,16 @@ export class Store {
 
   async addStaff(email: string, perms: Record<Perm, boolean>) {
     const id = this.currentId();
-    if (id) await setDoc(doc(this.db, 'tenants', id, 'staff', email),
-      { email, role: 'staff', lastSeen: '—', perms });
+    if (!id) return;
+    await setDoc(doc(this.db, 'tenants', id, 'staff', email), { email, role: 'staff', lastSeen: '—', perms });
+    await updateDoc(this.tenantRef(id), { memberEmails: arrayUnion(email) });  // así puede entrar
   }
 
   async removeStaff(email: string) {
     const id = this.currentId();
-    if (id) await deleteDoc(doc(this.db, 'tenants', id, 'staff', email));
+    if (!id) return;
+    await deleteDoc(doc(this.db, 'tenants', id, 'staff', email));
+    await updateDoc(this.tenantRef(id), { memberEmails: arrayRemove(email) });
   }
 
   /** Alta de comercio: lo que produce el wizard. Devuelve el id del tenant. */
@@ -255,15 +260,16 @@ export class Store {
     if (!user) throw new Error('sin sesión');
 
     const id = business.slug;
+    const ownerEmail = user.email ?? user.uid;
     await setDoc(doc(this.db, 'tenants', id), {
       business,
       ownerUid: user.uid,
-      memberUids: [user.uid],
+      memberEmails: [ownerEmail],
       soldThisMonth: 0,
       monthly: Array.from({ length: 6 }, () => ({ sold: 0, redeemed: 0 })),
     });
-    await setDoc(doc(this.db, 'tenants', id, 'staff', user.email ?? user.uid), {
-      email: user.email ?? user.uid, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS,
+    await setDoc(doc(this.db, 'tenants', id, 'staff', ownerEmail), {
+      email: ownerEmail, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS,
     });
     return id;
   }

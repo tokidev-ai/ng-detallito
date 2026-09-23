@@ -147,7 +147,8 @@ for (const t of TENANTS) {
   await put(`tenants/${t.id}`, {
     business: t.business,
     ownerUid: owner.uid,
-    memberUids: [owner.uid],
+    // membresía por correo: el dueño y los empleados que sembramos
+    memberEmails: [owner.email, ...t.extraStaff.map(m => m.email)],
     soldThisMonth: t.soldThisMonth,
     // Firestore no acepta arrays anidados: cada mes va como {sold, redeemed}
     monthly: t.monthly.map(([sold, redeemed]) => ({ sold, redeemed })),
