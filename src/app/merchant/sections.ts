@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { CardState, GiftCard, Perm, Store, cardState } from '../data';
 import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
 import { Storefront } from '../storefront';
@@ -348,6 +349,18 @@ export class Emitidas {
           Despublicada, el link deja de funcionar para tus clientes. Las gift cards ya vendidas se siguen canjeando.
         </p>
       </section>
+
+      @if (s.isOwner()) {
+        <section class="rounded-box border border-error/30 bg-error/5 p-5 sm:p-6">
+          <h2 class="text-lg font-medium text-error">Zona de peligro</h2>
+          <p class="mt-1 text-sm text-base-content/60">
+            Borrar el negocio elimina su página y su panel para siempre. No se puede deshacer.
+          </p>
+          <button type="button" class="btn btn-outline btn-error btn-sm mt-4" (click)="confirmingDelete.set(true)">
+            Borrar negocio
+          </button>
+        </section>
+      }
     </div>
 
     <!-- lo que se está editando, en vivo -->
@@ -358,13 +371,55 @@ export class Emitidas {
       </div>
     </aside>
   </div>
+
+  <!-- borrar negocio: modal con confirmación tipeando el nombre -->
+  @if (confirmingDelete()) {
+    <div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" (click)="cancelDelete()">
+      <div class="w-full max-w-sm rounded-box bg-base-100 p-5 shadow-xl" (click)="$event.stopPropagation()">
+        <h3 class="text-lg font-medium text-error">Borrar “{{ b().name }}”</h3>
+        <p class="mt-2 text-sm text-base-content/70">
+          Esto elimina el negocio, su página pública y su panel. No se puede deshacer.
+        </p>
+        <label class="mt-4 block">
+          <span class="mb-1 block text-sm text-base-content/60">Escribí <b>{{ b().name }}</b> para confirmar</span>
+          <input class="input input-bordered w-full" [(ngModel)]="deleteText" name="delText" [placeholder]="b().name">
+        </label>
+        <div class="mt-5 flex justify-end gap-2">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="cancelDelete()" [disabled]="deleting()">Cancelar</button>
+          <button type="button" class="btn btn-error btn-sm" (click)="deleteBusiness()"
+                  [disabled]="deleting() || deleteText.trim() !== b().name">
+            {{ deleting() ? 'Borrando…' : 'Borrar para siempre' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
   `,
 })
 export class Marca {
   readonly s = inject(Store);
+  private readonly router = inject(Router);
   readonly b = this.s.business;
   readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
   newAmount: number | null = null;
+
+  readonly confirmingDelete = signal(false);
+  readonly deleting = signal(false);
+  deleteText = '';
+
+  cancelDelete() { this.confirmingDelete.set(false); this.deleteText = ''; }
+
+  async deleteBusiness() {
+    if (this.deleteText.trim() !== this.b().name || this.deleting()) return;
+    this.deleting.set(true);
+    try {
+      await this.s.deleteTenant();
+      this.s.setCurrent(null);
+      await this.router.navigate(['/app']);
+    } finally {
+      this.deleting.set(false);
+    }
+  }
 
   onLogo(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
@@ -430,7 +485,7 @@ const CASHIER: Record<Perm, boolean> = {
             </p>
           </div>
           @if (m.role !== 'owner') {
-            <button type="button" class="btn btn-ghost btn-xs text-error" (click)="remove(m.email)">quitar</button>
+            <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removing.set(m.email)">quitar</button>
           }
         </div>
 
@@ -458,6 +513,23 @@ const CASHIER: Record<Perm, boolean> = {
 
   <p class="mt-4 text-sm text-base-content/60">Datos bancarios y liquidaciones no se delegan nunca.</p>
   <p class="mt-1 text-sm text-warning">la UI oculta; las Firestore Rules son las que mandan.</p>
+
+  <!-- quitar empleado: modal, no alert -->
+  @if (removing(); as email) {
+    <div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" (click)="removing.set(null)">
+      <div class="w-full max-w-sm rounded-box bg-base-100 p-5 shadow-xl" (click)="$event.stopPropagation()">
+        <h3 class="text-lg font-medium">Quitar del equipo</h3>
+        <p class="mt-2 text-sm text-base-content/70">
+          <span class="font-medium text-base-content">{{ email }}</span> dejará de tener acceso al negocio.
+          Podés volver a agregarlo cuando quieras.
+        </p>
+        <div class="mt-5 flex justify-end gap-2">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="removing.set(null)">Cancelar</button>
+          <button type="button" class="btn btn-error btn-sm" (click)="confirmRemove(email)">Quitar</button>
+        </div>
+      </div>
+    </div>
+  }
   `,
 })
 export class Equipo {
@@ -465,6 +537,7 @@ export class Equipo {
   readonly groups = PERM_GROUPS;
   email = '';
   readonly error = signal('');
+  readonly removing = signal<string | null>(null);
 
   add() {
     const email = this.email.trim().toLowerCase();
@@ -475,8 +548,9 @@ export class Equipo {
     this.email = '';
   }
 
-  remove(email: string) {
-    if (confirm(`¿Quitar a ${email} del equipo?`)) this.s.removeStaff(email);
+  confirmRemove(email: string) {
+    this.s.removeStaff(email);
+    this.removing.set(null);
   }
 }
 

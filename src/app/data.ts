@@ -254,6 +254,13 @@ export class Store {
     await updateDoc(this.tenantRef(id), { memberEmails: arrayRemove(email) });
   }
 
+  /** Baja de comercio (solo el dueño). ponytail: borra el doc del tenant; sus
+   *  subcolecciones quedan huérfanas pero inaccesibles (sin el doc no hay
+   *  membresía ni publicación). Una Cloud Function las limpiaría en producción. */
+  async deleteTenant(id = this.currentId()) {
+    if (id) await deleteDoc(doc(this.db, 'tenants', id));
+  }
+
   /** Alta de comercio: lo que produce el wizard. Devuelve el id del tenant. */
   async createTenant(business: Business): Promise<string> {
     const user = this.auth.user();

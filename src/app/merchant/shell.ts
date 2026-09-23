@@ -20,6 +20,15 @@ const TABS: Tab[] = [
   template: `
   <div class="min-h-dvh bg-base-200">
     <div class="mx-auto max-w-7xl p-3 sm:p-6">
+      @if (!store.current()) {
+        <!-- entrando al negocio: loader mientras Firestore trae el comercio -->
+        <div class="grid min-h-[70vh] place-items-center rounded-box border border-base-300 bg-base-100">
+          <div class="flex flex-col items-center gap-3 text-base-content/50">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+            <p class="text-sm">Entrando a tu negocio…</p>
+          </div>
+        </div>
+      } @else {
       <div class="overflow-hidden rounded-box border border-base-300 bg-base-100">
 
         <header class="flex flex-wrap items-center gap-3 p-4 sm:p-6">
@@ -75,9 +84,11 @@ const TABS: Tab[] = [
           <router-outlet />
         </main>
       </div>
+      }
     </div>
 
     <!-- bottom nav: móvil -->
+    @if (store.current()) {
     <nav class="btm-nav fixed inset-x-0 bottom-0 z-40 flex h-[4.5rem] items-stretch border-t border-base-300 bg-base-100 pb-[env(safe-area-inset-bottom)] md:hidden">
       @for (t of tabs().slice(0, 3); track t.path) {
         <a class="flex flex-1 flex-col items-center justify-center gap-1 text-xs text-base-content/60"
@@ -96,6 +107,7 @@ const TABS: Tab[] = [
         Más
       </button>
     </nav>
+    }
 
     @if (moreOpen()) {
       <div class="fixed inset-0 z-50 md:hidden">
