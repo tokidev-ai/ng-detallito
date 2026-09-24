@@ -5,191 +5,274 @@ import { Business, GiftCard, Store } from './data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from './card';
 import { GiftcardArt } from './giftcard';
 import { Wordmark } from './brand';
-// ponytail: sin `reveal` acá — la animación de entrada se traga la tarjeta en la
-// preview embebida del panel. La página igual queda atractiva sin ella.
 
 /** La página pública del comercio: comprar una gift card en pasos. Se usa tal
  *  cual en /:slug y como vista previa en vivo del wizard (ahí no es interactiva,
- *  se queda en el primer paso). El color y el logo son los del comercio. */
+ *  se queda en el primer paso). Toda la paleta sale del color del comercio:
+ *  `--c1` es su color y styles.css deriva los vecinos (--c2, --c3, suaves, fondo). */
 @Component({
   selector: 'app-storefront',
   imports: [FormsModule, BsPipe, GiftcardArt, Wordmark],
   template: `
-    <div class="storefront flex flex-col bg-base-100 text-base-content" [class.min-h-dvh]="interactive()">
+    <div class="storefront flex flex-col bg-base-100 text-base-content" [class.min-h-dvh]="interactive()"
+         [style.--c1]="b().color">
 
-      <!-- barra superior -->
-      <header class="sticky top-0 z-30 border-b border-base-300 bg-base-100/85 backdrop-blur">
-        <div class="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3 sm:px-8">
-          <div class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl border border-base-300 bg-base-200 text-[9px] text-base-content/40">
-            @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> } @else { logo }
-          </div>
-          <p class="min-w-0 flex-1 truncate font-semibold tracking-tight">{{ b().name || 'Tu comercio' }}</p>
-          <span class="hidden text-xs text-base-content/45 sm:block">giftcards.bo/{{ b().slug || 'tu-link' }}</span>
+      <!-- ── zona de color: header + hero, fondo oscuro teñido con la marca ── -->
+      <div class="sf-hero relative flex flex-1 flex-col overflow-hidden text-white">
+        <!-- aurora: tres manchas de la paleta que derivan lento -->
+        <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+          <span class="blob blob-1" style="background:var(--c1)"></span>
+          <span class="blob blob-2" style="background:var(--c2)"></span>
+          <span class="blob blob-3" style="background:var(--c3)"></span>
+          <div class="dotgrid-light absolute inset-0"></div>
         </div>
-      </header>
 
-      <!-- hero: la sección centra el contenido verticalmente en todos los tamaños;
-           el grid de dos columnas resuelve el layout horizontal en desktop -->
-      <section class="relative flex flex-1 flex-col justify-center overflow-hidden">
-        <div class="dotgrid pointer-events-none absolute inset-0" aria-hidden="true"></div>
-        <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
-             [style.background-color]="b().color" aria-hidden="true"></div>
-
-        <div class="relative mx-auto grid w-full max-w-6xl gap-x-12 gap-y-8 px-5 py-8 text-center sm:px-8 sm:py-12 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:gap-y-8 lg:py-16 lg:text-left">
-
-          <!-- 1 · título -->
-          <h1 class="order-1 text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-balance sm:text-5xl lg:col-start-1 lg:row-start-1 lg:self-end lg:text-[3.75rem] lg:leading-[0.95]">
-            Regala una gift card de
-            <span class="relative inline-block" [style.color]="b().color">
-              {{ b().name || 'tu comercio' }}
-              <svg class="subrayado absolute -bottom-1.5 left-0 w-full" height="14"
-                   viewBox="0 0 200 14" preserveAspectRatio="none" fill="none" aria-hidden="true">
-                <path d="M3 9.5C42 4 86 2.6 130 4.2c25 .9 48 2.6 67 5.3"
-                      stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              </svg>
+        <header class="relative z-10">
+          <div class="mx-auto flex max-w-6xl items-center gap-3 px-5 py-4 sm:px-8">
+            <div class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-white/10 text-[9px] text-white/50 ring-1 ring-white/20">
+              @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> } @else { logo }
+            </div>
+            <p class="min-w-0 flex-1 truncate font-semibold tracking-tight">{{ b().name || 'Tu comercio' }}</p>
+            <span class="hidden rounded-full bg-white/10 px-3 py-1 text-xs text-white/70 ring-1 ring-white/15 sm:block">
+              giftcards.bo/{{ b().slug || 'tu-link' }}
             </span>
-          </h1>
+          </div>
+        </header>
 
-          <!-- 2 · tarjeta de compra -->
-          <div class="relative order-2 text-left lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
-            <div class="pointer-events-none absolute -inset-3 rounded-[2rem] opacity-20 blur-2xl"
-                 [style.background-color]="b().color" aria-hidden="true"></div>
+        <div class="relative z-10 flex flex-1 flex-col lg:justify-center">
+          <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col lg:grid lg:flex-none lg:grid-cols-[1fr_minmax(0,440px)] lg:items-center lg:gap-16 lg:px-8 lg:py-12">
 
-            <div class="relative rounded-3xl border border-base-300 bg-base-100 p-5 shadow-xl sm:p-7">
+            <!-- ── pitch + tarjeta en vivo ── -->
+            <div class="px-5 pb-14 pt-2 text-center sm:px-8 lg:p-0 lg:text-left">
+              <span class="reveal inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 ring-1 ring-white/20 backdrop-blur">
+                <span class="relative flex size-2">
+                  <span class="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-75"></span>
+                  <span class="relative inline-flex size-2 rounded-full bg-success"></span>
+                </span>
+                Gift card digital · llega al instante
+              </span>
+
+              <h1 class="reveal reveal-1 mt-4 text-[2.3rem] font-extrabold leading-[0.98] tracking-[-0.045em] text-balance sm:text-5xl lg:text-[4.1rem]">
+                Regala algo especial en
+                <span class="relative inline-block">
+                  <span class="text-aurora">{{ b().name || 'tu comercio' }}</span>
+                  <svg class="subrayado absolute -bottom-1.5 left-0 w-full" height="14" style="color:var(--c2-soft)"
+                       viewBox="0 0 200 14" preserveAspectRatio="none" fill="none" aria-hidden="true">
+                    <path d="M3 9.5C42 4 86 2.6 130 4.2c25 .9 48 2.6 67 5.3"
+                          stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  </svg>
+                </span>
+              </h1>
+
+              @if (b().description) {
+                <p class="reveal reveal-2 mx-auto mt-4 line-clamp-2 max-w-md text-base text-white/75 lg:mx-0 lg:text-lg">{{ b().description }}</p>
+              }
+
+              @if (!issuedCard()) {
+                <!-- la tarjeta que se arma mientras el cliente elige: lo que llama la atención -->
+                <div class="pop relative mx-auto mt-8 w-full max-w-[270px] sm:max-w-[340px] lg:mx-0 lg:mt-10" style="animation-delay:.2s">
+                  <span class="chip-float absolute -left-3 -top-4 z-10 grid size-11 place-items-center rounded-2xl bg-white text-xl shadow-xl lg:-left-6">🎁</span>
+                  <span class="chip-float absolute -bottom-4 -right-2 z-10 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-xl lg:-right-8"
+                        style="background:var(--color-success);animation-delay:-2s">✓ Al instante</span>
+                  <div class="float">
+                    <div class="shine relative flex aspect-[1.586] -rotate-3 flex-col justify-between overflow-hidden rounded-2xl p-5 text-left shadow-2xl shadow-black/50 ring-1 ring-white/25"
+                         style="background:linear-gradient(135deg,var(--c1),var(--c2))" [style.color]="onBrand()">
+                      <span class="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/15" aria-hidden="true"></span>
+                      <span class="pointer-events-none absolute -bottom-20 -left-6 size-48 rounded-full bg-black/10" aria-hidden="true"></span>
+
+                      <div class="relative flex items-center gap-2">
+                        <div class="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-white/25 text-[8px]">
+                          @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> } @else { logo }
+                        </div>
+                        <p class="min-w-0 flex-1 truncate text-sm font-semibold">{{ b().name || 'Tu comercio' }}</p>
+                        <span class="text-[10px] uppercase tracking-[0.2em] opacity-80">Gift card</span>
+                      </div>
+
+                      <!-- @for de un solo elemento: al cambiar el monto se recrea y rebota -->
+                      @for (k of [amount]; track k) {
+                        <p class="pop relative text-4xl font-extrabold tracking-[-0.03em] tabular-nums sm:text-5xl">
+                          {{ amount ? (amount | bs) : 'Bs ···' }}
+                        </p>
+                      }
+
+                      <div class="relative flex items-end justify-between gap-3 text-xs">
+                        <div class="min-w-0">
+                          <p class="opacity-70">Para</p>
+                          <p class="truncate text-sm font-semibold">{{ to.trim() || 'Alguien especial' }}</p>
+                        </div>
+                        @if (from.trim()) {
+                          <div class="min-w-0 text-right">
+                            <p class="opacity-70">De</p>
+                            <p class="truncate text-sm font-semibold">{{ from }}</p>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- ── panel de compra: hoja que sube en móvil, tarjeta flotante en desktop ── -->
+            <div class="sheet-up relative z-10 -mt-6 flex-1 overflow-hidden rounded-t-[2rem] bg-base-100 px-5 pb-8 pt-7 text-base-content sm:px-8 lg:mt-0 lg:flex-none lg:rounded-[2rem] lg:p-8 lg:shadow-2xl lg:shadow-black/40">
+              <!-- franja de la paleta arriba del panel -->
+              <div class="absolute inset-x-0 top-0 h-1.5" style="background:linear-gradient(90deg,var(--c3),var(--c1),var(--c2))"></div>
 
               <!-- ── compra terminada ── -->
               @if (issuedCard(); as card) {
-                <p class="reveal text-center text-sm font-medium text-base-content/70">
-                  <span class="pop inline-block">🎉</span> ¡Tu gift card está lista!
-                </p>
-                <div class="pop mt-3" style="animation-delay:.08s"><app-giftcard-art [card]="card" [business]="b()" /></div>
-                <p class="reveal reveal-3 mt-5 text-center text-xs uppercase tracking-wider text-base-content/50">Envíasela a quien la recibe</p>
-                <div class="reveal reveal-4 mt-2 grid grid-cols-2 gap-2">
-                  <a class="btn gap-2 text-white" style="background-color:#25D366;border-color:#25D366"
-                     [href]="waHref()" target="_blank" rel="noopener">WhatsApp</a>
-                  <a class="btn btn-outline gap-2" [href]="mailHref()">Correo</a>
+                <div class="pointer-events-none absolute inset-0 z-20 overflow-hidden" aria-hidden="true">
+                  @for (p of confetti; track $index) {
+                    <span class="confetti" [style.left.%]="p.left" [style.width.px]="p.w" [style.background]="p.color"
+                          [style.--d]="p.dur + 's'" [style.--delay]="p.delay + 's'" [style.--r]="p.rot + 'deg'"></span>
+                  }
                 </div>
-                <button type="button" class="reveal reveal-5 btn btn-ghost btn-sm mt-2 w-full" (click)="copy()">
-                  {{ copied() ? '¡Link copiado!' : 'Copiar link' }}
-                </button>
-                <button type="button" class="reveal reveal-5 btn btn-ghost btn-sm mt-1 w-full" (click)="reset()">Comprar otra</button>
+                <div class="relative">
+                  <p class="reveal text-center text-2xl font-extrabold tracking-tight">
+                    <span class="pop inline-block">🎉</span> ¡Tu gift card está lista!
+                  </p>
+                  <p class="reveal reveal-1 mt-1 text-center text-sm text-base-content/60">Ahora envíasela a quien la va a disfrutar.</p>
+                  <div class="pop mt-5" style="animation-delay:.12s"><app-giftcard-art [card]="card" [business]="b()" /></div>
+                  <div class="reveal reveal-4 mt-5 grid grid-cols-2 gap-2">
+                    <a class="cta text-white" style="background:#25D366;box-shadow:0 12px 28px -12px #25D366"
+                       [href]="waHref()" target="_blank" rel="noopener">WhatsApp</a>
+                    <a class="cta bg-base-200" [href]="mailHref()">Correo</a>
+                  </div>
+                  <button type="button" class="reveal reveal-5 btn btn-ghost btn-sm mt-2 w-full" (click)="copy()">
+                    {{ copied() ? '¡Link copiado!' : 'Copiar link' }}
+                  </button>
+                  <button type="button" class="reveal reveal-5 btn btn-ghost btn-sm mt-1 w-full" (click)="reset()">Regalar otra</button>
+                </div>
 
               <!-- ── pasos de compra ── -->
               } @else {
                 <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50">Comprar / Regalar gift card</p>
+
                 @if (interactive()) {
-                  <!-- stepper: círculos numerados, check en los pasos hechos,
-                       conector que se llena con el color de la marca -->
+                  <!-- stepper verde: hecho = check, actual = pulso -->
                   <div class="mt-4 flex items-center gap-2">
                     @for (name of steps; track $index) {
                       <div class="flex flex-col items-center gap-1.5">
-                        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-base-200 text-xs font-bold text-base-content/40 transition-all"
-                              [class.scale-110]="$index === step()"
-                              [style.background-color]="$index <= step() ? b().color : null"
-                              [style.color]="$index <= step() ? onBrand() : null">
+                        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-base-200 text-xs font-bold text-base-content/40 transition-all duration-300"
+                              [class.step-pulse]="$index === step()"
+                              [style.background-color]="$index <= step() ? 'var(--color-success)' : null"
+                              [style.color]="$index <= step() ? 'var(--color-success-content)' : null">
                           @if ($index < step()) {
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="size-4">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="pop size-4">
                               <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                           } @else { {{ $index + 1 }} }
                         </span>
-                        <span class="text-[10px] font-medium text-base-content/40 transition-colors"
-                              [style.color]="$index === step() ? b().color : null">{{ name }}</span>
+                        <span class="text-[10px] font-semibold text-base-content/40 transition-colors"
+                              [style.color]="$index <= step() ? 'var(--color-success)' : null">{{ name }}</span>
                       </div>
                       @if (!$last) {
-                        <span class="mb-5 h-0.5 flex-1 rounded-full bg-base-200 transition-colors"
-                              [style.background-color]="$index < step() ? b().color : null"></span>
+                        <span class="relative mb-5 h-1 flex-1 overflow-hidden rounded-full bg-base-200">
+                          <span class="absolute inset-y-0 left-0 rounded-full bg-success transition-all duration-500 ease-out"
+                                [style.width.%]="$index < step() ? 100 : 0"></span>
+                        </span>
                       }
                     }
                   </div>
                 }
 
-                @switch (view()) {
-                  @case (0) {
-                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Elige el monto</p>
-                    @if (amounts().length) {
-                      <div class="mt-2 grid grid-cols-3 gap-2">
-                        @for (a of amounts(); track a) {
-                          <button type="button" (click)="pick(a)"
-                            class="btn h-12 font-semibold normal-case transition-transform active:scale-95"
-                            [class.btn-outline]="amount !== a"
-                            [style.background-color]="amount === a ? b().color : ''"
-                            [style.color]="amount === a ? onBrand() : ''"
-                            [style.border-color]="amount === a ? b().color : ''">
-                            {{ a | bs }}
-                          </button>
+                <!-- @for de un solo elemento: cada paso entra con animación al cambiar -->
+                @for (v of [view()]; track v) {
+                  <div class="step-in">
+                    @switch (v) {
+                      @case (0) {
+                        <h2 class="mt-6 text-2xl font-extrabold tracking-tight">¿Cuánto quieres regalar?</h2>
+                        @if (amounts().length) {
+                          <div class="mt-4 grid gap-2" [style.grid-template-columns]="'repeat(' + cols() + ', minmax(0, 1fr))'">
+                            @for (a of amounts(); track a; let i = $index) {
+                              <button type="button" (click)="pick(a)"
+                                class="pill reveal h-14 rounded-2xl bg-base-200 text-lg font-extrabold tabular-nums"
+                                [class.pill-on]="amount === a"
+                                [style.animation-delay]="(0.05 + i * 0.06) + 's'"
+                                [style.background]="amount === a ? 'linear-gradient(135deg,var(--c1),var(--c2))' : null"
+                                [style.color]="amount === a ? onBrand() : null">
+                                {{ a | bs }}
+                              </button>
+                            }
+                          </div>
                         }
-                      </div>
-                    }
-                    @if (showCustom()) {
-                      <input type="number" min="1" class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="amount" name="amount"
-                             [placeholder]="amounts().length ? 'Otro monto (Bs)' : 'Monto de la gift card (Bs)'">
-                    }
-                    <button type="button" class="btn mt-4 h-12 w-full border-none text-base shadow-sm"
-                            [disabled]="!amount || amount < 1"
-                            [style.background-color]="b().color" [style.color]="onBrand()"
-                            (click)="next()">Continuar</button>
-                  }
-
-                  @case (1) {
-                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">¿Para quién es?</p>
-                    <input class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="to" name="to" placeholder="Nombre de quien la recibe">
-                    <input class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="from" name="from"
-                           placeholder="De parte de… (opcional)">
-                    <p class="mt-1 text-xs text-base-content/50">Déjalo vacío si quieres que el regalo sea anónimo.</p>
-                    <div class="mt-4 flex gap-2">
-                      <button type="button" class="btn btn-ghost h-12 flex-1" (click)="back()">Atrás</button>
-                      <button type="button" class="btn h-12 flex-1 border-none" [disabled]="!to.trim()"
-                              [style.background-color]="b().color" [style.color]="onBrand()"
-                              (click)="next()">Continuar</button>
-                    </div>
-                  }
-
-                  @case (2) {
-                    <p class="mt-5 text-xs uppercase tracking-wider text-base-content/50">Revisa y confirma</p>
-                    <dl class="mt-2 divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
-                      <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Monto</dt><dd class="text-lg font-bold tabular-nums" [style.color]="b().color">{{ amount | bs }}</dd></div>
-                      <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Para</dt><dd class="font-medium">{{ to }}</dd></div>
-                      @if (from.trim()) {
-                        <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">De parte de</dt><dd>{{ from }}</dd></div>
+                        @if (showCustom()) {
+                          <label class="field mt-3 flex items-center gap-2">
+                            <span class="font-bold text-base-content/45">Bs</span>
+                            <input type="number" min="1" class="h-full w-full bg-transparent text-lg font-semibold outline-none"
+                                   [(ngModel)]="amount" name="amount"
+                                   [placeholder]="amounts().length ? 'Otro monto' : 'Monto de la gift card'">
+                          </label>
+                        }
+                        <button type="button" class="cta cta-brand mt-5" [disabled]="!amount || amount < 1"
+                                [style.color]="onBrand()" (click)="next()">
+                          Continuar
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
                       }
-                      <div class="flex justify-between gap-3 p-3"><dt class="text-base-content/55">Vence</dt><dd>{{ b().validityMonths }} meses desde hoy</dd></div>
-                    </dl>
-                    <div class="mt-4 flex gap-2">
-                      <button type="button" class="btn btn-ghost h-12 flex-1" (click)="back()" [disabled]="busy()">Atrás</button>
-                      <button type="button" class="btn h-12 flex-1 border-none" [disabled]="busy()"
-                              [style.background-color]="b().color" [style.color]="onBrand()"
-                              (click)="buy()">{{ busy() ? 'Emitiendo…' : 'Comprar' }}</button>
-                    </div>
-                    <p class="mt-3 text-center text-xs text-base-content/50">Pago coordinado con el comercio</p>
-                    @if (error()) { <p class="mt-2 text-center text-sm text-error">{{ error() }}</p> }
-                  }
+
+                      @case (1) {
+                        <h2 class="mt-6 text-2xl font-extrabold tracking-tight">¿Para quién es?</h2>
+                        <p class="mt-1 text-sm text-base-content/55">Su nombre aparece en la gift card.</p>
+                        <input class="field mt-4" [(ngModel)]="to" name="to" placeholder="Nombre de quien la recibe">
+                        <input class="field mt-2" [(ngModel)]="from" name="from" placeholder="De parte de… (opcional)">
+                        <p class="mt-2 text-xs text-base-content/50">Déjalo vacío si quieres que el regalo sea anónimo.</p>
+                        <div class="mt-5 flex gap-2">
+                          <button type="button" class="grid size-14 shrink-0 place-items-center rounded-2xl bg-base-200 transition active:scale-95" aria-label="Atrás" (click)="back()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-5"><path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </button>
+                          <button type="button" class="cta cta-brand flex-1" [disabled]="!to.trim()"
+                                  [style.color]="onBrand()" (click)="next()">
+                            Continuar
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </button>
+                        </div>
+                      }
+
+                      @case (2) {
+                        <h2 class="mt-6 text-2xl font-extrabold tracking-tight">Revisa tu regalo</h2>
+                        <dl class="mt-4 divide-y divide-base-300/70 rounded-2xl bg-base-200 px-4 text-sm">
+                          <div class="flex items-center justify-between gap-3 py-3"><dt class="text-base-content/55">Monto</dt><dd class="text-xl font-extrabold tabular-nums">{{ amount | bs }}</dd></div>
+                          <div class="flex justify-between gap-3 py-3"><dt class="text-base-content/55">Para</dt><dd class="font-semibold">{{ to }}</dd></div>
+                          @if (from.trim()) {
+                            <div class="flex justify-between gap-3 py-3"><dt class="text-base-content/55">De parte de</dt><dd class="font-semibold">{{ from }}</dd></div>
+                          }
+                          <div class="flex justify-between gap-3 py-3"><dt class="text-base-content/55">Vence</dt><dd class="font-semibold">{{ b().validityMonths }} meses desde hoy</dd></div>
+                        </dl>
+                        <div class="mt-5 flex gap-2">
+                          <button type="button" class="grid size-14 shrink-0 place-items-center rounded-2xl bg-base-200 transition active:scale-95" aria-label="Atrás" (click)="back()" [disabled]="busy()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-5"><path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </button>
+                          <button type="button" class="cta cta-brand flex-1" [disabled]="busy()"
+                                  [style.color]="onBrand()" (click)="buy()">
+                            @if (busy()) { <span class="loading loading-spinner loading-sm"></span> Emitiendo… }
+                            @else { Regalar {{ amount | bs }} 🎁 }
+                          </button>
+                        </div>
+                        <p class="mt-3 text-center text-xs text-base-content/50">Pago coordinado con el comercio</p>
+                        @if (error()) { <p class="mt-2 text-center text-sm text-error">{{ error() }}</p> }
+                      }
+                    }
+                  </div>
                 }
+
+                <ul class="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 border-t border-base-200 pt-5 text-xs text-base-content/60">
+                  @for (v of trust(); track v) {
+                    <li class="inline-flex items-center gap-1.5">
+                      <span class="grid size-4 place-items-center rounded-full bg-success text-success-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" class="size-2.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                      {{ v }}
+                    </li>
+                  }
+                </ul>
               }
             </div>
           </div>
-
-          <!-- 3 · descripción y detalles -->
-          <div class="order-3 lg:col-start-1 lg:row-start-2 lg:self-start">
-            <p class="mx-auto max-w-md text-lg text-base-content/70 lg:mx-0">
-              {{ b().description || 'Cuenta en una línea qué ofreces.' }}
-            </p>
-            <ul class="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-base-content/60 lg:justify-start">
-              @for (v of trust(); track v) {
-                <li class="inline-flex items-center gap-1.5">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="size-4" [style.color]="b().color">
-                    <path d="M4 12.5l5 5 11-11" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  {{ v }}
-                </li>
-              }
-            </ul>
-          </div>
         </div>
-      </section>
+      </div>
 
       <!-- footer -->
-      <footer class="border-t border-base-300">
+      <footer class="border-t border-base-300 bg-base-100">
         <div class="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-7 text-center sm:px-8">
           @if (b().terms) { <p class="max-w-2xl text-xs leading-relaxed text-base-content/50">{{ b().terms }}</p> }
           <p class="flex items-center gap-1.5 text-xs text-base-content/40">
@@ -211,6 +294,8 @@ export class Storefront {
 
   readonly b = computed(() => this.business() ?? this.store.business());
   readonly amounts = computed(() => this.b().suggestedAmounts ?? []);
+  /** Columnas de los montos: hasta 3, sin huecos si hay menos. */
+  readonly cols = computed(() => Math.min(this.amounts().length, 3) || 1);
   /** El dueño puede apagar el monto libre. Pero si no hay montos sugeridos,
    *  igual lo mostramos: si no, no habría forma de comprar. */
   readonly showCustom = computed(() => this.b().allowCustomAmount !== false || !this.amounts().length);
@@ -220,6 +305,16 @@ export class Storefront {
     'Se canjea con QR o código',
     `Vence en ${this.b().validityMonths} meses`,
   ]);
+
+  /** Confeti de la pantalla final: posiciones al azar una sola vez, colores de la paleta. */
+  readonly confetti = Array.from({ length: 44 }, (_, i) => ({
+    left: Math.random() * 100,
+    w: 6 + Math.random() * 6,
+    dur: 1.6 + Math.random() * 1.4,
+    delay: Math.random() * 0.5,
+    rot: Math.round(Math.random() * 720 - 360),
+    color: ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--color-success)', '#facc15'][i % 5],
+  }));
 
   // ── compra por pasos ───────────────────────────────────────────────────────
   readonly steps = ['Monto', 'Para quién', 'Confirmar'];

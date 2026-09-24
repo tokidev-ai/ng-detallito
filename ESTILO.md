@@ -44,6 +44,10 @@ sabe dónde hay que tocar.
 La primera marca tenía un degradado naranja → magenta → violeta. Se fue entero.
 Colores planos: se leen mejor en pantallas malas y no envejecen.
 
+**Excepción: la página del comercio (`storefront.ts`).** Ahí se pidió explícitamente algo
+"bien llamativo, con más colores". Es del comercio, no nuestra, y compite por atención en
+WhatsApp/Instagram. Vale solo ahí; el panel y la landing siguen planos.
+
 ### Sin modo oscuro
 
 Se pidió claro. Agregarlo es mantener dos paletas para una que nadie miró todavía.
@@ -180,12 +184,23 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   escribe un monto libre, así que la lista puede estar vacía y la página igual vende.
   El dueño los edita en "Editar página"; el onboarding son 3 pasos (Marca, Banco, Publicar).
 - **La página pública (`storefront.ts`) es una landing del comercio**, no una tarjetita:
-  barra superior, hero de dos columnas (pitch a la izquierda con titular grande + subrayado
-  a mano en el color del comercio + checks; tarjeta de compra a la derecha con glow de marca),
-  footer con términos + "Hecho con GiftKBol". En móvil la compra va primero (`order-1`), el
-  pitch debajo. Reutiliza `Reveal`, `Wordmark`, `.dotgrid`, `.subrayado`. Todo el acento
-  (subrayado, botones, progreso, glow) usa `business.color`; el texto sobre color, `onBrand`.
-  La preview del panel/onboarding renderiza el mismo componente angosto → muestra el móvil.
+  - **Paleta derivada del color del dueño.** El componente pone `--c1` (su color) y
+    `styles.css` deriva con color relativo `oklch(from …)`: `--c2`/`--c3` (tono ±40°),
+    versiones claras `--c*-soft` para texto sobre oscuro, y `--hero` (fondo casi negro
+    teñido). Sin soporte de color relativo todo cae al color base. Cualquier color que
+    elija el dueño funciona; no hay colores fijos salvo el verde del stepper.
+  - **Hero oscuro teñido** con aurora (3 manchas borrosas de la paleta que derivan),
+    nombre del comercio con gradiente animado (`.text-aurora`) y subrayado a mano.
+  - **Tarjeta en vivo**: inclinada, flotando, con brillo que la recorre (`.shine`). Se
+    arma mientras el cliente elige monto y escribe el nombre; el monto rebota al cambiar
+    (`@for` de un elemento que se recrea). Es el gancho visual.
+  - **Panel de compra**: hoja blanca que sube en móvil (esquinas redondeadas sobre el
+    hero), tarjeta flotante en desktop. Stepper **verde** (`success`, 5:1 sobre blanco)
+    con pulso en el paso actual; cada paso entra deslizando.
+  - Final: confeti con la paleta (encima de todo, `z-20`) + la gift card con el mismo
+    gradiente + brillo (`GiftcardArt` también usa la paleta, así se ve igual en todos lados).
+  - Todo el movimiento se apaga con `prefers-reduced-motion`.
+  - La preview del panel/onboarding renderiza el mismo componente angosto → muestra el móvil.
 - **Compartir la gift card = link, no imagen adjunta.** Cada carta tiene su página
   pública `/{slug}/g/{code}` (`giftcard.ts`) con diseño de marca (logo, color, QR que
   apunta a esa misma URL). WhatsApp (`wa.me`) y correo (`mailto:`) mandan ese link.

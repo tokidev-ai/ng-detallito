@@ -11,7 +11,10 @@ import { BsPipe, FechaPipe, onBrand } from './ui';
   selector: 'app-giftcard-art',
   imports: [BsPipe, FechaPipe],
   template: `
-  <div class="overflow-hidden rounded-2xl shadow-lg" [style.background-color]="business().color" [style.color]="ink()">
+  <!-- .storefront solo para heredar la paleta derivada (--c2) del color del comercio -->
+  <div class="storefront shine relative overflow-hidden rounded-2xl shadow-lg" [style.--c1]="business().color"
+       [style.background-color]="business().color" style="background-image:linear-gradient(135deg,var(--c1),var(--c2))"
+       [style.color]="ink()">
     <div class="p-5 sm:p-6">
       <div class="flex items-center gap-3">
         <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-white/20 text-[10px]">

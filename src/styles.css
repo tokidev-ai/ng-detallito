@@ -65,6 +65,109 @@ body {
 .storefront {
   --color-primary: #18181b;
   --color-primary-content: #ffffff;
+
+  /* Paleta del comercio. --c1 lo pone el componente (su color); el resto se
+     deriva. Sin soporte de color relativo, todo cae al color base. */
+  --c1: #1c1b18;
+  --c2: var(--c1);
+  --c3: var(--c1);
+  --c1-soft: #ffffff;
+  --c2-soft: #ffffff;
+  --c3-soft: #ffffff;
+  --hero: #0c0c0e;
+}
+@supports (color: oklch(from red l c h)) {
+  .storefront {
+    --c2: oklch(from var(--c1) l max(c, 0.12) calc(h + 40));
+    --c3: oklch(from var(--c1) l max(c, 0.12) calc(h - 40));
+    --c1-soft: oklch(from var(--c1) 0.85 0.14 h);
+    --c2-soft: oklch(from var(--c1) 0.85 0.14 calc(h + 40));
+    --c3-soft: oklch(from var(--c1) 0.85 0.14 calc(h - 40));
+    --hero: oklch(from var(--c1) 0.17 0.05 h);
+  }
+}
+
+/* ── página del comercio: la excepción a "sin gradientes" (ver ESTILO.md) ── */
+.sf-hero { background-color: var(--hero); }
+
+.dotgrid-light {
+  background-image: radial-gradient(circle, rgb(255 255 255 / .12) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(120% 80% at 50% 0%, #000 30%, transparent 75%);
+}
+
+/* aurora: manchas borrosas de la paleta que derivan */
+.blob { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .55; will-change: transform; }
+.blob-1 { width: 22rem; height: 22rem; left: -6rem; top: -4rem; animation: drift-a 14s ease-in-out infinite; }
+.blob-2 { width: 20rem; height: 20rem; right: -6rem; top: 30%; animation: drift-b 17s ease-in-out infinite; }
+.blob-3 { width: 18rem; height: 18rem; left: 30%; bottom: -8rem; opacity: .4; animation: drift-a 20s ease-in-out infinite reverse; }
+@keyframes drift-a { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(60px,40px) scale(1.2); } }
+@keyframes drift-b { 0%,100% { transform: translate(0,0) scale(1.1); } 50% { transform: translate(-50px,-40px) scale(.9); } }
+
+/* nombre del comercio con la paleta corriendo */
+.text-aurora {
+  background: linear-gradient(90deg, var(--c1-soft), var(--c2-soft), var(--c3-soft), var(--c1-soft));
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: aurora 6s linear infinite;
+}
+@keyframes aurora { to { background-position: 300% 0; } }
+
+/* la tarjeta en vivo: flota y un brillo la recorre */
+.float { animation: float 5s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.chip-float { animation: float 4s ease-in-out infinite; }
+.shine::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .38) 48%, transparent 62%);
+  transform: translateX(-120%); animation: shine 4s ease-in-out 1s infinite;
+}
+@keyframes shine { 0% { transform: translateX(-120%); } 55%,100% { transform: translateX(120%); } }
+
+/* el panel sube como hoja; cada paso entra deslizando */
+.sheet-up { animation: sheet-up .6s cubic-bezier(.22,.8,.3,1) both; }
+@keyframes sheet-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+.step-in { animation: step-in .4s cubic-bezier(.22,.8,.3,1) both; }
+@keyframes step-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+
+/* stepper: el paso actual late en verde */
+.step-pulse { animation: step-pulse 1.8s ease-out infinite; }
+@keyframes step-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-success) 55%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+
+/* montos, campos y CTA */
+.pill { transition: transform .15s, box-shadow .2s; }
+.pill:hover { transform: translateY(-2px); }
+.pill:active { transform: scale(.95); }
+.pill-on { transform: translateY(-2px) scale(1.04); box-shadow: 0 14px 28px -12px var(--c1); }
+.field {
+  @apply h-14 w-full rounded-2xl bg-base-200 px-4 text-base outline-none transition;
+}
+.field:focus, .field:focus-within { @apply bg-base-100; box-shadow: 0 0 0 2px var(--c1); }
+.cta {
+  @apply flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-base font-bold transition;
+}
+.cta:active { transform: scale(.98); }
+.cta:disabled { opacity: .4; pointer-events: none; }
+.cta-brand {
+  background: linear-gradient(120deg, var(--c1), var(--c2), var(--c1));
+  background-size: 200% 100%;
+  box-shadow: 0 16px 32px -14px var(--c1);
+  animation: cta-flow 4s linear infinite;
+}
+@keyframes cta-flow { to { background-position: 200% 0; } }
+
+/* confeti de la compra terminada */
+.confetti {
+  position: absolute; top: -16px; height: 14px; border-radius: 3px; opacity: 0;
+  animation: fall var(--d) cubic-bezier(.2,.6,.4,1) var(--delay) forwards;
+}
+@keyframes fall {
+  0% { opacity: 1; transform: translateY(0) rotate(0); }
+  100% { opacity: 0; transform: translateY(620px) rotate(var(--r)); }
 }
 
 /* Trama de puntos de fondo, desvanecida hacia los bordes para que no compita
@@ -100,7 +203,9 @@ body {
 .pop { animation: pop .5s cubic-bezier(.22,.8,.3,1) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .pop { animation: none !important; }
+  .reveal, .pop, .blob, .text-aurora, .float, .chip-float, .shine::after, .sheet-up,
+  .step-in, .step-pulse, .cta-brand, .confetti { animation: none !important; }
+  .confetti { display: none; }
   .subrayado path { animation: none !important; stroke-dashoffset: 0; }
 }
 
