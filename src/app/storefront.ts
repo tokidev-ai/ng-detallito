@@ -28,9 +28,9 @@ import { Wordmark } from './brand';
         </div>
       </header>
 
-      <!-- hero: la sección centra el contenido verticalmente (mobile); en desktop
-           vuelve a bloque y el grid de dos columnas manda -->
-      <section class="relative flex flex-1 flex-col justify-center overflow-hidden lg:block">
+      <!-- hero: la sección centra el contenido verticalmente en todos los tamaños;
+           el grid de dos columnas resuelve el layout horizontal en desktop -->
+      <section class="relative flex flex-1 flex-col justify-center overflow-hidden">
         <div class="dotgrid pointer-events-none absolute inset-0" aria-hidden="true"></div>
         <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full opacity-[0.12] blur-3xl"
              [style.background-color]="b().color" aria-hidden="true"></div>
@@ -74,15 +74,30 @@ import { Wordmark } from './brand';
 
               <!-- ── pasos de compra ── -->
               } @else {
-                <div class="flex items-center justify-between">
-                  <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50">Comprar gift card</p>
-                  @if (interactive()) { <p class="text-xs text-base-content/40">Paso {{ view() + 1 }} de 3</p> }
-                </div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50">Comprar gift card</p>
                 @if (interactive()) {
-                  <div class="mt-3 flex items-center gap-1.5">
-                    @for (i of [0, 1, 2]; track i) {
-                      <span class="h-1.5 flex-1 rounded-full transition-colors"
-                            [style.background-color]="i <= step() ? b().color : 'var(--fallback-b3,#e5e5e5)'"></span>
+                  <!-- stepper: círculos numerados, check en los pasos hechos,
+                       conector que se llena con el color de la marca -->
+                  <div class="mt-4 flex items-center gap-2">
+                    @for (name of steps; track $index) {
+                      <div class="flex flex-col items-center gap-1.5">
+                        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-base-200 text-xs font-bold text-base-content/40 transition-all"
+                              [class.scale-110]="$index === step()"
+                              [style.background-color]="$index <= step() ? b().color : null"
+                              [style.color]="$index <= step() ? onBrand() : null">
+                          @if ($index < step()) {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="size-4">
+                              <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          } @else { {{ $index + 1 }} }
+                        </span>
+                        <span class="text-[10px] font-medium text-base-content/40 transition-colors"
+                              [style.color]="$index === step() ? b().color : null">{{ name }}</span>
+                      </div>
+                      @if (!$last) {
+                        <span class="mb-5 h-0.5 flex-1 rounded-full bg-base-200 transition-colors"
+                              [style.background-color]="$index < step() ? b().color : null"></span>
+                      }
                     }
                   </div>
                 }
@@ -202,6 +217,7 @@ export class Storefront {
   ]);
 
   // ── compra por pasos ───────────────────────────────────────────────────────
+  readonly steps = ['Monto', 'Para quién', 'Confirmar'];
   readonly step = signal(0);
   /** La preview del wizard se queda en el primer paso. */
   readonly view = computed(() => (this.interactive() ? this.step() : 0));
