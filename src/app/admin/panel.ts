@@ -534,7 +534,7 @@ const PAD = 6;
     <div class="fixed inset-0 z-50 flex justify-end">
       <button type="button" aria-label="Cerrar" class="absolute inset-0 bg-black/40" (click)="closeTenant()"></button>
       <aside class="drawer-in relative flex h-full w-full max-w-md flex-col overflow-y-auto bg-base-100 shadow-2xl">
-        <div class="storefront relative overflow-hidden p-6 text-white" [style.--c1]="d.t.business.color" style="background:linear-gradient(135deg,var(--c1),var(--c2))">
+        <div class="storefront relative shrink-0 overflow-hidden p-6 text-white" [style.--c1]="d.t.business.color" style="background:linear-gradient(135deg,var(--c1),var(--c2))">
           <span class="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-white/15"></span>
           <button type="button" class="btn btn-ghost btn-sm btn-square absolute right-3 top-3 text-white" (click)="closeTenant()">✕</button>
           <p class="text-xs font-semibold uppercase tracking-wider text-white/70">{{ d.t.business.published ? 'Publicada' : 'Borrador' }}</p>
@@ -545,7 +545,7 @@ const PAD = 6;
           </div>
         </div>
 
-        <div class="space-y-6 p-6">
+        <div class="shrink-0 space-y-6 p-6">
           <div class="grid grid-cols-2 gap-2">
             <div class="rounded-xl bg-base-200 p-3"><p class="text-xs text-base-content/50">Vendido este mes</p><p class="text-lg font-extrabold tabular-nums">{{ d.month.gross | bs }}</p></div>
             <div class="rounded-xl bg-base-200 p-3"><p class="text-xs text-base-content/50">Nos toca este mes</p><p class="text-lg font-extrabold tabular-nums text-[#c2410c]">{{ d.month.fee | bs:2 }}</p></div>
