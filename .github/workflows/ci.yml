@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+  # En push a main NO corre: Deploy ya hace test + build antes de desplegar,
+  # así un push lanza un solo workflow, no dos.
 
 concurrency:
   group: ci-${{ github.ref }}
