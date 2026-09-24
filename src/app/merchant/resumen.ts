@@ -59,22 +59,33 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
         <p class="text-sm text-base-content/50">total <span class="tabular-nums font-medium text-base-content/70">{{ total6() | bs }}</span></p>
       </div>
 
-      <div class="mt-8 flex h-48 items-end gap-2 sm:gap-3">
-        @for (m of s.monthly(); track $index) {
-          <div class="group relative flex h-full flex-1 flex-col items-center gap-2"
-               (mouseenter)="hovered.set($index)" (mouseleave)="hovered.set(-1)">
-            <div class="pointer-events-none absolute -top-7 whitespace-nowrap rounded-md bg-base-content px-2 py-1 text-xs font-medium text-base-100 opacity-0 shadow transition-opacity"
-                 [class.opacity-100]="hovered() === $index">{{ m.sold | bs }}</div>
-            <div class="flex w-full flex-1 items-end">
-              <div class="w-full rounded-t-md transition-[height,opacity] duration-500 ease-out"
-                   [style.height.%]="mounted() ? pct(m.sold) : 0"
-                   [style.background-color]="b().color"
-                   [style.opacity]="hovered() === -1 || hovered() === $index ? 1 : 0.4"></div>
+      <div class="mt-8">
+        <!-- línea + puntos. La línea es un SVG estirado (non-scaling-stroke la
+             mantiene fina); los puntos son divs para quedar redondos y ser buen
+             blanco de hover. -->
+        <div class="relative h-44" (mouseleave)="hovered.set(-1)">
+          <svg class="absolute inset-0 h-full w-full transition-opacity duration-700"
+               [class.opacity-0]="!mounted()" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path [attr.d]="areaPath()" [attr.fill]="b().color" opacity="0.08" />
+            <path [attr.d]="linePath()" fill="none" [attr.stroke]="b().color" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+          </svg>
+          @for (p of pts(); track $index) {
+            <div class="absolute grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center"
+                 [style.left.%]="p.x" [style.top.%]="p.y" (mouseenter)="hovered.set($index)">
+              <div class="pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-base-content px-2 py-1 text-xs font-medium text-base-100 opacity-0 shadow transition-opacity"
+                   [class.opacity-100]="hovered() === $index">{{ p.sold | bs }}</div>
+              <span class="size-2.5 rounded-full border-2 border-base-100 transition-transform"
+                    [class.scale-150]="hovered() === $index" [style.background-color]="b().color"></span>
             </div>
-            <span class="text-xs text-base-content/50" [class.font-semibold]="hovered() === $index"
-                  [class.text-base-content]="hovered() === $index">{{ label($index) }}</span>
-          </div>
-        }
+          }
+        </div>
+        <div class="relative mt-2 h-4">
+          @for (p of pts(); track $index) {
+            <span class="absolute -translate-x-1/2 text-xs text-base-content/50" [style.left.%]="p.x"
+                  [class.font-semibold]="hovered() === $index" [class.text-base-content]="hovered() === $index">{{ p.label }}</span>
+          }
+        </div>
       </div>
     </section>
   </div>
@@ -89,8 +100,28 @@ export class Resumen {
   constructor() { afterNextRender(() => this.mounted.set(true)); }  // dispara la animación de entrada
 
   private readonly peak = computed(() => Math.max(1, ...this.s.monthly().map(m => m.sold)));
-  pct(v: number) { return Math.round((v / this.peak()) * 100); }
   readonly total6 = computed(() => this.s.monthly().reduce((sum, m) => sum + m.sold, 0));
+
+  /** Puntos de la línea en coordenadas 0–100 (viewBox), con margen para que los
+   *  dots no queden pegados al borde. y invertido: más ventas, más arriba. */
+  private readonly PAD = 8;
+  readonly pts = computed(() => {
+    const ms = this.s.monthly(), n = ms.length, peak = this.peak(), span = 100 - this.PAD * 2;
+    return ms.map((m, i) => ({
+      x: this.PAD + (n > 1 ? (i / (n - 1)) * span : span / 2),
+      y: this.PAD + (1 - m.sold / peak) * span,
+      sold: m.sold,
+      label: this.label(i),
+    }));
+  });
+  readonly linePath = computed(() =>
+    this.pts().map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' '));
+  /** Misma línea cerrada contra la base, para el relleno tenue debajo. */
+  readonly areaPath = computed(() => {
+    const p = this.pts();
+    if (!p.length) return '';
+    return `M${p[0].x.toFixed(1)} 100 ${this.linePath().slice(1)} L${p[p.length - 1].x.toFixed(1)} 100 Z`;
+  });
 
   /** Etiqueta del mes: los últimos N meses terminando en el actual. */
   label(i: number): string {

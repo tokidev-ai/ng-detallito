@@ -57,9 +57,9 @@ const TABS: Tab[] = [
               /{{ b().slug }} · {{ b().published ? 'publicada' : 'borrador' }}
             </p>
           </div>
-          <a class="btn btn-outline btn-sm" [routerLink]="['/', b().slug]">
+          <button type="button" class="btn btn-outline btn-sm" (click)="shareOpen.set(true)">
             <span class="hidden sm:inline">Compartir link</span><span class="sm:hidden">Link</span>
-          </a>
+          </button>
           <button type="button" class="btn btn-outline btn-sm">
             {{ ownerName() }} <span class="hidden sm:inline">(owner)</span>
           </button>
@@ -112,6 +112,25 @@ const TABS: Tab[] = [
     </nav>
     }
 
+    <!-- compartir la página pública: copiar el link o abrirla en otra pestaña -->
+    @if (shareOpen()) {
+      <div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" (click)="shareOpen.set(false)">
+        <div class="w-full max-w-sm rounded-box bg-base-100 p-5 shadow-xl" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-medium">Compartir tu página</h3>
+            <button type="button" class="btn btn-ghost btn-sm btn-square" (click)="shareOpen.set(false)">✕</button>
+          </div>
+          <p class="mt-3 break-all rounded-field border border-base-300 bg-base-200 px-3 py-2 text-sm text-base-content/70">{{ shareUrl() }}</p>
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <button type="button" class="btn btn-primary" (click)="copyShare()">
+              {{ copied() ? '¡Copiado!' : 'Copiar' }}
+            </button>
+            <a class="btn btn-outline" [href]="shareUrl()" target="_blank" rel="noopener" (click)="shareOpen.set(false)">Ir</a>
+          </div>
+        </div>
+      </div>
+    }
+
     @if (moreOpen()) {
       <div class="fixed inset-0 z-50 md:hidden">
         <button type="button" aria-label="Cerrar" class="absolute inset-0 bg-black/40" (click)="moreOpen.set(false)"></button>
@@ -140,6 +159,18 @@ export class MerchantShell {
   readonly tabs = computed(() => TABS.filter(t => this.store.can(t.perm)));
   readonly moreOpen = signal(false);
   readonly b = this.store.business;
+
+  // compartir link de la página pública
+  readonly shareOpen = signal(false);
+  readonly copied = signal(false);
+  shareUrl() { return `${location.origin}/${this.b().slug}`; }
+  async copyShare() {
+    try {
+      await navigator.clipboard.writeText(this.shareUrl());
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    } catch { /* sin clipboard: queda el link a la vista para copiar a mano */ }
+  }
   readonly ownerName = computed(() =>
     (this.store.staff().find(m => m.role === 'owner')?.email ?? '').split('@')[0] || '—');
 
