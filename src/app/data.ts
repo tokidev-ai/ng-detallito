@@ -34,7 +34,14 @@ export interface Business {
 /** `expires` es ISO `yyyy-mm-dd` (comparable y ordenable como texto). El estado
  *  no se guarda: se deriva con `cardState`. `code` es la clave del documento.
  *  `from` es opcional: el regalo puede ser anónimo. */
-export interface GiftCard { code: string; to: string; from?: string; value: number; balance: number; expires: string }
+export interface GiftCard {
+  code: string; to: string; from?: string; value: number; balance: number; expires: string;
+  /** Cuándo se vendió (ISO). Las cartas viejas no lo tienen: el superadmin lo
+   *  deduce del vencimiento (`admin/ledger.ts` → `soldDate`). */
+  soldAt?: string;
+  /** Por dónde entró la venta: la página pública (QR) o el panel del comercio. */
+  channel?: 'qr' | 'panel';
+}
 export interface Redemption { by: string; code: string; amount: number; at: string }
 export interface StaffMember { email: string; role: 'owner' | 'staff'; lastSeen: string; perms: Record<Perm, boolean> }
 
@@ -49,6 +56,9 @@ export interface Tenant {
   soldThisMonth: number;
   /** Firestore no permite arrays de arrays: cada mes es un objeto. */
   monthly: MonthPoint[];
+  /** Nuestra comisión con este comercio (0.05 = 5%), negociada uno a uno. Solo
+   *  la escribe el superadmin; sin valor, rige `DEFAULT_RATE`. */
+  commissionRate?: number;
 }
 
 export interface MonthPoint { sold: number; redeemed: number }
@@ -239,7 +249,8 @@ export class Store {
    *  producción, esto va detrás de la pasarela de pago y de reglas que solo
    *  dejen crear `cards` a una función/servidor, no a cualquier visitante. */
   async issueCard(tenantId: string, card: GiftCard) {
-    await setDoc(doc(this.db, 'tenants', tenantId, 'cards', card.code), card);
+    await setDoc(doc(this.db, 'tenants', tenantId, 'cards', card.code),
+      { ...card, soldAt: new Date().toISOString(), channel: 'qr' });
   }
 
   async togglePerm(email: string, perm: Perm) {

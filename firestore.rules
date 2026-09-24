@@ -42,6 +42,13 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == tenant(tenantId).ownerUid;
     }
 
+    // El libro de cobros del superadmin: lee las cards de TODOS los comercios con
+    // una consulta collectionGroup('cards'). Solo lectura; escribir sigue siendo
+    // cosa de cada comercio (reglas de abajo).
+    match /{path=**}/cards/{code} {
+      allow read: if isSuperadmin();
+    }
+
     // Quién es superadmin: cada uno lee solo el suyo, nadie se lo puede dar.
     match /superadmins/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
@@ -55,18 +62,29 @@ service cloud.firestore {
                        || (request.auth != null && myEmail() in resource.data.memberEmails)
                        || isSuperadmin();
 
-      // el alta la hace el propio dueño y se pone a sí mismo como único miembro
+      // el alta la hace el propio dueño y se pone a sí mismo como único miembro.
+      // La comisión no la elige el comercio: la negociamos y la ponemos nosotros.
       allow create: if signedIn()
                     && request.resource.data.ownerUid == request.auth.uid
                     && request.resource.data.memberEmails == [myEmail()]
-                    && request.resource.data.business.slug == tenantId;
+                    && request.resource.data.business.slug == tenantId
+                    && !('commissionRate' in request.resource.data);
 
       // el ownerUid no cambia nunca; la lista de miembros solo la toca quien
-      // administra el equipo (owner incluido, que tiene manageStaff).
+      // administra el equipo (owner incluido, que tiene manageStaff). La comisión,
+      // nunca: si no, un comercio se la bajaría a 0.
       allow update: if isMember(tenantId)
                     && request.resource.data.ownerUid == resource.data.ownerUid
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['commissionRate'])
                     && (request.resource.data.memberEmails == resource.data.memberEmails
                         || isOwner(tenantId) || hasPerm(tenantId, 'manageStaff'));
+
+      // el superadmin solo toca la comisión (entre 0% y 50%), nada más del comercio
+      allow update: if isSuperadmin()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commissionRate'])
+                    && request.resource.data.commissionRate is number
+                    && request.resource.data.commissionRate >= 0
+                    && request.resource.data.commissionRate <= 0.5;
 
       allow delete: if isOwner(tenantId);
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BsPipe, FechaPipe, onBrand } from './ui';
 import { cardState, daysUntil, expiryFrom, giftMessage, giftPath, newCode, pctChange, stampKey, waLink } from './card';
 import { slugify } from './onboarding/wizard';
+import { lastMonths, soldDate, toCobro, toCsv, totals } from './admin/ledger';
 
 describe('slugify', () => {
   it('saca tildes, espacios y símbolos', () => {
@@ -107,5 +108,37 @@ describe('números del dashboard', () => {
     const at = ['05/09 10:00', '28/08 18:30', '05/09 09:15'];
     expect([...at].sort((a, b) => stampKey(b).localeCompare(stampKey(a))))
       .toEqual(['05/09 10:00', '05/09 09:15', '28/08 18:30']);
+  });
+});
+
+describe('libro de cobros (superadmin)', () => {
+  const t = { id: 'nor', business: { name: 'Nor', slug: 'nor', color: '#000', published: true, validityMonths: 6 } };
+
+  it('soldDate usa soldAt, o lo deduce restando la vigencia al vencimiento', () => {
+    expect(soldDate({ soldAt: '2026-09-23T14:00:00.000Z', expires: '2027-03-23' }, 6)).toBe('2026-09-23');
+    expect(soldDate({ expires: '2027-03-23' }, 6)).toBe('2026-09-23');
+    // es la inversa exacta de expiryFrom
+    expect(soldDate({ expires: expiryFrom(12, new Date('2026-01-31')) }, 12)).toBe('2026-01-31');
+  });
+
+  it('toCobro aplica la comisión del comercio, o la de defecto', () => {
+    const c = { code: 'A', to: 'Ana', value: 250, balance: 250, expires: '2099-01-01' };
+    expect(toCobro(t, c).fee).toBe(12.5);          // 5% por defecto
+    expect(toCobro(t, c).net).toBe(237.5);
+    const neg = toCobro({ ...t, commissionRate: 0.035 }, c);
+    expect([neg.rate, neg.fee, neg.net]).toEqual([0.035, 8.75, 241.25]);
+  });
+
+  it('totals suma bruto, comisión y neto', () => {
+    const c = { code: 'A', to: 'Ana', value: 100, balance: 100, expires: '2099-01-01' };
+    expect(totals([toCobro(t, c), toCobro(t, { ...c, value: 50 })])).toEqual({ count: 2, gross: 150, fee: 7.5, net: 142.5 });
+  });
+
+  it('lastMonths cruza el cambio de año', () => {
+    expect(lastMonths(3, '2026-02-10')).toEqual(['2025-12', '2026-01', '2026-02']);
+  });
+
+  it('toCsv escapa y usa coma decimal para Excel en español', () => {
+    expect(toCsv([['a;b', 'x"y', 12.5]])).toBe('﻿"a;b";"x""y";12,5');
   });
 });

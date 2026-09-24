@@ -1,5 +1,6 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, input, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import QRCode from 'qrcode';
 import { BsPipe, onBrand } from './ui';
 import { Business, GiftCard, Store } from './data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from './card';
@@ -237,13 +238,88 @@ import { Wordmark } from './brand';
                           <button type="button" class="grid size-14 shrink-0 place-items-center rounded-2xl bg-base-200 transition active:scale-95" aria-label="Atrás" (click)="back()" [disabled]="busy()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-5"><path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                           </button>
-                          <button type="button" class="cta cta-brand flex-1" [disabled]="busy()"
-                                  [style.color]="onBrand()" (click)="buy()">
-                            @if (busy()) { <span class="loading loading-spinner loading-sm"></span> Emitiendo… }
-                            @else { Regalar {{ amount | bs }} 🎁 }
+                          <button type="button" class="cta cta-brand flex-1"
+                                  [style.color]="onBrand()" (click)="next()">
+                            Ir a pagar {{ amount | bs }}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                           </button>
                         </div>
-                        <p class="mt-3 text-center text-xs text-base-content/50">Pago coordinado con el comercio</p>
+                      }
+
+                      <!-- ── pago por QR ──
+                           ponytail: solo el paso visual. "Ya pagué" simula la confirmación y
+                           emite la carta. Cuando haya banco, el QR lo genera la pasarela y la
+                           emisión la dispara su webhook (Cloud Function), no este botón. -->
+                      @case (3) {
+                        <div class="mt-6 flex items-center justify-between gap-3">
+                          <h2 class="text-2xl font-extrabold tracking-tight">Paga con QR</h2>
+                          <span class="rounded-full bg-base-200 px-2.5 py-1 font-mono text-xs font-semibold tabular-nums"
+                                [class.text-error]="secondsLeft() < 60">{{ clock() }}</span>
+                        </div>
+                        <p class="mt-1 text-sm text-base-content/55">Escanéalo con la app de tu banco. El monto ya viene cargado.</p>
+
+                        <div class="relative mx-auto mt-5 w-fit">
+                          <!-- esquinas de visor con el color del comercio -->
+                          <span class="qr-corner left-0 top-0 border-l-4 border-t-4" [style.border-color]="b().color"></span>
+                          <span class="qr-corner right-0 top-0 border-r-4 border-t-4" [style.border-color]="b().color"></span>
+                          <span class="qr-corner bottom-0 left-0 border-b-4 border-l-4" [style.border-color]="b().color"></span>
+                          <span class="qr-corner bottom-0 right-0 border-b-4 border-r-4" [style.border-color]="b().color"></span>
+
+                          <div class="relative m-3 overflow-hidden rounded-2xl bg-white p-3 shadow-xl ring-1 ring-base-300">
+                            @if (payQr.value(); as src) {
+                              <img [src]="src" alt="QR de pago" class="size-48 transition" [class.opacity-20]="expired() || verifying()">
+                            } @else {
+                              <div class="size-48 animate-pulse rounded-lg bg-base-200"></div>
+                            }
+                            @if (!expired() && !verifying()) {
+                              <span class="scanline absolute inset-x-3 h-0.5 rounded-full" [style.background-color]="b().color"
+                                    [style.box-shadow]="'0 0 12px 2px ' + b().color"></span>
+                            }
+                            @if (verifying()) {
+                              <div class="absolute inset-0 grid place-items-center">
+                                <span class="loading loading-spinner loading-lg" [style.color]="b().color"></span>
+                              </div>
+                            }
+                            @if (expired()) {
+                              <div class="absolute inset-0 grid place-items-center text-center">
+                                <div>
+                                  <p class="text-sm font-bold">El QR venció</p>
+                                  <button type="button" class="btn btn-sm mt-2 rounded-full" (click)="startTimer()">Generar otro</button>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        </div>
+
+                        <p class="mt-3 text-center text-4xl font-extrabold tracking-[-0.03em] tabular-nums">{{ amount | bs }}</p>
+                        <p class="text-center text-xs text-base-content/50">
+                          A nombre de {{ bank().holder || b().name }}@if (bank().bank) { · {{ bank().bank }} }
+                        </p>
+
+                        <div class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-base-200 py-2.5 text-sm font-medium">
+                          @if (verifying()) {
+                            <span class="loading loading-dots loading-xs"></span> Verificando tu pago…
+                          } @else {
+                            <span class="relative flex size-2.5">
+                              <span class="absolute inline-flex size-full animate-ping rounded-full bg-warning opacity-75"></span>
+                              <span class="relative inline-flex size-2.5 rounded-full bg-warning"></span>
+                            </span>
+                            Esperando tu pago
+                          }
+                        </div>
+
+                        <div class="mt-4 flex gap-2">
+                          <button type="button" class="grid size-14 shrink-0 place-items-center rounded-2xl bg-base-200 transition active:scale-95" aria-label="Atrás" (click)="back()" [disabled]="verifying()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-5"><path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          </button>
+                          <button type="button" class="cta cta-brand flex-1" [disabled]="verifying() || expired()"
+                                  [style.color]="onBrand()" (click)="confirmPay()">
+                            @if (verifying()) { Verificando… } @else { Ya pagué ✓ }
+                          </button>
+                        </div>
+                        <p class="mt-3 text-center text-[11px] text-base-content/45">
+                          🔒 Pago de demostración: todavía no se cobra de verdad.
+                        </p>
                         @if (error()) { <p class="mt-2 text-center text-sm text-error">{{ error() }}</p> }
                       }
                     }
@@ -296,6 +372,8 @@ export class Storefront {
    *  igual lo mostramos: si no, no habría forma de comprar. */
   readonly showCustom = computed(() => this.b().allowCustomAmount !== false || !this.amounts().length);
   readonly onBrand = computed(() => onBrand(this.b().color));
+  /** Comercios viejos pueden no tener datos bancarios cargados. */
+  readonly bank = computed(() => this.b().bank ?? { bank: '', account: '', holder: '', nit: '' });
   readonly trust = computed(() => [
     'Un código al instante',
     'Se canjea con QR o código',
@@ -313,7 +391,7 @@ export class Storefront {
   }));
 
   // ── compra por pasos ───────────────────────────────────────────────────────
-  readonly steps = ['Monto', 'Para quién', 'Confirmar'];
+  readonly steps = ['Monto', 'Para quién', 'Confirmar', 'Pagar'];
   readonly step = signal(0);
   /** La preview del wizard se queda en el primer paso. */
   readonly view = computed(() => (this.interactive() ? this.step() : 0));
@@ -326,8 +404,54 @@ export class Storefront {
   amount: number | null = null;
 
   pick(a: number) { this.amount = a; }
-  back() { this.step.update(s => Math.max(0, s - 1)); }
-  next() { if (this.interactive()) this.step.update(s => Math.min(2, s + 1)); }
+  back() { this.step.update(s => Math.max(0, s - 1)); this.stopTimer(); }
+  next() {
+    if (!this.interactive()) return;
+    this.step.update(s => Math.min(3, s + 1));
+    if (this.step() === 3) this.startTimer();
+  }
+
+  // ── pago por QR (visual) ─────────────────────────────────────────────────────
+  /** El QR vale 10 minutos, como los QR de cobro de los bancos. */
+  private readonly QR_SECONDS = 600;
+  readonly secondsLeft = signal(0);
+  readonly expired = computed(() => this.step() === 3 && this.secondsLeft() === 0);
+  readonly clock = computed(() => {
+    const s = this.secondsLeft();
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  });
+  readonly verifying = signal(false);
+  private timer?: ReturnType<typeof setInterval>;
+  /** Cambia en cada QR generado, así "Generar otro" da un código distinto. */
+  private readonly payRef = signal('');
+
+  startTimer() {
+    this.stopTimer();
+    this.payRef.set(newCode());
+    this.secondsLeft.set(this.QR_SECONDS);
+    this.timer = setInterval(() => {
+      this.secondsLeft.update(s => Math.max(0, s - 1));
+      if (this.secondsLeft() === 0) this.stopTimer();
+    }, 1000);
+  }
+  stopTimer() { clearInterval(this.timer); this.timer = undefined; }
+
+  /** ponytail: payload de demostración. El real lo arma la pasarela del banco. */
+  readonly payQr = resource({
+    params: () => (this.step() === 3 ? `GIFTKBOL-DEMO|${this.b().slug}|${this.amount}|${this.payRef()}` : undefined),
+    loader: ({ params }) => QRCode.toDataURL(params, { margin: 1, width: 320 }),
+  });
+
+  /** Demo: simula que el banco confirmó y emite la carta. */
+  confirmPay() {
+    if (this.verifying() || this.expired()) return;
+    this.verifying.set(true);
+    setTimeout(async () => {
+      await this.buy();
+      this.verifying.set(false);
+      if (this.issuedCard()) this.stopTimer();
+    }, 1600);
+  }
 
   async buy() {
     const id = this.tenantId();
@@ -359,7 +483,10 @@ export class Storefront {
     try { await navigator.clipboard.writeText(this.shareUrl()); this.copied.set(true); } catch { /* sin clipboard */ }
   }
 
+  constructor() { inject(DestroyRef).onDestroy(() => this.stopTimer()); }
+
   reset() {
+    this.stopTimer();
     this.issuedCard.set(null); this.copied.set(false); this.error.set(''); this.step.set(0);
     this.to = ''; this.from = ''; this.amount = null;
   }

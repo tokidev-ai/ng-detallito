@@ -296,11 +296,15 @@ export class Emitidas {
   async save() {
     const code = this.fCode.trim();
     if (!code || this.fValue == null || !this.fExpires) return;
+    // setDoc reemplaza la carta entera: al editar conservamos cuándo y por dónde se vendió
+    const prev = this.editingCode ? this.s.cards().find(c => c.code === this.editingCode) : undefined;
     await this.s.saveCard({
       code, to: this.fTo.trim(), value: this.fValue,
       balance: this.fBalance ?? this.fValue,  // saldo en blanco = carta entera
       expires: this.fExpires,
       ...(this.fFrom.trim() ? { from: this.fFrom.trim() } : {}),
+      ...(prev ? { ...(prev.soldAt ? { soldAt: prev.soldAt } : {}), ...(prev.channel ? { channel: prev.channel } : {}) }
+               : { soldAt: new Date().toISOString(), channel: 'panel' as const }),
     });
     this.formOpen.set(false);
   }

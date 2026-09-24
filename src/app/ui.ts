@@ -12,12 +12,13 @@ export function onBrand(hex: string): string {
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b) > 0.45 ? '#1c1b18' : '#ffffff';
 }
 
-const nf = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 0 });
+const nf = [0, 1, 2].map(d => new Intl.NumberFormat('es-BO', { minimumFractionDigits: d, maximumFractionDigits: d }));
 
+/** `{{ x | bs }}` → Bs 1.650 · `{{ x | bs:2 }}` → Bs 12,50 (comisiones con centavos). */
 @Pipe({ name: 'bs' })
 export class BsPipe implements PipeTransform {
-  transform(value: number | null | undefined): string {
-    return value == null ? '—' : `Bs ${nf.format(value)}`;
+  transform(value: number | null | undefined, decimals: 0 | 1 | 2 = 0): string {
+    return value == null ? '—' : `Bs ${nf[decimals].format(value)}`;
   }
 }
 

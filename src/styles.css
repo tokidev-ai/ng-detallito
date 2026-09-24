@@ -166,6 +166,9 @@ body {
 }
 @keyframes cta-flow { to { background-position: 200% 0; } }
 
+/* esquinas de visor alrededor del QR de pago */
+.qr-corner { position: absolute; width: 1.75rem; height: 1.75rem; border-radius: .5rem; }
+
 /* confeti de la compra terminada */
 .confetti {
   position: absolute; top: -16px; height: 14px; border-radius: 3px; opacity: 0;
@@ -269,6 +272,11 @@ body {
 }
 .nav-item:hover { @apply bg-base-200 text-base-content; }
 .nav-item.nav-active { @apply bg-primary/10 text-[#c2410c]; }
+
+/* panel lateral (ficha de comercio del superadmin): entra desde la derecha */
+.drawer-in { animation: drawer-in .35s cubic-bezier(.22,.8,.3,1) both; }
+@keyframes drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .drawer-in { animation: none; } }
 
 /* el gráfico del dashboard se dibuja de izquierda a derecha al entrar */
 .chart-reveal { animation: chart-reveal 1.2s cubic-bezier(.22,.8,.3,1) .2s both; }
