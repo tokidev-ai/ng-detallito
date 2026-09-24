@@ -108,8 +108,10 @@ export class Tenants {
     return u?.displayName?.split(' ')[0] ?? (u?.email ?? '').split('@')[0] ?? '';
   });
 
-  /** No mostrar el estado vacío mientras Firestore todavía no contestó. */
-  readonly loading = computed(() => this.auth.user() === undefined);
+  /** No mostrar el estado vacío mientras el auth o la lista de comercios
+   *  todavía no contestaron: si no, parpadea "no tienes comercio" antes de
+   *  redirigir al panel del comercio que sí existe. */
+  readonly loading = computed(() => this.auth.user() === undefined || !this.s.tenantsLoaded());
 
   constructor() {
     // Con comercios, el admin es el panel del comercio: entramos directo.

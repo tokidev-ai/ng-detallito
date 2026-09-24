@@ -20,16 +20,16 @@ const TABS: Tab[] = [
   template: `
   <div class="min-h-dvh bg-base-200">
     <div class="mx-auto max-w-7xl p-3 sm:p-6">
+      <div class="overflow-hidden rounded-box border border-base-300 bg-base-100">
       @if (!store.current()) {
         <!-- entrando al negocio: loader mientras Firestore trae el comercio -->
-        <div class="grid min-h-[70vh] place-items-center rounded-box border border-base-300 bg-base-100">
+        <div class="grid min-h-[70vh] place-items-center">
           <div class="flex flex-col items-center gap-3 text-base-content/50">
             <span class="loading loading-spinner loading-lg text-primary"></span>
             <p class="text-sm">Entrando a tu negocio…</p>
           </div>
         </div>
       } @else {
-      <div class="overflow-hidden rounded-box border border-base-300 bg-base-100">
 
         <header class="flex flex-wrap items-center gap-3 p-4 sm:p-6">
           <div class="dropdown">
@@ -80,11 +80,14 @@ const TABS: Tab[] = [
           </div>
         </nav>
 
-        <main class="p-4 pb-safe sm:p-6 md:pb-6">
-          <router-outlet />
-        </main>
-      </div>
       }
+      <!-- El outlet vive SIEMPRE en el DOM. Si colgaba del @else, la ruta hija
+           se activaba con el outlet aún fuera del árbol y el panel salía en
+           blanco hasta la siguiente navegación. Lo ocultamos mientras carga. -->
+      <main class="p-4 pb-safe sm:p-6 md:pb-6" [class.hidden]="!store.current()">
+        <router-outlet />
+      </main>
+      </div>
     </div>
 
     <!-- bottom nav: móvil -->

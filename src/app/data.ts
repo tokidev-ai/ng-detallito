@@ -4,7 +4,7 @@ import {
   Firestore, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, getDoc, getDocs,
   query, runTransaction, setDoc, updateDoc, where,
 } from '@angular/fire/firestore';
-import { Observable, of, switchMap } from 'rxjs';
+import { Observable, of, switchMap, tap } from 'rxjs';
 import { AuthService } from './auth';
 import { cardState } from './card';
 
@@ -68,12 +68,16 @@ export class Store {
   readonly commissionRate = 0.05;
   readonly currentId = signal<string | null>(null);
 
+  /** false hasta que Firestore contesta la lista de comercios de esta persona.
+   *  Sirve para no confundir "todavía cargando" con "no tiene ninguno". */
+  readonly tenantsLoaded = signal(false);
+
   // ── los comercios de esta persona (por su correo) ───────────────────────────
   private readonly myTenants$: Observable<Tenant[]> = toObservable$(() => this.auth.user()?.email ?? null).pipe(
     switchMap(email => email
-      ? collectionData(
+      ? (collectionData(
           query(collection(this.db, 'tenants'), where('memberEmails', 'array-contains', email)),
-          { idField: 'id' }) as Observable<Tenant[]>
+          { idField: 'id' }) as Observable<Tenant[]>).pipe(tap(() => this.tenantsLoaded.set(true)))
       : of([])),
   );
   readonly tenants = toSignal(this.myTenants$, { initialValue: [] as Tenant[] });
