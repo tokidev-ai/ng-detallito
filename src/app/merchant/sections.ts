@@ -325,8 +325,10 @@ export class Emitidas {
 @Component({
   selector: 'app-marca',
   imports: [FormsModule, Storefront],
-  // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta
-  host: { '(window:beforeunload)': 'dirty() && $event.preventDefault()' },
+  // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta.
+  // Ojo: un handler que devuelve `false` hace que Angular llame preventDefault()
+  // solo; por eso es un método sin retorno y no `dirty() && …`.
+  host: { '(window:beforeunload)': 'warnUnsaved($event)' },
   template: `
   <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
 
@@ -489,6 +491,7 @@ export class Marca {
 
   edit(patch: Partial<Business>) { this.draft.update(d => ({ ...d, ...patch })); }
   discard() { this.draft.set({}); }
+  warnUnsaved(e: BeforeUnloadEvent) { if (this.dirty()) e.preventDefault(); }
 
   async save() {
     if (!this.dirty() || this.saving()) return;
