@@ -194,6 +194,12 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 
 - **`[class.a b]` con espacio revienta en runtime** y aborta el render sin dar error de
   compilación. Una vez dejó el wizard sin pasos ni colores. Cada clase, su binding.
+- **Un handler de evento que devuelve `false` hace que Angular llame `preventDefault()`.**
+  `(window:beforeunload)="dirty() && $event.preventDefault()"` pedía confirmar al salir
+  justo cuando NO había cambios. Handlers con efectos: métodos sin retorno.
+- **`index.html` no se cachea** (`firebase.json` → `no-cache`; `.js/.css` con hash →
+  `immutable`). Con el `max-age=3600` por defecto, tras un deploy el navegador seguía
+  hasta una hora con la versión vieja.
 - **`resource.value()` lanza** si el resource está en error. Hay que preguntar
   `hasValue()` primero o se cae la detección de cambios antes de poder mostrar el error.
 - **Firestore no acepta arrays anidados.** `[[a, b]]` va como `[{a, b}]`.
