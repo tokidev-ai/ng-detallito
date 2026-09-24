@@ -20,16 +20,10 @@ const TABS: Tab[] = [
   template: `
   <div class="min-h-dvh bg-base-200">
     <div class="mx-auto max-w-7xl p-3 sm:p-6">
-      @if (!store.current()) {
-        <!-- entrando al negocio: loader mientras Firestore trae el comercio -->
-        <div class="grid min-h-[70vh] place-items-center rounded-box border border-base-300 bg-base-100">
-          <div class="flex flex-col items-center gap-3 text-base-content/50">
-            <span class="loading loading-spinner loading-lg text-primary"></span>
-            <p class="text-sm">Entrando a tu negocio…</p>
-          </div>
-        </div>
-      } @else {
-      <div class="overflow-hidden rounded-box border border-base-300 bg-base-100">
+      <!-- El router-outlet vive SIEMPRE en el DOM: si lo escondiéramos tras un @if,
+           la ruta hija podría activarse sin outlet montado y quedar sin renderizar
+           (header sí, cuerpo en blanco). El loader va como overlay encima. -->
+      <div class="relative min-h-[70vh] overflow-hidden rounded-box border border-base-300 bg-base-100">
 
         <header class="flex flex-wrap items-center gap-3 p-4 sm:p-6">
           <div class="dropdown">
@@ -83,8 +77,17 @@ const TABS: Tab[] = [
         <main class="p-4 pb-safe sm:p-6 md:pb-6">
           <router-outlet />
         </main>
+
+        @if (!store.current()) {
+          <!-- entrando al negocio: tapa el chrome vacío mientras Firestore trae el comercio -->
+          <div class="absolute inset-0 grid place-items-center bg-base-100">
+            <div class="flex flex-col items-center gap-3 text-base-content/50">
+              <span class="loading loading-spinner loading-lg text-primary"></span>
+              <p class="text-sm">Entrando a tu negocio…</p>
+            </div>
+          </div>
+        }
       </div>
-      }
     </div>
 
     <!-- bottom nav: móvil -->

@@ -4,7 +4,7 @@ import {
   Firestore, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, getDoc, getDocs,
   query, runTransaction, setDoc, updateDoc, where,
 } from '@angular/fire/firestore';
-import { Observable, of, switchMap } from 'rxjs';
+import { Observable, map, of, startWith, switchMap } from 'rxjs';
 import { AuthService } from './auth';
 import { cardState } from './card';
 
@@ -69,14 +69,20 @@ export class Store {
   readonly currentId = signal<string | null>(null);
 
   // ── los comercios de esta persona (por su correo) ───────────────────────────
-  private readonly myTenants$: Observable<Tenant[]> = toObservable$(() => this.auth.user()?.email ?? null).pipe(
+  private readonly myTenants$ = toObservable$(() => this.auth.user()?.email ?? null).pipe(
     switchMap(email => email
-      ? collectionData(
+      ? (collectionData(
           query(collection(this.db, 'tenants'), where('memberEmails', 'array-contains', email)),
-          { idField: 'id' }) as Observable<Tenant[]>
-      : of([])),
+          { idField: 'id' }) as Observable<Tenant[]>).pipe(
+          map(list => ({ list, loaded: true })),
+          startWith({ list: [] as Tenant[], loaded: false }))  // "cargando", no "vacío"
+      : of({ list: [] as Tenant[], loaded: true })),  // sin sesión: no hay comercios, punto
   );
-  readonly tenants = toSignal(this.myTenants$, { initialValue: [] as Tenant[] });
+  private readonly tenantsState = toSignal(this.myTenants$, { initialValue: { list: [] as Tenant[], loaded: false } });
+  readonly tenants = computed(() => this.tenantsState().list);
+  /** false hasta que Firestore contesta la lista. Distingue "cargando" de "sin
+   *  comercios", así ni el shell ni la lista muestran un estado final antes de tiempo. */
+  readonly tenantsLoaded = computed(() => this.auth.ready() && this.tenantsState().loaded);
 
   readonly current = computed(() => this.tenants().find(t => t.id === this.currentId()) ?? null);
   setCurrent(id: string | null) { this.currentId.set(id); }
