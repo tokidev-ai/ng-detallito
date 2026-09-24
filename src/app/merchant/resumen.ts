@@ -18,7 +18,7 @@ const PAD = 6;  // margen del gráfico, en % del viewBox, para que los puntos no
     <!-- ── saludo + acciones rápidas ── -->
     <div class="reveal flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-sm capitalize text-base-content/50">{{ today }}</p>
+        <p class="text-sm text-base-content/50 first-letter:uppercase">{{ today }}</p>
         <h2 class="mt-0.5 text-2xl font-extrabold tracking-tight sm:text-3xl">Hola, {{ firstName() }} 👋</h2>
         <p class="mt-1 text-sm text-base-content/60">Así va {{ s.business().name }} este mes.</p>
       </div>
@@ -111,8 +111,8 @@ const PAD = 6;  // margen del gráfico, en % del viewBox, para que los puntos no
           </div>
 
           <svg class="chart-reveal absolute inset-0 h-full w-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path [attr.d]="area(sold())" class="fill-primary" opacity="0.1" />
-            <path [attr.d]="area(redeemed())" class="fill-success" opacity="0.08" />
+            <!-- relleno solo bajo ventas: dos áreas superpuestas ensucian el color -->
+            <path [attr.d]="area(sold())" class="fill-primary" opacity="0.08" />
             <path [attr.d]="line(sold())" fill="none" class="stroke-primary" stroke-width="2.5"
                   stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
             <path [attr.d]="line(redeemed())" fill="none" class="stroke-success" stroke-width="2.5"
