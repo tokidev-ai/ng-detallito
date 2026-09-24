@@ -178,6 +178,26 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   despublicar sigue siendo inmediato: es un botón explícito.
 - Radio de tarjeta: `--radius-box` 1rem (antes 0.75): se ve más actual sin perder sobriedad.
 
+## 7c. Pagos y superadmin
+
+- **Pago por QR = solo visual por ahora.** 4.º paso del storefront: QR (payload de demo),
+  visor con el color del comercio, 10 min de vigencia, titular/banco del comercio y "Ya
+  pagué" que simula la confirmación y emite la carta. Lleva la nota "Pago de
+  demostración". Con banco: el QR lo arma la pasarela y emite su webhook, no el botón.
+- **Un cobro = una gift card vendida.** El superadmin calcula todo desde las cards
+  (`collectionGroup('cards')`), no desde `soldThisMonth` del tenant (dato de ejemplo).
+  Cada carta nueva guarda `soldAt` y `channel` (`qr`/`panel`); en las viejas la fecha se
+  deduce exacta de `vence − vigencia` y se marca con `~`. Lógica en `admin/ledger.ts`.
+- **Comisión variable por comercio** (`tenant.commissionRate`, 5% por defecto). La
+  escribe solo el superadmin (0–50%); las reglas impiden que el comercio la fije al
+  crearse o la cambie después.
+- **Panel del superadmin** con el estilo del panel: Resumen (ingresos nuestros, GMV,
+  salud, top, alertas), Comercios (búsqueda/filtros/orden + ficha lateral con la
+  comisión editable), Cobros (filtros + CSV) y Liquidaciones (bruto − comisión = a
+  transferir, planilla CSV). CSV con BOM, `;` y coma decimal: abre bien en Excel en español.
+- **Columna flex con scroll: `shrink-0` en los hijos**, o flex los encoge y un
+  `overflow-hidden` se come el contenido (pasó con la cabecera de la ficha).
+
 ---
 
 ## 8. Imágenes
