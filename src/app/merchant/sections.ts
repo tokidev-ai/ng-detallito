@@ -402,7 +402,7 @@ export class Emitidas {
     <!-- lo que se está editando, en vivo -->
     <aside class="lg:sticky lg:top-6 lg:self-start">
       <p class="mb-3 text-xs uppercase tracking-wider text-base-content/50">Así se ve tu página</p>
-      <div class="mx-auto w-full max-w-[300px] overflow-hidden rounded-[2rem] border-4 border-base-300 bg-base-100">
+      <div class="phone-preview mx-auto w-[328px] max-w-full rounded-[2rem] border-4 border-base-content/80 bg-base-100 shadow-xl">
         <app-storefront />
       </div>
     </aside>

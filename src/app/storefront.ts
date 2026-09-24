@@ -13,7 +13,10 @@ import { Wordmark } from './brand';
 @Component({
   selector: 'app-storefront',
   imports: [FormsModule, BsPipe, GiftcardArt, Wordmark],
+  // @container: el layout responde al ancho del componente, no del viewport. Así la
+  // vista previa angosta del panel se ve como móvil aunque la pantalla sea de escritorio.
   template: `
+    <div class="@container">
     <div class="storefront flex flex-col bg-base-100 text-base-content" [class.min-h-dvh]="interactive()"
          [style.--c1]="b().color">
 
@@ -28,31 +31,23 @@ import { Wordmark } from './brand';
         </div>
 
         <header class="relative z-10">
-          <div class="mx-auto flex max-w-6xl items-center gap-3 px-5 py-4 sm:px-8">
+          <div class="mx-auto flex max-w-6xl items-center gap-3 px-5 py-4 @2xl:px-8">
             <div class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-white/10 text-[9px] text-white/50 ring-1 ring-white/20">
               @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> } @else { logo }
             </div>
             <p class="min-w-0 flex-1 truncate font-semibold tracking-tight">{{ b().name || 'Tu comercio' }}</p>
-            <span class="hidden rounded-full bg-white/10 px-3 py-1 text-xs text-white/70 ring-1 ring-white/15 sm:block">
+            <span class="hidden rounded-full bg-white/10 px-3 py-1 text-xs text-white/70 ring-1 ring-white/15 @2xl:block">
               giftcards.bo/{{ b().slug || 'tu-link' }}
             </span>
           </div>
         </header>
 
-        <div class="relative z-10 flex flex-1 flex-col lg:justify-center">
-          <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col lg:grid lg:flex-none lg:grid-cols-[1fr_minmax(0,440px)] lg:items-center lg:gap-16 lg:px-8 lg:py-12">
+        <div class="relative z-10 flex flex-1 flex-col @5xl:justify-center">
+          <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col @5xl:grid @5xl:flex-none @5xl:grid-cols-[1fr_minmax(0,440px)] @5xl:items-center @5xl:gap-16 @5xl:px-8 @5xl:py-12">
 
             <!-- ── pitch + tarjeta en vivo ── -->
-            <div class="px-5 pb-14 pt-2 text-center sm:px-8 lg:p-0 lg:text-left">
-              <span class="reveal inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/90 ring-1 ring-white/20 backdrop-blur">
-                <span class="relative flex size-2">
-                  <span class="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-75"></span>
-                  <span class="relative inline-flex size-2 rounded-full bg-success"></span>
-                </span>
-                Gift card digital · llega al instante
-              </span>
-
-              <h1 class="reveal reveal-1 mt-4 text-[2.3rem] font-extrabold leading-[0.98] tracking-[-0.045em] text-balance sm:text-5xl lg:text-[4.1rem]">
+            <div class="px-5 pb-14 pt-2 text-center @2xl:px-8 @5xl:p-0 @5xl:text-left">
+              <h1 class="reveal reveal-1 mt-3 text-[2.3rem] font-extrabold leading-[0.98] tracking-[-0.045em] text-balance @2xl:text-5xl @5xl:text-[4.1rem]">
                 Regala algo especial en
                 <span class="relative inline-block">
                   <span class="text-aurora">{{ b().name || 'tu comercio' }}</span>
@@ -65,14 +60,14 @@ import { Wordmark } from './brand';
               </h1>
 
               @if (b().description) {
-                <p class="reveal reveal-2 mx-auto mt-4 line-clamp-2 max-w-md text-base text-white/75 lg:mx-0 lg:text-lg">{{ b().description }}</p>
+                <p class="reveal reveal-2 mx-auto mt-4 line-clamp-2 max-w-md text-base text-white/75 @5xl:mx-0 @5xl:text-lg">{{ b().description }}</p>
               }
 
               @if (!issuedCard()) {
                 <!-- la tarjeta que se arma mientras el cliente elige: lo que llama la atención -->
-                <div class="pop relative mx-auto mt-8 w-full max-w-[270px] sm:max-w-[340px] lg:mx-0 lg:mt-10" style="animation-delay:.2s">
-                  <span class="chip-float absolute -left-3 -top-4 z-10 grid size-11 place-items-center rounded-2xl bg-white text-xl shadow-xl lg:-left-6">🎁</span>
-                  <span class="chip-float absolute -bottom-4 -right-2 z-10 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-xl lg:-right-8"
+                <div class="pop relative mx-auto mt-8 w-full max-w-[270px] @2xl:max-w-[340px] @5xl:mx-0 @5xl:mt-10" style="animation-delay:.2s">
+                  <span class="chip-float absolute -left-3 -top-4 z-10 grid size-11 place-items-center rounded-2xl bg-white text-xl shadow-xl @5xl:-left-6">🎁</span>
+                  <span class="chip-float absolute -bottom-4 -right-2 z-10 rounded-full px-3 py-1.5 text-xs font-bold text-white shadow-xl @5xl:-right-8"
                         style="background:var(--color-success);animation-delay:-2s">✓ Al instante</span>
                   <div class="float">
                     <div class="shine relative flex aspect-[1.586] -rotate-3 flex-col justify-between overflow-hidden rounded-2xl p-5 text-left shadow-2xl shadow-black/50 ring-1 ring-white/25"
@@ -90,7 +85,7 @@ import { Wordmark } from './brand';
 
                       <!-- @for de un solo elemento: al cambiar el monto se recrea y rebota -->
                       @for (k of [amount]; track k) {
-                        <p class="pop relative text-4xl font-extrabold tracking-[-0.03em] tabular-nums sm:text-5xl">
+                        <p class="pop relative text-4xl font-extrabold tracking-[-0.03em] tabular-nums @2xl:text-5xl">
                           {{ amount ? (amount | bs) : 'Bs ···' }}
                         </p>
                       }
@@ -114,7 +109,7 @@ import { Wordmark } from './brand';
             </div>
 
             <!-- ── panel de compra: hoja que sube en móvil, tarjeta flotante en desktop ── -->
-            <div class="sheet-up relative z-10 -mt-6 flex-1 overflow-hidden rounded-t-[2rem] bg-base-100 px-5 pb-8 pt-7 text-base-content sm:px-8 lg:mt-0 lg:flex-none lg:rounded-[2rem] lg:p-8 lg:shadow-2xl lg:shadow-black/40">
+            <div class="sheet-up relative z-10 -mt-6 flex-1 overflow-hidden rounded-t-[2rem] bg-base-100 px-5 pb-8 pt-7 text-base-content @2xl:px-8 @5xl:mt-0 @5xl:flex-none @5xl:rounded-[2rem] @5xl:p-8 @5xl:shadow-2xl @5xl:shadow-black/40">
               <!-- franja de la paleta arriba del panel -->
               <div class="absolute inset-x-0 top-0 h-1.5" style="background:linear-gradient(90deg,var(--c3),var(--c1),var(--c2))"></div>
 
@@ -273,13 +268,14 @@ import { Wordmark } from './brand';
 
       <!-- footer -->
       <footer class="border-t border-base-300 bg-base-100">
-        <div class="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-7 text-center sm:px-8">
+        <div class="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-7 text-center @2xl:px-8">
           @if (b().terms) { <p class="max-w-2xl text-xs leading-relaxed text-base-content/50">{{ b().terms }}</p> }
           <p class="flex items-center gap-1.5 text-xs text-base-content/40">
             Hecho con <app-wordmark />
           </p>
         </div>
       </footer>
+    </div>
     </div>
   `,
 })

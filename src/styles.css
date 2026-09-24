@@ -87,6 +87,12 @@ body {
   }
 }
 
+/* Vista previa de la página en el panel/onboarding: un teléfono de 390px lógicos
+   reducido a 320px visuales, con scroll propio y sin barra. */
+.phone-preview { height: 640px; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; }
+.phone-preview::-webkit-scrollbar { display: none; }
+.phone-preview > * { display: block; width: 390px; zoom: .8205; }
+
 /* ── página del comercio: la excepción a "sin gradientes" (ver ESTILO.md) ── */
 .sf-hero { background-color: var(--hero); }
 
@@ -187,6 +193,51 @@ body {
 }
 @keyframes trazo { to { stroke-dashoffset: 0; } }
 
+/* ── landing ─────────────────────────────────────────────────────────────────
+   Abanico de tarjetas, notificación en bucle, marquesina y mini demos del bento. */
+.fan { animation: fan 6s ease-in-out infinite; transform: rotate(var(--rot, 0deg)); }
+@keyframes fan {
+  0%,100% { transform: rotate(var(--rot, 0deg)) translateY(0); }
+  50% { transform: rotate(calc(var(--rot, 0deg) + 2deg)) translateY(-14px); }
+}
+
+.toast-loop { animation: toast-loop 7s cubic-bezier(.22,.8,.3,1) 1.2s infinite both; }
+@keyframes toast-loop {
+  0% { opacity: 0; transform: translateY(-14px) scale(.96); }
+  8%, 62% { opacity: 1; transform: none; }
+  72%, 100% { opacity: 0; transform: translateY(-14px) scale(.96); }
+}
+
+.marquee { display: flex; width: max-content; animation: marquee 32s linear infinite; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* bento: la tarjeta que cambia de color como si el dueño eligiera su marca */
+.swatch-cycle { animation: swatch-cycle 8s steps(1) infinite; }
+@keyframes swatch-cycle {
+  0% { background-color: #ea580c; } 20% { background-color: #0f766e; } 40% { background-color: #be123c; }
+  60% { background-color: #4338ca; } 80% { background-color: #a16207; }
+}
+
+/* bento: línea de escaneo sobre el QR */
+.scanline { animation: scanline 2.4s ease-in-out infinite; }
+@keyframes scanline { 0%,100% { top: 8%; } 50% { top: 88%; } }
+
+/* bento: el gráfico se dibuja, se queda y vuelve a empezar */
+.draw-loop { stroke-dasharray: 320; stroke-dashoffset: 320; animation: draw-loop 5s ease-in-out infinite; }
+@keyframes draw-loop { 0% { stroke-dashoffset: 320; } 45%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -320; } }
+
+/* bento: burbuja de mensaje que aparece */
+.bubble-loop { animation: bubble-loop 5s cubic-bezier(.22,.8,.3,1) infinite both; }
+@keyframes bubble-loop {
+  0% { opacity: 0; transform: translateY(10px) scale(.9); }
+  12%, 75% { opacity: 1; transform: none; }
+  88%, 100% { opacity: 0; transform: translateY(-6px); }
+}
+
 /* ── movimiento ──────────────────────────────────────────────────────────────
    Entrada nada más; se apaga entero con prefers-reduced-motion. */
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -204,7 +255,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .reveal, .pop, .blob, .text-aurora, .float, .chip-float, .shine::after, .sheet-up,
-  .step-in, .step-pulse, .cta-brand, .confetti { animation: none !important; }
+  .step-in, .step-pulse, .cta-brand, .confetti,
+  .fan, .toast-loop, .marquee, .swatch-cycle, .scanline, .draw-loop, .bubble-loop { animation: none !important; }
+  .draw-loop { stroke-dashoffset: 0; }
   .confetti { display: none; }
   .subrayado path { animation: none !important; stroke-dashoffset: 0; }
 }

@@ -46,7 +46,9 @@ Colores planos: se leen mejor en pantallas malas y no envejecen.
 
 **Excepción: la página del comercio (`storefront.ts`).** Ahí se pidió explícitamente algo
 "bien llamativo, con más colores". Es del comercio, no nuestra, y compite por atención en
-WhatsApp/Instagram. Vale solo ahí; el panel y la landing siguen planos.
+WhatsApp/Instagram. Vale ahí, en la página del regalo y en la gift card misma. El panel
+sigue plano; la landing usa aurora tenue de fondo y muestra tarjetas con la paleta del
+producto, pero sus botones y bloques naranjas siguen planos.
 
 ### Sin modo oscuro
 
@@ -119,26 +121,30 @@ Español latinoamericano neutro, **tuteo**. Sin voseo rioplatense: *sabes*, no *
 
 ## 7. La landing
 
+Estructura (rediseño de sep. 2026): **hero → marquesina de rubros → cómo funciona →
+bento oscuro de beneficios + cifras → cierre**.
+
+- **Hero claro con aurora tenue** (manchas naranja/ámbar/rosa a baja opacidad sobre la
+  trama de puntos). El titular y el subrayado de *gift cards* se mantienen.
+- **El producto es un abanico de 3 gift cards** de comercios de ejemplo, cada una con su
+  color y la misma paleta derivada que las tarjetas reales (`.storefront` + `--c1`), así
+  la landing muestra exactamente lo que el comercio va a vender. Flotan desfasadas
+  (`.fan`), con una notificación de "Nueva venta" en bucle y el chip de canje.
+  Los desplazamientos del abanico se escalan con `--k` según el ancho: en móvil no se sale.
+- **Marquesina de rubros, no de nombres** (💈 Barberías ✦ 💆 Spas…): no presenta comercios
+  inventados como clientes.
+- **Bento oscuro (`bg-neutral`)** con mini demos animadas: tarjeta que cambia de color,
+  escaneo de QR, gráfico que se dibuja, burbuja de WhatsApp. El naranja ahí va en cifras
+  y acentos; los botones siguen siendo el único naranja sólido.
+
 ### En móvil
 
-En un teléfono entran unos **640px útiles** antes del primer scroll. Si el botón no
-entra ahí, la landing no vende. Medido en cada cambio.
-
-Orden de lectura en móvil: **titular → producto → texto → cifras**. El hero es una
-columna de flex donde el orden lo da el DOM, y desde `lg` pasa a grilla de dos columnas
-con posiciones explícitas (`col-start` / `row-start`). Así no hay markup duplicado ni
-peleas con `order`.
-
-Decisiones que solo aplican en móvil:
+En un teléfono entran unos **640px útiles** antes del primer scroll: titular, texto y el
+abanico entran ahí. Medido en cada cambio.
 
 - **El hero no lleva botones.** El CTA vive en la barra, que es fija: acompaña todo el
   scroll en vez de quedarse atrás en la primera pantalla.
-- **El cierre no se muestra.** Su mensaje cierra el párrafo del hero, en negrita, color
-  de marca y subrayado.
-- **La insignia de canje no flota**, o taparía el botón del mockup.
 - **Todo el bloque de texto va centrado**; en escritorio vuelve a la izquierda.
-- **El mockup se corta abajo a propósito**: es lo que invita a bajar. Si entra completo,
-  no hay motivo para seguir.
 
 ### Sin precio
 
@@ -201,6 +207,15 @@ qué gana espanta a quien recién llega. Esa conversación va después.
     gradiente + brillo (`GiftcardArt` también usa la paleta, así se ve igual en todos lados).
   - Todo el movimiento se apaga con `prefers-reduced-motion`.
   - La preview del panel/onboarding renderiza el mismo componente angosto → muestra el móvil.
+- **La vista previa del storefront usa container queries, no breakpoints de viewport.**
+  El storefront va envuelto en `@container` y usa `@2xl:` (≈`sm`) y `@5xl:` (≈`lg`). Con
+  `sm:`/`lg:` la vista previa de 300px en una pantalla de escritorio agarraba el layout de
+  escritorio: titular de 4rem, una palabra por línea. La vista previa (`.phone-preview`)
+  renderiza el componente a 390px lógicos con `zoom` a 320px y scroll propio.
+- **La página del regalo (`/{slug}/g/{code}`) es una experiencia**, no un comprobante:
+  fondo con la paleta del comercio y aurora, titular personal ("Ana, te regalaron Bs 80"),
+  la tarjeta flotando, "Cómo usarla" en 3 pasos (con copiar código) y confeti si está
+  activa. Canjeada/vencida: tarjeta en gris y el aviso arriba.
 - **Compartir la gift card = link, no imagen adjunta.** Cada carta tiene su página
   pública `/{slug}/g/{code}` (`giftcard.ts`) con diseño de marca (logo, color, QR que
   apunta a esa misma URL). WhatsApp (`wa.me`) y correo (`mailto:`) mandan ese link.

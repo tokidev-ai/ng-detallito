@@ -177,7 +177,7 @@ export const slugify = (s: string) =>
         <!-- vista previa en vivo -->
         <aside class="border-t border-base-300 bg-base-200 p-4 sm:p-6 lg:border-l lg:border-t-0">
           <p class="mb-3 text-xs uppercase tracking-wider text-base-content/50">Vista previa · móvil</p>
-          <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-[2rem] border-4 border-base-content/80 bg-base-100">
+          <div class="phone-preview mx-auto w-[328px] max-w-full rounded-[2rem] border-4 border-base-content/80 bg-base-100 shadow-xl">
             <app-storefront [business]="draft()" />
           </div>
         </aside>
