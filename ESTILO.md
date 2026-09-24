@@ -159,6 +159,27 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 
 ---
 
+## 7b. El panel del comercio
+
+- **Barra lateral en escritorio** (`shell.ts`): wordmark, selector de comercio (avatar con
+  el logo o la inicial sobre el color del comercio + estado publicada/borrador), menú con
+  íconos (`.nav-item`, activo en `primary/10` con texto orange-700), "Ver mi página" y
+  abajo el usuario con "Salir". Arriba, barra con el título de la sección y "Compartir
+  link". En móvil: selector arriba y barra inferior.
+- **Dashboard** (`resumen.ts`): saludo + acciones rápidas (Canjear, Nueva gift card →
+  `gift-cards?nueva=1` abre el formulario), 4 KPIs (la deuda es la **única tarjeta
+  oscura**: es la cifra estrella), ventas vs canjes en dos líneas con tooltip por mes,
+  dona por estado, próximos vencimientos (rojo ≤7 días, ámbar ≤30) y últimos canjes.
+  Los cálculos (`daysUntil`, `pctChange`, `stampKey`) viven en `card.ts` con tests.
+- **Editar página guarda con botón, no al tipear.** Un color tocado por accidente se
+  publicaba solo. Ahora hay un borrador (`draft`): los campos y la vista previa muestran
+  lo guardado + lo pendiente, y una barra flotante ofrece Descartar / Guardar cambios.
+  Salir con cambios pendientes pregunta (`canDeactivate` + `beforeunload`). Publicar /
+  despublicar sigue siendo inmediato: es un botón explícito.
+- Radio de tarjeta: `--radius-box` 1rem (antes 0.75): se ve más actual sin perder sobriedad.
+
+---
+
 ## 8. Imágenes
 
 - `public/img/spa-cover.jpg` — foto real de Unsplash (licencia Unsplash: uso comercial

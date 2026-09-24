@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { CardState, GiftCard, Perm, Store, cardState } from '../data';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Business, CardState, GiftCard, Perm, Store, cardState } from '../data';
 import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
 import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
@@ -288,6 +288,11 @@ export class Emitidas {
     this.formOpen.set(true);
   }
 
+  /** El atajo "Nueva gift card" del dashboard llega con ?nueva=1: abrimos el formulario. */
+  constructor() {
+    if (inject(ActivatedRoute).snapshot.queryParamMap.has('nueva')) this.openNew();
+  }
+
   async save() {
     const code = this.fCode.trim();
     if (!code || this.fValue == null || !this.fExpires) return;
@@ -320,6 +325,8 @@ export class Emitidas {
 @Component({
   selector: 'app-marca',
   imports: [FormsModule, Storefront],
+  // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta
+  host: { '(window:beforeunload)': 'dirty() && $event.preventDefault()' },
   template: `
   <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
 
@@ -328,41 +335,45 @@ export class Emitidas {
         <h2 class="text-lg font-medium">Tu marca</h2>
 
         <div class="mt-5 flex flex-col gap-5 sm:flex-row">
-          <label class="grid h-28 w-28 shrink-0 cursor-pointer place-items-center rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 hover:border-primary/50">
-            @if (b().logoUrl) {
-              <img [src]="b().logoUrl" alt="logo" class="size-full rounded-box object-cover">
+          <label class="grid h-28 w-28 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 transition hover:border-primary/50 hover:bg-base-200">
+            @if (v().logoUrl) {
+              <img [src]="v().logoUrl" alt="logo" class="size-full object-cover">
             } @else { <span>sube tu<br>logo</span> }
             <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
           </label>
 
           <div class="flex-1 space-y-4">
             <label class="form-control block">
-              <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Nombre</span>
-              <input class="input input-bordered w-full" [ngModel]="b().name" name="name"
-                     (ngModelChange)="s.saveBusiness({ name: $event })">
+              <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Nombre</span>
+              <input class="input input-bordered w-full" [ngModel]="v().name" name="name"
+                     (ngModelChange)="edit({ name: $event })">
             </label>
 
             <label class="form-control block">
-              <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Descripción corta</span>
-              <textarea class="textarea textarea-bordered h-20 w-full" [ngModel]="b().description" name="desc"
-                        (ngModelChange)="s.saveBusiness({ description: $event })"></textarea>
+              <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Descripción corta</span>
+              <textarea class="textarea textarea-bordered h-20 w-full" [ngModel]="v().description" name="desc"
+                        (ngModelChange)="edit({ description: $event })"></textarea>
             </label>
           </div>
         </div>
 
         <fieldset class="mt-5">
-          <legend class="mb-2 text-xs uppercase tracking-wider text-base-content/50">Color de marca</legend>
+          <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Color de marca</legend>
           <div class="flex flex-wrap items-center gap-2">
             @for (c of swatches; track c) {
-              <button type="button" (click)="s.saveBusiness({ color: c })" [style.background-color]="c"
-                      [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="b().color === c"
-                      class="size-10 rounded-field border-2"
-                      [class.border-primary]="b().color === c"
-                      [class.border-base-300]="b().color !== c"></button>
+              <button type="button" (click)="edit({ color: c })" [style.background-color]="c"
+                      [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="v().color === c"
+                      class="grid size-10 place-items-center rounded-xl text-white ring-offset-2 transition hover:scale-105"
+                      [class.ring-2]="v().color === c" [class.ring-base-content]="v().color === c">
+                @if (v().color === c) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="size-4"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+              </button>
             }
-            <label class="grid size-10 cursor-pointer place-items-center rounded-field border-2 border-dashed border-base-300 text-lg leading-none">
-              +<input type="color" class="sr-only" [ngModel]="b().color" name="color"
-                      (ngModelChange)="s.saveBusiness({ color: $event })">
+            <label class="grid size-10 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-base-300 text-lg leading-none transition hover:border-base-content/30"
+                   title="Otro color">
+              +<input type="color" class="sr-only" [ngModel]="v().color" name="color"
+                      (ngModelChange)="edit({ color: $event })">
             </label>
           </div>
         </fieldset>
@@ -403,10 +414,37 @@ export class Emitidas {
     <aside class="lg:sticky lg:top-6 lg:self-start">
       <p class="mb-3 text-xs uppercase tracking-wider text-base-content/50">Así se ve tu página</p>
       <div class="phone-preview mx-auto w-[328px] max-w-full rounded-[2rem] border-4 border-base-content/80 bg-base-100 shadow-xl">
-        <app-storefront />
+        <app-storefront [business]="v()" />
       </div>
+      @if (dirty()) {
+        <p class="mt-3 text-center text-xs text-base-content/50">Vista previa con cambios sin guardar</p>
+      }
     </aside>
   </div>
+
+  <!-- barra de guardado: solo aparece con cambios pendientes -->
+  @if (dirty() || justSaved()) {
+    <div class="pop fixed bottom-24 left-1/2 z-40 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 md:bottom-8 md:left-[calc(50%+8rem)]">
+      <div class="flex items-center gap-3 rounded-2xl bg-neutral p-3 pl-4 text-neutral-content shadow-2xl">
+        @if (dirty()) {
+          <span class="relative flex size-2.5">
+            <span class="absolute inline-flex size-full animate-ping rounded-full bg-warning opacity-75"></span>
+            <span class="relative inline-flex size-2.5 rounded-full bg-warning"></span>
+          </span>
+          <p class="min-w-0 flex-1 truncate text-sm font-medium">Cambios sin guardar</p>
+          <button type="button" class="btn btn-ghost btn-sm text-neutral-content" (click)="discard()" [disabled]="saving()">Descartar</button>
+          <button type="button" class="btn btn-primary btn-sm" (click)="save()" [disabled]="saving()">
+            @if (saving()) { <span class="loading loading-spinner loading-xs"></span> } Guardar cambios
+          </button>
+        } @else {
+          <span class="grid size-6 place-items-center rounded-full bg-success text-success-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="size-3.5"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <p class="flex-1 text-sm font-medium">Cambios guardados</p>
+        }
+      </div>
+    </div>
+  }
 
   <!-- borrar negocio: modal con confirmación tipeando el nombre -->
   @if (confirmingDelete()) {
@@ -438,6 +476,33 @@ export class Marca {
   readonly b = this.s.business;
   readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
 
+  // ── borrador: nada se guarda hasta "Guardar cambios" ─────────────────────────
+  /** Cambios pendientes sobre lo guardado. La vista previa y los campos muestran `v()`. */
+  readonly draft = signal<Partial<Business>>({});
+  readonly v = computed<Business>(() => ({ ...this.b(), ...this.draft() }));
+  /** Solo lo que de verdad difiere de lo guardado (volver al valor original no cuenta). */
+  private readonly changes = computed(() => Object.fromEntries(
+    Object.entries(this.draft()).filter(([k, val]) => this.b()[k as keyof Business] !== val)) as Partial<Business>);
+  readonly dirty = computed(() => Object.keys(this.changes()).length > 0);
+  readonly saving = signal(false);
+  readonly justSaved = signal(false);
+
+  edit(patch: Partial<Business>) { this.draft.update(d => ({ ...d, ...patch })); }
+  discard() { this.draft.set({}); }
+
+  async save() {
+    if (!this.dirty() || this.saving()) return;
+    this.saving.set(true);
+    try {
+      await this.s.saveBusiness(this.changes());
+      this.draft.set({});
+      this.justSaved.set(true);
+      setTimeout(() => this.justSaved.set(false), 2200);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
   readonly confirmingDelete = signal(false);
   readonly deleting = signal(false);
   deleteText = '';
@@ -460,7 +525,7 @@ export class Marca {
     const file = (e.target as HTMLInputElement).files?.[0];
     // ponytail: objectURL, no Storage: se ve al instante y no sobrevive al reload.
     // Cuando entre Firebase Storage se sube aquí y se guarda la URL real.
-    if (file) this.s.saveBusiness({ logoUrl: URL.createObjectURL(file) });
+    if (file) this.edit({ logoUrl: URL.createObjectURL(file) });
   }
 }
 

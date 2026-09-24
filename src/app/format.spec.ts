@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BsPipe, FechaPipe, onBrand } from './ui';
-import { cardState, expiryFrom, giftMessage, giftPath, newCode, waLink } from './card';
+import { cardState, daysUntil, expiryFrom, giftMessage, giftPath, newCode, pctChange, stampKey, waLink } from './card';
 import { slugify } from './onboarding/wizard';
 
 describe('slugify', () => {
@@ -87,5 +87,25 @@ describe('BsPipe', () => {
     expect(bs.transform(3480)).toBe('Bs 3.480');
     expect(bs.transform(0)).toBe('Bs 0');
     expect(bs.transform(null)).toBe('—');
+  });
+});
+
+describe('números del dashboard', () => {
+  it('daysUntil cuenta días enteros, negativo si ya pasó', () => {
+    expect(daysUntil('2026-09-30', '2026-09-23')).toBe(7);
+    expect(daysUntil('2026-09-23', '2026-09-23')).toBe(0);
+    expect(daysUntil('2026-09-20', '2026-09-23')).toBe(-3);
+  });
+
+  it('pctChange compara contra el mes anterior y no divide por cero', () => {
+    expect(pctChange(120, 100)).toBe(20);
+    expect(pctChange(50, 100)).toBe(-50);
+    expect(pctChange(80, 0)).toBeNull();
+  });
+
+  it('stampKey ordena los canjes por mes, día y hora', () => {
+    const at = ['05/09 10:00', '28/08 18:30', '05/09 09:15'];
+    expect([...at].sort((a, b) => stampKey(b).localeCompare(stampKey(a))))
+      .toEqual(['05/09 10:00', '05/09 09:15', '28/08 18:30']);
   });
 });

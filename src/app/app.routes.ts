@@ -26,7 +26,12 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'resumen' },
       { path: 'resumen', loadComponent: () => import('./merchant/resumen').then(m => m.Resumen) },
       { path: 'gift-cards', loadComponent: () => import('./merchant/sections').then(m => m.Emitidas) },
-      { path: 'marca', loadComponent: () => import('./merchant/sections').then(m => m.Marca) },
+      {
+        path: 'marca', loadComponent: () => import('./merchant/sections').then(m => m.Marca),
+        // cambiar de sección con cambios sin guardar: confirmamos antes de perderlos
+        canDeactivate: [(c: { dirty?: () => boolean }) =>
+          !c.dirty?.() || confirm('Tienes cambios sin guardar en tu página. ¿Salir sin guardar?')],
+      },
       { path: 'equipo', loadComponent: () => import('./merchant/sections').then(m => m.Equipo) },
     ],
   },

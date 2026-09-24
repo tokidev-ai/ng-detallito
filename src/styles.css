@@ -37,7 +37,7 @@
 
   --radius-selector: 0.5rem;
   --radius-field: 0.5rem;
-  --radius-box: 0.75rem;
+  --radius-box: 1rem;
   --border: 1px;
   --depth: 0;
   --noise: 0;
@@ -261,6 +261,19 @@ body {
   .confetti { display: none; }
   .subrayado path { animation: none !important; stroke-dashoffset: 0; }
 }
+
+/* ── panel ──────────────────────────────────────────────────────────────────
+   Ítems de la barra lateral: el activo en naranja suave, texto orange-700 (5:1). */
+.nav-item {
+  @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-base-content/65 transition;
+}
+.nav-item:hover { @apply bg-base-200 text-base-content; }
+.nav-item.nav-active { @apply bg-primary/10 text-[#c2410c]; }
+
+/* el gráfico del dashboard se dibuja de izquierda a derecha al entrar */
+.chart-reveal { animation: chart-reveal 1.2s cubic-bezier(.22,.8,.3,1) .2s both; }
+@keyframes chart-reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce) { .chart-reveal { animation: none; } }
 
 /* la bottom nav móvil es fija: que el contenido no quede debajo */
 .pb-safe { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }

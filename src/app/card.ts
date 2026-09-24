@@ -46,3 +46,21 @@ export function giftMessage(businessName: string, url: string, c: { to?: string;
 export const waLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
 export const mailtoLink = (subject: string, body: string) =>
   `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+// ── números del dashboard ────────────────────────────────────────────────────
+
+/** Días enteros de hoy a `iso` (yyyy-mm-dd). 0 = vence hoy, negativo = ya venció. */
+export function daysUntil(iso: string, today = todayIso()): number {
+  return Math.round((Date.parse(iso) - Date.parse(today)) / 86_400_000);
+}
+
+/** Cambio porcentual de `prev` a `cur`, redondeado. null si no hay base para comparar. */
+export function pctChange(cur: number, prev: number): number | null {
+  if (!prev) return null;
+  return Math.round(((cur - prev) / prev) * 100);
+}
+
+/** Clave ordenable de un sello de canje `dd/mm HH:mm` → `mm/dd HH:mm`.
+ *  ponytail: el sello no trae año; en enero un canje de diciembre ordena como
+ *  "futuro". Guardar ISO en el canje lo arregla cuando importe. */
+export const stampKey = (at: string) => `${at.slice(3, 5)}/${at.slice(0, 2)}${at.slice(5)}`;

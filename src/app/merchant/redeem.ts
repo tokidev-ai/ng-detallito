@@ -1,4 +1,4 @@
-import { Component, ElementRef, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, effect, inject, input, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GiftCard, Store, cardState } from '../data';
 import { BsPipe } from '../ui';
@@ -14,7 +14,10 @@ const BD: any = (globalThis as any).BarcodeDetector;
   selector: 'app-redeem',
   imports: [FormsModule, BsPipe],
   template: `
-  <button type="button" class="btn btn-outline btn-sm" (click)="open()">Canjear</button>
+  <button type="button" [class]="btnClass()" (click)="open()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M4 12h16" stroke-linecap="round"/></svg>
+    Canjear
+  </button>
 
   @if (isOpen()) {
     <div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" (click)="close()">
@@ -78,6 +81,8 @@ const BD: any = (globalThis as any).BarcodeDetector;
 })
 export class RedeemDialog {
   private readonly s = inject(Store);
+  /** Estilo del botón que abre el diálogo: cambia según dónde se use. */
+  readonly btnClass = input('btn btn-outline btn-sm');
   readonly canScan = !!BD;
   readonly state = (c: GiftCard) => cardState(c);
 
