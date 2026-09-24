@@ -93,9 +93,14 @@ body {
 .reveal-2 { animation-delay: .12s; }
 .reveal-3 { animation-delay: .18s; }
 .reveal-4 { animation-delay: .24s; }
+.reveal-5 { animation-delay: .30s; }
+
+/* La tarjeta ya emitida entra con un pequeño rebote, como algo que "aparece". */
+@keyframes pop { 0% { opacity: 0; transform: scale(.85); } 60% { transform: scale(1.03); } 100% { opacity: 1; transform: none; } }
+.pop { animation: pop .5s cubic-bezier(.22,.8,.3,1) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal { animation: none !important; }
+  .reveal, .pop { animation: none !important; }
   .subrayado path { animation: none !important; stroke-dashoffset: 0; }
 }
 

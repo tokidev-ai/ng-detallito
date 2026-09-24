@@ -63,6 +63,17 @@ const TABS: { id: CardState; label: string }[] = [
                name="newAmount" placeholder="Bs" (keyup.enter)="addAmount()">
         <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
       </div>
+
+      <label class="mt-5 flex cursor-pointer items-start gap-3 border-t border-base-200 pt-4">
+        <input type="checkbox" class="toggle toggle-primary toggle-sm mt-0.5"
+               [checked]="s.business().allowCustomAmount !== false" (change)="toggleCustom($event)">
+        <span>
+          <span class="block text-sm font-medium">Permitir monto libre</span>
+          <span class="block text-xs text-base-content/55">
+            Si lo apagas, el cliente solo elige uno de los montos de arriba (necesitas al menos uno).
+          </span>
+        </span>
+      </label>
     </div>
   } @else {
 
@@ -254,6 +265,9 @@ export class Emitidas {
   }
   removeAmount(a: number) {
     this.s.saveBusiness({ suggestedAmounts: this.s.business().suggestedAmounts.filter(x => x !== a) });
+  }
+  toggleCustom(e: Event) {
+    this.s.saveBusiness({ allowCustomAmount: (e.target as HTMLInputElement).checked });
   }
 
   // ── formulario ─────────────────────────────────────────────────────────────

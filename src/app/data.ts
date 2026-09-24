@@ -24,6 +24,10 @@ export interface Business {
   /** Montos que la página ofrece como botones. El cliente igual puede escribir
    *  uno libre, así que la lista puede estar vacía y la página sigue vendiendo. */
   suggestedAmounts: number[];
+  /** Si es false, el cliente solo puede elegir uno de los montos sugeridos (sin
+   *  monto libre). undefined/true = permitido. El dueño lo controla desde la
+   *  gestión de gift cards. */
+  allowCustomAmount?: boolean;
   bank: { bank: string; account: string; holder: string; nit: string };
 }
 
@@ -51,7 +55,7 @@ export interface MonthPoint { sold: number; redeemed: number }
 
 export const EMPTY_BUSINESS: Business = {
   name: '', slug: '', description: '', logoUrl: null, color: '#1c1b18',
-  published: false, validityMonths: 12, terms: '', suggestedAmounts: [],
+  published: false, validityMonths: 12, terms: '', suggestedAmounts: [], allowCustomAmount: true,
   bank: { bank: '', account: '', holder: '', nit: '' },
 };
 

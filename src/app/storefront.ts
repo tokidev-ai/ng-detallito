@@ -59,22 +59,24 @@ import { Wordmark } from './brand';
 
               <!-- ── compra terminada ── -->
               @if (issuedCard(); as card) {
-                <p class="text-center text-sm font-medium text-base-content/70">🎉 ¡Tu gift card está lista!</p>
-                <div class="mt-3"><app-giftcard-art [card]="card" [business]="b()" /></div>
-                <p class="mt-5 text-center text-xs uppercase tracking-wider text-base-content/50">Envíasela a quien la recibe</p>
-                <div class="mt-2 grid grid-cols-2 gap-2">
+                <p class="reveal text-center text-sm font-medium text-base-content/70">
+                  <span class="pop inline-block">🎉</span> ¡Tu gift card está lista!
+                </p>
+                <div class="pop mt-3" style="animation-delay:.08s"><app-giftcard-art [card]="card" [business]="b()" /></div>
+                <p class="reveal reveal-3 mt-5 text-center text-xs uppercase tracking-wider text-base-content/50">Envíasela a quien la recibe</p>
+                <div class="reveal reveal-4 mt-2 grid grid-cols-2 gap-2">
                   <a class="btn gap-2 text-white" style="background-color:#25D366;border-color:#25D366"
                      [href]="waHref()" target="_blank" rel="noopener">WhatsApp</a>
                   <a class="btn btn-outline gap-2" [href]="mailHref()">Correo</a>
                 </div>
-                <button type="button" class="btn btn-ghost btn-sm mt-2 w-full" (click)="copy()">
+                <button type="button" class="reveal reveal-5 btn btn-ghost btn-sm mt-2 w-full" (click)="copy()">
                   {{ copied() ? '¡Link copiado!' : 'Copiar link' }}
                 </button>
-                <button type="button" class="btn btn-ghost btn-sm mt-1 w-full" (click)="reset()">Comprar otra</button>
+                <button type="button" class="reveal reveal-5 btn btn-ghost btn-sm mt-1 w-full" (click)="reset()">Comprar otra</button>
 
               <!-- ── pasos de compra ── -->
               } @else {
-                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50">Comprar gift card</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50">Comprar / Regalar gift card</p>
                 @if (interactive()) {
                   <!-- stepper: círculos numerados, check en los pasos hechos,
                        conector que se llena con el color de la marca -->
@@ -119,15 +121,14 @@ import { Wordmark } from './brand';
                         }
                       </div>
                     }
-                    <input type="number" min="1" class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="amount" name="amount"
-                           [placeholder]="amounts().length ? 'Otro monto (Bs)' : 'Monto de la gift card (Bs)'">
+                    @if (showCustom()) {
+                      <input type="number" min="1" class="input input-bordered mt-2 h-12 w-full" [(ngModel)]="amount" name="amount"
+                             [placeholder]="amounts().length ? 'Otro monto (Bs)' : 'Monto de la gift card (Bs)'">
+                    }
                     <button type="button" class="btn mt-4 h-12 w-full border-none text-base shadow-sm"
                             [disabled]="!amount || amount < 1"
                             [style.background-color]="b().color" [style.color]="onBrand()"
                             (click)="next()">Continuar</button>
-                    <p class="mt-3 text-center text-xs text-base-content/50">
-                      Vence en {{ b().validityMonths }} meses · pago coordinado con el comercio
-                    </p>
                   }
 
                   @case (1) {
@@ -160,6 +161,7 @@ import { Wordmark } from './brand';
                               [style.background-color]="b().color" [style.color]="onBrand()"
                               (click)="buy()">{{ busy() ? 'Emitiendo…' : 'Comprar' }}</button>
                     </div>
+                    <p class="mt-3 text-center text-xs text-base-content/50">Pago coordinado con el comercio</p>
                     @if (error()) { <p class="mt-2 text-center text-sm text-error">{{ error() }}</p> }
                   }
                 }
@@ -209,6 +211,9 @@ export class Storefront {
 
   readonly b = computed(() => this.business() ?? this.store.business());
   readonly amounts = computed(() => this.b().suggestedAmounts ?? []);
+  /** El dueño puede apagar el monto libre. Pero si no hay montos sugeridos,
+   *  igual lo mostramos: si no, no habría forma de comprar. */
+  readonly showCustom = computed(() => this.b().allowCustomAmount !== false || !this.amounts().length);
   readonly onBrand = computed(() => onBrand(this.b().color));
   readonly trust = computed(() => [
     'Un código al instante',
