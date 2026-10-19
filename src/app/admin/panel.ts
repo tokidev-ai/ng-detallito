@@ -8,12 +8,11 @@ import { Wordmark } from '../brand';
 import { BsPipe, FechaPipe } from '../ui';
 import { Cobro, DEFAULT_RATE, lastMonths, rateOf, toCobro, toCsv, totals } from './ledger';
 
-type Section = 'resumen' | 'comercios' | 'cobros' | 'liquidaciones';
+type Section = 'resumen' | 'comercios' | 'ventas';
 const SECTIONS: { id: Section; label: string; icon: string }[] = [
   { id: 'resumen',       label: 'Resumen',        icon: 'M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-4H4zM14 4v4h6V4z' },
   { id: 'comercios',     label: 'Comercios',      icon: 'M3 9l1.5-5h15L21 9M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM5 13v7h14v-7' },
-  { id: 'cobros',        label: 'Cobros',         icon: 'M3 7h18v10H3zM3 11h18M8 15h3' },
-  { id: 'liquidaciones', label: 'Liquidaciones',  icon: 'M12 3v18M17 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H6' },
+  { id: 'ventas',        label: 'Ventas',         icon: 'M12 3v18M17 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H6' },
 ];
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const PAD = 6;
@@ -362,165 +361,94 @@ const PAD = 6;
               </ul>
             }
 
-            <!-- ════════════════ COBROS ════════════════ -->
-            @case ('cobros') {
-              <div class="reveal space-y-3">
-                <div class="flex flex-wrap items-center gap-2">
-                  <label class="relative min-w-0 flex-1 sm:max-w-sm">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-base-content/40"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-                    <input class="input input-bordered w-full rounded-full ps-9" [(ngModel)]="cq" name="cq" placeholder="Código, destinatario o comercio">
-                  </label>
-                  <select class="select select-bordered select-sm rounded-full" [(ngModel)]="cTenant" name="cTenant">
-                    <option value="">Todos los comercios</option>
-                    @for (t of tenantsByName(); track t.id) { <option [value]="t.id">{{ t.business.name }}</option> }
-                  </select>
-                  <select class="select select-bordered select-sm rounded-full" [(ngModel)]="cState" name="cState">
-                    <option value="">Cualquier estado</option>
-                    <option value="activa">Activas</option>
-                    <option value="canjeada">Canjeadas</option>
-                    <option value="vencida">Vencidas</option>
-                  </select>
-                  <select class="select select-bordered select-sm rounded-full" [(ngModel)]="cChannel" name="cChannel">
-                    <option value="">Cualquier canal</option>
-                    <option value="qr">Página (QR)</option>
-                    <option value="panel">Panel del comercio</option>
-                  </select>
+            <!-- ════════════════ VENTAS ════════════════ -->
+            @case ('ventas') {
+              <div class="reveal flex flex-wrap items-center justify-between gap-3">
+                <select class="select select-bordered select-sm rounded-full" [ngModel]="vMonth()" (ngModelChange)="vMonth.set($event); vOpen.set(null)" name="vMonth">
+                  @for (m of months6Desc; track m) { <option [value]="m">{{ monthLabel(m) }}</option> }
+                  <option value="">Desde siempre</option>
+                </select>
+                <button type="button" class="btn btn-sm rounded-full border-base-300 bg-base-100" (click)="exportVentas()" [disabled]="!ventas().length">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Planilla CSV
+                </button>
+              </div>
+
+              <!-- las tres preguntas: cuánto se vendió, cuánto es nuestro, cuánto debemos -->
+              <div class="reveal reveal-1 mt-5 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-box border border-base-300 bg-base-100 p-5">
+                  <p class="text-sm text-base-content/55">Vendimos</p>
+                  <p class="mt-1 text-3xl font-extrabold tabular-nums">{{ vTotals().gross | bs }}</p>
+                  <p class="text-xs text-base-content/45">{{ vTotals().count }} gift cards</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                  @for (r of ranges; track r.id) {
-                    <button type="button" class="rounded-full px-3 py-1.5 text-sm font-medium transition"
-                            [class]="cRange() === r.id ? 'bg-neutral text-neutral-content' : 'bg-base-100 text-base-content/65 ring-1 ring-base-300'"
-                            (click)="setRange(r.id)">{{ r.label }}</button>
-                  }
-                  <span class="mx-1 hidden h-5 border-l border-base-300 sm:block"></span>
-                  <input type="date" class="input input-bordered input-sm rounded-full" [ngModel]="cFrom()" (ngModelChange)="cFrom.set($event); cRange.set('custom')" name="cFrom" aria-label="Desde">
-                  <span class="text-sm text-base-content/40">a</span>
-                  <input type="date" class="input input-bordered input-sm rounded-full" [ngModel]="cTo()" (ngModelChange)="cTo.set($event); cRange.set('custom')" name="cTo" aria-label="Hasta">
-                  <button type="button" class="btn btn-sm ms-auto rounded-full border-base-300 bg-base-100" (click)="exportCobros()" [disabled]="!cobrosFiltered().length">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Exportar CSV
-                  </button>
+                <div class="rounded-box border border-base-300 bg-base-100 p-5">
+                  <p class="text-sm text-base-content/55">Nuestra comisión</p>
+                  <p class="mt-1 text-3xl font-extrabold tabular-nums text-[#c2410c]">{{ vTotals().fee | bs:2 }}</p>
+                </div>
+                <div class="rounded-box bg-neutral p-5 text-neutral-content">
+                  <p class="text-sm text-neutral-content/60">Les debemos a los comercios</p>
+                  <p class="mt-1 text-3xl font-extrabold tabular-nums">{{ vTotals().net | bs:2 }}</p>
                 </div>
               </div>
 
-              <!-- totales del filtro -->
-              <div class="reveal reveal-1 mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <div class="rounded-box border border-base-300 bg-base-100 p-4"><p class="text-xs text-base-content/50">Cobros</p><p class="text-xl font-extrabold tabular-nums">{{ cobrosTotals().count }}</p></div>
-                <div class="rounded-box border border-base-300 bg-base-100 p-4"><p class="text-xs text-base-content/50">Bruto</p><p class="text-xl font-extrabold tabular-nums">{{ cobrosTotals().gross | bs }}</p></div>
-                <div class="rounded-box bg-neutral p-4 text-neutral-content"><p class="text-xs text-neutral-content/60">Nuestra comisión</p><p class="text-xl font-extrabold tabular-nums">{{ cobrosTotals().fee | bs:2 }}</p></div>
-                <div class="rounded-box border border-base-300 bg-base-100 p-4"><p class="text-xs text-base-content/50">Neto a comercios</p><p class="text-xl font-extrabold tabular-nums">{{ cobrosTotals().net | bs:2 }}</p></div>
-              </div>
-
+              <!-- por comercio; tocar una fila muestra sus ventas -->
               <div class="reveal reveal-2 mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
                 <table class="table">
                   <thead>
                     <tr class="text-xs uppercase tracking-wider">
-                      <th>Fecha</th><th>Comercio</th><th>Código</th><th>Para</th><th>Canal</th><th>Estado</th>
-                      <th class="text-right">Monto</th><th class="text-right">Comisión</th><th class="text-right">Neto</th>
+                      <th>Comercio</th><th class="text-right">Vendió</th><th class="text-right">Comisión</th>
+                      <th class="text-right">Le debemos</th><th>Cuenta destino</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (c of cobrosPage(); track c.tenantId + c.code) {
-                      <tr class="hover:bg-base-200/60">
-                        <td class="whitespace-nowrap tabular-nums text-base-content/70">
-                          {{ c.date | fecha }}
-                          @if (c.estimated) { <span class="text-base-content/35" title="Fecha deducida del vencimiento (carta anterior al registro de fecha)">~</span> }
-                        </td>
+                    @for (v of ventas(); track v.t.id) {
+                      <tr class="cursor-pointer hover:bg-base-200/60" (click)="vOpen.set(vOpen() === v.t.id ? null : v.t.id)">
                         <td>
-                          <button type="button" class="flex items-center gap-2 font-medium hover:underline" (click)="openTenant(c.tenantId)">
-                            <span class="size-2.5 shrink-0 rounded-full" [style.background-color]="c.color"></span>{{ c.tenant }}
-                          </button>
+                          <span class="flex items-center gap-2 font-semibold">
+                            <span class="size-2.5 shrink-0 rounded-full" [style.background-color]="v.t.business.color"></span>{{ v.t.business.name }}
+                            <span class="text-xs font-normal text-base-content/40">{{ vOpen() === v.t.id ? '▾' : '▸' }}</span>
+                          </span>
                         </td>
-                        <td class="font-mono text-sm">{{ c.code }}</td>
-                        <td class="max-w-36 truncate">{{ c.to }}</td>
-                        <td class="text-sm text-base-content/60">{{ c.channel === 'qr' ? 'Página' : c.channel === 'panel' ? 'Panel' : '—' }}</td>
-                        <td>
-                          <span class="rounded-full px-2 py-0.5 text-xs font-medium"
-                                [class]="c.state === 'activa' ? 'bg-success/10 text-success' : c.state === 'vencida' ? 'bg-error/10 text-error' : 'bg-base-200 text-base-content/60'">{{ c.state }}</span>
-                        </td>
-                        <td class="text-right font-semibold tabular-nums">{{ c.value | bs }}</td>
-                        <td class="whitespace-nowrap text-right tabular-nums text-[#c2410c]">{{ c.fee | bs:2 }} <span class="text-xs text-base-content/40">{{ pct(c.rate) }}</span></td>
-                        <td class="text-right tabular-nums">{{ c.net | bs:2 }}</td>
-                      </tr>
-                    } @empty {
-                      <tr><td colspan="9" class="py-12 text-center text-base-content/45">Ningún cobro con estos filtros.</td></tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-              @if (cobrosFiltered().length > cobrosPage().length) {
-                <div class="mt-4 text-center">
-                  <button type="button" class="btn btn-sm rounded-full border-base-300 bg-base-100" (click)="cLimit.update(n => n + 50)">
-                    Mostrar más ({{ cobrosFiltered().length - cobrosPage().length }} restantes)
-                  </button>
-                </div>
-              }
-            }
-
-            <!-- ════════════════ LIQUIDACIONES ════════════════ -->
-            @case ('liquidaciones') {
-              <div class="reveal flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <p class="max-w-xl text-sm text-base-content/60">
-                    Lo que hay que transferirle a cada comercio por el mes: lo vendido menos nuestra comisión.
-                    Es la planilla para la banca en línea.
-                  </p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <select class="select select-bordered select-sm rounded-full" [(ngModel)]="lMonth" name="lMonth">
-                    @for (m of months6Desc; track m) { <option [value]="m">{{ monthLabel(m) }}</option> }
-                  </select>
-                  <button type="button" class="btn btn-primary btn-sm rounded-full" (click)="exportLiquidacion()" [disabled]="!liquidacion().length">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Planilla CSV
-                  </button>
-                </div>
-              </div>
-
-              <div class="reveal reveal-1 mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <div class="rounded-box border border-base-300 bg-base-100 p-4"><p class="text-xs text-base-content/50">Comercios a pagar</p><p class="text-xl font-extrabold tabular-nums">{{ liquidacion().length }}</p></div>
-                <div class="rounded-box border border-base-300 bg-base-100 p-4"><p class="text-xs text-base-content/50">Bruto del mes</p><p class="text-xl font-extrabold tabular-nums">{{ liqTotals().gross | bs }}</p></div>
-                <div class="rounded-box bg-neutral p-4 text-neutral-content"><p class="text-xs text-neutral-content/60">Nos quedamos</p><p class="text-xl font-extrabold tabular-nums">{{ liqTotals().fee | bs:2 }}</p></div>
-                <div class="rounded-box border border-base-300 bg-base-100 p-4"><p class="text-xs text-base-content/50">A transferir</p><p class="text-xl font-extrabold tabular-nums">{{ liqTotals().net | bs:2 }}</p></div>
-              </div>
-
-              <div class="reveal reveal-2 mt-4 overflow-x-auto rounded-box border border-base-300 bg-base-100">
-                <table class="table">
-                  <thead>
-                    <tr class="text-xs uppercase tracking-wider">
-                      <th>Comercio</th><th class="text-right">Cobros</th><th class="text-right">Bruto</th><th class="text-right">Comisión</th>
-                      <th class="text-right">A transferir</th><th>Cuenta destino</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (l of liquidacion(); track l.t.id) {
-                      <tr>
-                        <td>
-                          <button type="button" class="flex items-center gap-2 font-semibold hover:underline" (click)="openTenant(l.t.id)">
-                            <span class="size-2.5 rounded-full" [style.background-color]="l.t.business.color"></span>{{ l.t.business.name }}
-                          </button>
-                        </td>
-                        <td class="text-right tabular-nums">{{ l.tot.count }}</td>
-                        <td class="text-right tabular-nums">{{ l.tot.gross | bs }}</td>
-                        <td class="whitespace-nowrap text-right tabular-nums text-[#c2410c]">{{ l.tot.fee | bs:2 }} <span class="text-xs text-base-content/40">{{ pct(l.rate) }}</span></td>
-                        <td class="text-right text-base font-extrabold tabular-nums">{{ l.tot.net | bs:2 }}</td>
+                        <td class="text-right tabular-nums">{{ v.tot.gross | bs }} <span class="block text-xs text-base-content/40">{{ v.tot.count }} cartas</span></td>
+                        <td class="whitespace-nowrap text-right tabular-nums text-[#c2410c]">{{ v.tot.fee | bs:2 }} <span class="block text-xs text-base-content/40">{{ pct(v.rate) }}</span></td>
+                        <td class="text-right text-base font-extrabold tabular-nums">{{ v.tot.net | bs:2 }}</td>
                         <td class="text-sm">
-                          @if (hasBank(l.t)) {
-                            <p class="font-medium">{{ l.t.business.bank!.holder }}</p>
-                            <p class="text-xs text-base-content/55">{{ l.t.business.bank!.bank }} · <span class="font-mono">{{ l.t.business.bank!.account }}</span></p>
+                          @if (hasBank(v.t)) {
+                            <p class="font-medium">{{ v.t.business.bank!.holder }}</p>
+                            <p class="text-xs text-base-content/55">{{ v.t.business.bank!.bank }} · <span class="font-mono">{{ v.t.business.bank!.account }}</span></p>
                           } @else {
                             <span class="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs font-semibold text-warning">⚠ Sin datos bancarios</span>
                           }
                         </td>
                       </tr>
+                      @if (vOpen() === v.t.id) {
+                        <tr>
+                          <td colspan="5" class="bg-base-200/50 p-0">
+                            <ul class="divide-y divide-base-200 px-4">
+                              @for (c of v.list; track c.code) {
+                                <li class="flex items-center justify-between gap-3 py-2 text-sm">
+                                  <span class="min-w-0 truncate">
+                                    <span class="tabular-nums text-base-content/55">{{ c.date | fecha }}</span>
+                                    · <span class="font-mono">{{ c.code }}</span> · {{ c.to }}
+                                  </span>
+                                  <span class="whitespace-nowrap tabular-nums">{{ c.value | bs }} <span class="text-xs text-base-content/45">→ le toca {{ c.net | bs:2 }}</span></span>
+                                </li>
+                              }
+                            </ul>
+                            <div class="px-4 pb-3 text-right">
+                              <button type="button" class="text-sm font-semibold text-[#c2410c] hover:underline" (click)="openTenant(v.t.id)">Ver ficha del comercio →</button>
+                            </div>
+                          </td>
+                        </tr>
+                      }
                     } @empty {
-                      <tr><td colspan="6" class="py-12 text-center text-base-content/45">Ninguna venta en {{ monthLabel(lMonth()) }}.</td></tr>
+                      <tr><td colspan="5" class="py-12 text-center text-base-content/45">Ninguna venta {{ vMonth() ? 'en ' + monthLabel(vMonth()) : 'todavía' }}.</td></tr>
                     }
                   </tbody>
                 </table>
               </div>
               <p class="mt-3 text-xs text-base-content/45">
-                Todavía no registramos qué liquidaciones ya se pagaron: eso llega con la conexión al banco.
+                "Le debemos" es lo vendido menos nuestra comisión. Todavía no registramos qué transferencias ya se hicieron.
               </p>
             }
           }
@@ -602,7 +530,7 @@ const PAD = 6;
           <section>
             <div class="flex items-center justify-between">
               <h4 class="font-bold">Últimos cobros</h4>
-              <button type="button" class="text-sm font-semibold text-[#c2410c] hover:underline" (click)="seeCobros(d.t.id)">Ver todos →</button>
+              <button type="button" class="text-sm font-semibold text-[#c2410c] hover:underline" (click)="seeVentas(d.t.id)">Ver todos →</button>
             </div>
             <ul class="mt-2 divide-y divide-base-200">
               @for (c of d.recent; track c.code) {
@@ -660,7 +588,6 @@ export class AdminPanel {
   // value() lanza si el resource está en error: hasValue() primero.
   readonly tenantsList = computed(() => (this.tenants.hasValue() ? this.tenants.value() : []));
   private readonly tenantMap = computed(() => new Map(this.tenantsList().map(t => [t.id, t])));
-  readonly tenantsByName = computed(() => [...this.tenantsList()].sort((a, b) => a.business.name.localeCompare(b.business.name)));
 
   /** Todas las ventas de la plataforma, la más nueva primero. */
   readonly cobros = computed<Cobro[]>(() => {
@@ -814,76 +741,30 @@ export class AdminPanel {
     }
   }
 
-  seeCobros(id: string) {
-    this.cTenant.set(id); this.setRange('todo');
-    this.section.set('cobros'); this.closeTenant();
+  seeVentas(id: string) {
+    this.vMonth.set(''); this.vOpen.set(id);
+    this.section.set('ventas'); this.closeTenant();
   }
 
-  // ── cobros ─────────────────────────────────────────────────────────────────
-  readonly ranges = [
-    { id: 'mes', label: 'Este mes' }, { id: 'anterior', label: 'Mes anterior' },
-    { id: '30', label: 'Últimos 30 días' }, { id: 'todo', label: 'Todo' },
-  ];
-  readonly cq = signal('');
-  readonly cTenant = signal('');
-  readonly cState = signal('');
-  readonly cChannel = signal('');
-  readonly cRange = signal('mes');
-  readonly cFrom = signal(`${this.thisMonth}-01`);
-  readonly cTo = signal('');
-  readonly cLimit = signal(50);
-
-  setRange(id: string) {
-    this.cRange.set(id); this.cLimit.set(50);
-    const prev = this.months6[4];
-    const [from, to] = {
-      mes: [`${this.thisMonth}-01`, ''],
-      anterior: [`${prev}-01`, `${prev}-31`],
-      '30': [this.daysAgo(30), ''],
-      todo: ['', ''],
-    }[id] ?? ['', ''];
-    this.cFrom.set(from); this.cTo.set(to);
-  }
-
-  readonly cobrosFiltered = computed(() => {
-    const q = this.cq().trim().toLowerCase();
-    return this.cobros().filter(c =>
-      (!this.cTenant() || c.tenantId === this.cTenant()) &&
-      (!this.cState() || c.state === this.cState()) &&
-      (!this.cChannel() || c.channel === this.cChannel()) &&
-      (!this.cFrom() || c.date >= this.cFrom()) &&
-      (!this.cTo() || c.date <= this.cTo()) &&
-      (!q || c.code.toLowerCase().includes(q) || c.to.toLowerCase().includes(q) || c.tenant.toLowerCase().includes(q)));
-  });
-  readonly cobrosTotals = computed(() => totals(this.cobrosFiltered()));
-  readonly cobrosPage = computed(() => this.cobrosFiltered().slice(0, this.cLimit()));
-
-  exportCobros() {
-    this.download(`cobros-${new Date().toISOString().slice(0, 10)}.csv`, toCsv([
-      ['Fecha', 'Fecha estimada', 'Comercio', 'Código', 'Para', 'Canal', 'Estado', 'Monto', 'Comisión %', 'Comisión', 'Neto'],
-      ...this.cobrosFiltered().map(c => [c.date, c.estimated ? 'sí' : 'no', c.tenant, c.code, c.to, c.channel, c.state,
-        c.value, +(c.rate * 100).toFixed(2), c.fee, c.net]),
-    ]));
-  }
-
-  // ── liquidaciones ──────────────────────────────────────────────────────────
-  readonly lMonth = signal(this.thisMonth);
-  readonly liquidacion = computed(() => this.tenantsByName()
-    .map(t => ({ t, rate: rateOf(t), tot: totals(this.cobros().filter(c => c.tenantId === t.id && c.date.startsWith(this.lMonth()))) }))
-    .filter(l => l.tot.count > 0)
+  // ── ventas: cuánto se vendió, cuánto es nuestro y cuánto debemos, por comercio ──
+  /** `yyyy-mm`, o '' = desde siempre. */
+  readonly vMonth = signal(this.thisMonth);
+  readonly vOpen = signal<string | null>(null);
+  readonly ventas = computed(() => this.tenantsList()
+    .map(t => {
+      const list = this.cobros().filter(c => c.tenantId === t.id && c.date.startsWith(this.vMonth()));
+      return { t, rate: rateOf(t), list, tot: totals(list) };
+    })
+    .filter(v => v.tot.count > 0)
     .sort((a, b) => b.tot.net - a.tot.net));
-  readonly liqTotals = computed(() => {
-    const l = this.liquidacion();
-    const sum = (f: (x: typeof l[0]) => number) => Math.round(l.reduce((s, x) => s + f(x), 0) * 100) / 100;
-    return { gross: sum(x => x.tot.gross), fee: sum(x => x.tot.fee), net: sum(x => x.tot.net) };
-  });
+  readonly vTotals = computed(() => totals(this.ventas().flatMap(v => v.list)));
 
-  exportLiquidacion() {
-    this.download(`liquidacion-${this.lMonth()}.csv`, toCsv([
-      ['Comercio', 'Titular', 'Banco', 'Cuenta', 'NIT', 'Cobros', 'Bruto', 'Comisión %', 'Comisión', 'A transferir'],
-      ...this.liquidacion().map(l => [l.t.business.name, l.t.business.bank?.holder ?? '', l.t.business.bank?.bank ?? '',
-        l.t.business.bank?.account ?? '', l.t.business.bank?.nit ?? '', l.tot.count, l.tot.gross,
-        +(l.rate * 100).toFixed(2), l.tot.fee, l.tot.net]),
+  exportVentas() {
+    this.download(`ventas-${this.vMonth() || 'todo'}.csv`, toCsv([
+      ['Comercio', 'Titular', 'Banco', 'Cuenta', 'NIT', 'Cartas', 'Vendió', 'Comisión %', 'Comisión', 'Le debemos'],
+      ...this.ventas().map(v => [v.t.business.name, v.t.business.bank?.holder ?? '', v.t.business.bank?.bank ?? '',
+        v.t.business.bank?.account ?? '', v.t.business.bank?.nit ?? '', v.tot.count, v.tot.gross,
+        +(v.rate * 100).toFixed(2), v.tot.fee, v.tot.net]),
     ]));
   }
 

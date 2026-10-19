@@ -193,8 +193,9 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   crearse o la cambie después.
 - **Panel del superadmin** con el estilo del panel: Resumen (ingresos nuestros, GMV,
   salud, top, alertas), Comercios (búsqueda/filtros/orden + ficha lateral con la
-  comisión editable), Cobros (filtros + CSV) y Liquidaciones (bruto − comisión = a
-  transferir, planilla CSV). CSV con BOM, `;` y coma decimal: abre bien en Excel en español.
+  comisión editable) y Ventas (antes Cobros + Liquidaciones): un mes o "desde siempre",
+  tres números (vendimos / nuestra comisión / les debemos), una fila por comercio con su
+  cuenta y, al tocarla, sus ventas; planilla CSV por comercio. CSV con BOM, `;` y coma decimal: abre bien en Excel en español.
 - **Columna flex con scroll: `shrink-0` en los hijos**, o flex los encoge y un
   `overflow-hidden` se come el contenido (pasó con la cabecera de la ficha).
 
