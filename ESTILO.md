@@ -323,3 +323,17 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 - Scripts contra dev: `npm run seed:dev`, `npm run superadmin:dev -- correo`.
 - Alta de CI para dev (una vez): `scripts/setup-dev-ci.sh`.
 
+## Seguridad
+
+- No hay backend: **las Firestore Rules son toda la seguridad**. La UI oculta, las reglas mandan.
+- Cada permiso de tab también vale en las reglas: emitir/editar cartas = `viewCards`;
+  canjear = `redeem` y solo baja `balance`; página = `manageBranding`/`manageProducts`;
+  **cuenta bancaria = solo el dueño**.
+- Solo correos verificados (`email_verified`) cuentan como sesión.
+- Compra pública: solo campos conocidos, `to`/`from` ≤ 80, monto en `suggestedAmounts`.
+- Códigos `XXXX-XXXX` con `crypto.getRandomValues` (31^8): el código abre la página del
+  regalo, así que no puede ser corto ni predecible.
+- `scripts/rules.test.mjs` prueba esos casos en el emulador (`npm run test:rules`, Java 21);
+  corre en CI antes de cada deploy. Regla nueva → caso nuevo ahí.
+- Hosting: nosniff, sin iframes ajenos (clickjacking), referrer acotado, cámara solo propia.
+

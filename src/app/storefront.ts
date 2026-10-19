@@ -203,8 +203,8 @@ import { Wordmark } from './brand';
                       @case (1) {
                         <h2 class="mt-6 text-2xl font-extrabold tracking-tight">¿Para quién es?</h2>
                         <p class="mt-1 text-sm text-base-content/55">Su nombre aparece en la gift card.</p>
-                        <input class="field mt-4" [(ngModel)]="to" name="to" placeholder="Nombre de quien la recibe">
-                        <input class="field mt-2" [(ngModel)]="from" name="from" placeholder="De parte de… (opcional)">
+                        <input class="field mt-4" [(ngModel)]="to" name="to" maxlength="80" placeholder="Nombre de quien la recibe">
+                        <input class="field mt-2" [(ngModel)]="from" name="from" maxlength="80" placeholder="De parte de… (opcional)">
                         <p class="mt-2 text-xs text-base-content/50">Déjalo vacío si quieres que el regalo sea anónimo.</p>
                         <div class="mt-5 flex gap-2">
                           <button type="button" class="grid size-14 shrink-0 place-items-center rounded-2xl bg-base-200 transition active:scale-95" aria-label="Atrás" (click)="back()">

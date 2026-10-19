@@ -15,13 +15,16 @@ export function cardState(c: { balance: number; expires: string }, today = today
   return c.expires < today ? 'vencida' : 'activa';
 }
 
-/** Código de gift card: `1234-AB5`. Sin I/O/O/0/1 para que se dicte sin dudas.
- *  ponytail: aleatorio, sin garantía de unicidad. Con ~10^6 combinaciones y
- *  pocas cartas por comercio, choque improbable; si crece, verificar antes de escribir. */
-export function newCode(rnd = Math.random): string {
-  const d = () => Math.floor(rnd() * 10);
-  const L = () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(rnd() * 24)];
-  return `${d()}${d()}${d()}${d()}-${L()}${L()}${d()}`;
+/** Alfabeto de los códigos: sin 0/O, 1/I/L para que se dicten sin dudas. */
+const CODE_CHARS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+/** Código de gift card: `K7QM-3XPA`, 31^8 ≈ 8,5·10^11 combinaciones con azar
+ *  criptográfico. El código es el secreto que abre la página pública de la carta:
+ *  corto o predecible (Math.random), un bot adivinaría cartas ajenas. Los códigos
+ *  viejos (`1234-AB5`) siguen valiendo: se buscan por id, no por formato. */
+export function newCode(rnd = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32): string {
+  const c = () => CODE_CHARS[Math.floor(rnd() * CODE_CHARS.length)];
+  return `${c()}${c()}${c()}${c()}-${c()}${c()}${c()}${c()}`;
 }
 
 /** Vence a N meses de la emisión, en ISO `yyyy-mm-dd`. */

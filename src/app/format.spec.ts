@@ -44,11 +44,11 @@ describe('cardState', () => {
 });
 
 describe('newCode', () => {
-  it('tiene forma 1234-AB5 y evita letras ambiguas', () => {
+  it('tiene forma XXXX-XXXX y evita caracteres ambiguos', () => {
     for (let i = 0; i < 50; i++) {
       const c = newCode();
-      expect(c).toMatch(/^\d{4}-[A-Z]{2}\d$/);
-      expect(c).not.toMatch(/[IO]/);
+      expect(c).toMatch(/^[2-9A-Z]{4}-[2-9A-Z]{4}$/);
+      expect(c).not.toMatch(/[01IOL]/);
     }
   });
 });

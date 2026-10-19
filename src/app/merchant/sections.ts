@@ -106,11 +106,11 @@ const TABS: { id: CardState; label: string }[] = [
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
         <label class="form-control sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">Destinatario</span>
-          <input class="input input-bordered w-full" [(ngModel)]="fTo" name="to" placeholder="Nombre">
+          <input class="input input-bordered w-full" [(ngModel)]="fTo" name="to" maxlength="80" placeholder="Nombre">
         </label>
         <label class="form-control sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">De parte de <span class="text-base-content/40">(opcional)</span></span>
-          <input class="input input-bordered w-full" [(ngModel)]="fFrom" name="from" placeholder="Quién regala — vacío = anónimo">
+          <input class="input input-bordered w-full" [(ngModel)]="fFrom" name="from" maxlength="80" placeholder="Quién regala — vacío = anónimo">
         </label>
         <div class="sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">Valor</span>
@@ -505,7 +505,7 @@ export class Marca {
   readonly cardStyles = CARD_STYLES;
   surfaceOf(id: Business['cardStyle']) { return cardSurface(id, this.v().color); }
   /** Una carta de ejemplo para la vista previa del diseño. */
-  readonly sampleCard: GiftCard = { code: '1234-AB5', to: 'Lucía', from: 'Diego', value: 100, balance: 100, expires: '2027-12-31' };
+  readonly sampleCard: GiftCard = { code: 'K7QM-3XPA', to: 'Lucía', from: 'Diego', value: 100, balance: 100, expires: '2027-12-31' };
   /** Solo lo que de verdad difiere de lo guardado (volver al valor original no cuenta). */
   private readonly changes = computed(() => Object.fromEntries(
     Object.entries(this.draft()).filter(([k, val]) => this.b()[k as keyof Business] !== val)) as Partial<Business>);

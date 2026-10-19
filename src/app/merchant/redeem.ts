@@ -41,7 +41,7 @@ const BD: any = (globalThis as any).BarcodeDetector;
             }
             <div class="join mt-1 w-full">
               <input class="input input-bordered join-item w-full font-mono uppercase" [(ngModel)]="code"
-                     name="code" placeholder="1234-AB5" (keyup.enter)="lookup()">
+                     name="code" placeholder="K7QM-3XPA" (keyup.enter)="lookup()">
               <button type="button" class="btn btn-neutral join-item" (click)="lookup()">Buscar</button>
             </div>
           }

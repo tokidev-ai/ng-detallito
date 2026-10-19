@@ -32,6 +32,12 @@ jobs:
 
       - run: npm ci --legacy-peer-deps
       - run: npm test -- --watch=false
+      # Las reglas son toda la seguridad: si un caso se rompe, no se despliega.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm run test:rules
       - run: npx ng build --configuration $CONFIG
 
       # Sin claves en disco: GitHub se identifica por OIDC y Google le presta la service
