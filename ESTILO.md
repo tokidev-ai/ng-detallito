@@ -266,6 +266,10 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   fondo con la paleta del comercio y aurora, titular personal ("Ana, te regalaron Bs 80"),
   la tarjeta flotando, "Cómo usarla" en 3 pasos (con copiar código) y confeti si está
   activa. Canjeada/vencida: tarjeta en gris y el aviso arriba.
+- **Imágenes subidas = `logoDataUrl()`** (data.ts), nunca el archivo crudo ni un `blob:`:
+  recorte cuadrado, ≤256px, WebP con tope de 40 KB (baja calidad y después tamaño), lee
+  SVG y fotos rotadas, y lanza un Error con mensaje para mostrar. El logo se guarda al
+  subirlo, sin esperar a "Guardar cambios". Cualquier imagen nueva que se suba pasa por ahí.
 - **Gift card de dos caras** (`app-giftcard-art`): el frente es solo marca y monto (se
   puede mostrar sin cuidado); el revés tiene para/de, código, QR, saldo y vencimiento, con
   un ojito que los difumina. Se gira tocando la tarjeta o con el botón de abajo (CSS 3D:

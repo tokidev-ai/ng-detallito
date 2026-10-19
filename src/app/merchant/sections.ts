@@ -327,12 +327,16 @@ export class Emitidas {
         <h2 class="text-lg font-medium">Tu marca</h2>
 
         <div class="mt-5 flex flex-col gap-5 sm:flex-row">
-          <label class="grid h-28 w-28 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 transition hover:border-primary/50 hover:bg-base-200">
-            @if (v().logoUrl) {
-              <img [src]="v().logoUrl" alt="logo" class="size-full object-cover">
-            } @else { <span>sube tu<br>logo</span> }
-            <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
-          </label>
+          <div class="w-28 shrink-0">
+            <label class="grid h-28 w-28 cursor-pointer place-items-center overflow-hidden rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 transition hover:border-primary/50 hover:bg-base-200">
+              @if (logoBusy()) { <span class="loading loading-spinner"></span> }
+              @else if (v().logoUrl) {
+                <img [src]="v().logoUrl" alt="logo" class="size-full object-cover">
+              } @else { <span>sube tu<br>logo</span> }
+              <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
+            </label>
+            @if (logoError()) { <p class="mt-1 text-xs text-error">{{ logoError() }}</p> }
+          </div>
 
           <div class="flex-1 space-y-4">
             <label class="form-control block">
@@ -546,14 +550,22 @@ export class Marca {
 
   /** El logo se guarda al subirlo, sin esperar a "Guardar cambios": es lo que uno
    *  espera de una subida, y así un reload no lo pierde. */
+  readonly logoBusy = signal(false);
+  readonly logoError = signal('');
   async onLogo(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    const logoUrl = await logoDataUrl(file);
-    await this.s.saveBusiness({ logoUrl });
-    this.draft.update(({ logoUrl: _, ...rest }) => rest);
-    input.value = '';  // permite volver a elegir el mismo archivo
+    this.logoBusy.set(true); this.logoError.set('');
+    try {
+      await this.s.saveBusiness({ logoUrl: await logoDataUrl(file) });
+      this.draft.update(({ logoUrl: _, ...rest }) => rest);
+    } catch (err) {
+      this.logoError.set(err instanceof Error && !('code' in err) ? err.message : 'No se pudo guardar el logo. Prueba de nuevo.');
+    } finally {
+      this.logoBusy.set(false);
+      input.value = '';  // permite volver a elegir el mismo archivo
+    }
   }
 }
 

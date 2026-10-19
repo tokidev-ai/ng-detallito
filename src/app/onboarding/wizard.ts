@@ -55,12 +55,16 @@ export const slugify = (s: string) =>
 
             @case (0) {
               <div class="flex flex-col gap-5 sm:flex-row">
-                <label class="grid h-28 w-28 shrink-0 cursor-pointer place-items-center rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 hover:border-primary/40">
-                  @if (draft().logoUrl) {
-                    <img [src]="draft().logoUrl" alt="logo" class="size-full rounded-box object-cover">
-                  } @else { <span>sube tu<br>logo</span> }
-                  <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
-                </label>
+                <div class="w-28 shrink-0">
+                  <label class="grid h-28 w-28 cursor-pointer place-items-center rounded-box border-2 border-dashed border-base-300 text-center text-sm text-base-content/50 hover:border-primary/40">
+                    @if (logoBusy()) { <span class="loading loading-spinner"></span> }
+                    @else if (draft().logoUrl) {
+                      <img [src]="draft().logoUrl" alt="logo" class="size-full rounded-box object-cover">
+                    } @else { <span>sube tu<br>logo</span> }
+                    <input type="file" accept="image/*" class="hidden" (change)="onLogo($event)">
+                  </label>
+                  @if (logoError()) { <p class="mt-1 text-xs text-error">{{ logoError() }}</p> }
+                </div>
 
                 <div class="flex-1 space-y-4">
                   <label class="form-control block">
@@ -238,9 +242,16 @@ export class Onboarding {
     this.draft.update(d => ({ ...d, name, slug: this.slugTouched ? d.slug : slugify(name) }));
   }
 
+  readonly logoBusy = signal(false);
+  readonly logoError = signal('');
   async onLogo(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) this.patch({ logoUrl: await logoDataUrl(file) });
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.logoBusy.set(true); this.logoError.set('');
+    try { this.patch({ logoUrl: await logoDataUrl(file) }); }
+    catch (err) { this.logoError.set((err as Error).message); }
+    finally { this.logoBusy.set(false); input.value = ''; }
   }
 
   goTo(i: number) { if (i <= this.furthest()) this.step.set(i); }

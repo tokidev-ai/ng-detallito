@@ -12,16 +12,40 @@ export { cardState } from './card';
 export type { CardState } from './card';
 export type Perm = 'redeem' | 'viewCards' | 'viewSales' | 'manageProducts' | 'manageBranding' | 'manageStaff';
 
-/** Achica el logo a 256px y lo devuelve como data URL para guardarlo tal cual en
- *  el doc del comercio (~20-40 KB). Un blob: URL no sirve: solo vive en la pestaña.
- *  ponytail: data URL en Firestore, no Storage; pasar a Storage si se suben imágenes grandes. */
-export async function logoDataUrl(file: File, max = 256): Promise<string> {
-  const img = await createImageBitmap(file);
-  const k = Math.min(1, max / Math.max(img.width, img.height));
-  const c = document.createElement('canvas');
-  c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-  c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
-  return c.toDataURL('image/webp', 0.85);
+/** Optimiza el logo para guardarlo tal cual en el doc del comercio, que se baja
+ *  entero en cada página: recorte cuadrado al centro (todos los lugares lo muestran
+ *  en un cuadrado o círculo), 256px como máximo y WebP, bajando calidad y después
+ *  tamaño hasta entrar en `budget` caracteres. Una foto de 10 MB queda en ~15-30 KB.
+ *  Safari viejo no codifica WebP y devuelve PNG: ahí entra achicando. Lanza un Error
+ *  con un mensaje para mostrar si el archivo no es una imagen que el navegador lea.
+ *  ponytail: data URL en Firestore, no Storage; pasar a Storage si hacen falta imágenes grandes. */
+export async function logoDataUrl(file: File, max = 256, budget = 40_000): Promise<string> {
+  if (!file.type.startsWith('image/')) throw new Error('Ese archivo no es una imagen.');
+  if (file.size > 30_000_000) throw new Error('La imagen pesa más de 30 MB. Prueba con una más liviana.');
+
+  // <img> y no createImageBitmap: también lee SVG y respeta la rotación EXIF de las fotos
+  const src = URL.createObjectURL(file);
+  const img = new Image();
+  img.src = src;
+  try { await img.decode(); }
+  catch { throw new Error('No pudimos leer esa imagen. Prueba con JPG, PNG o WebP.'); }
+  finally { URL.revokeObjectURL(src); }
+
+  const w = img.naturalWidth || 512, h = img.naturalHeight || 512;  // SVG sin tamaño propio
+  const side = Math.min(w, h);
+  let url = '';
+  for (let size = Math.min(max, side); ; size = Math.round(size * 0.75)) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d')!;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, (w - side) / 2, (h - side) / 2, side, side, 0, 0, size, size);
+    for (const q of [0.85, 0.7, 0.55]) {
+      url = c.toDataURL('image/webp', q);
+      if (url.length <= budget) return url;
+    }
+    if (size <= 96) return url;  // piso: más chico ya no se reconoce el logo
+  }
 }
 
 /** Diseño de la gift card, a elección del comercio. Ver `cardSurface` en giftcard.ts. */
