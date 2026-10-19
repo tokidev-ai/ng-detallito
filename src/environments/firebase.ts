@@ -1,6 +1,8 @@
 // Config pública del proyecto Firebase `giftcards-bo`.
 // No es un secreto: la apiKey de una app web viaja en el bundle por diseño.
 // Lo que protege los datos son las Firestore Rules, no esta clave.
+// El ambiente dev usa firebase.dev.ts en su lugar (ver angular.json).
+export const envName: 'prod' | 'dev' = 'prod';
 export const firebaseConfig = {
     apiKey: 'AIzaSyDbqmFqjxEhPibX026ne02O7K8Or5vBKx0',
     authDomain: 'giftcards-bo.firebaseapp.com',

@@ -12,7 +12,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const PROJECT = 'giftcards-bo';
+const PROJECT = process.env.GKB_PROJECT ?? 'giftcards-bo';  // dev: npm run …:dev
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 const sh = (c, a) => execFileSync(c, a, { encoding: 'utf8' }).trim();
 

@@ -1,12 +1,13 @@
 name: Deploy
 
+# main → producción (giftcards-bo.web.app), dev → pruebas (giftcards-bo-dev.web.app).
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 concurrency:
-  group: deploy
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: false
 
 permissions:
@@ -16,9 +17,12 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      PROJECT: ${{ github.ref_name == 'main' && 'giftcards-bo' || 'giftcards-bo-dev' }}
+      CONFIG: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
     environment:
-      name: production
-      url: https://giftcards-bo.web.app
+      name: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+      url: https://${{ github.ref_name == 'main' && 'giftcards-bo' || 'giftcards-bo-dev' }}.web.app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,13 +32,14 @@ jobs:
 
       - run: npm ci --legacy-peer-deps
       - run: npm test -- --watch=false
-      - run: npm run build
+      - run: npx ng build --configuration $CONFIG
 
-      # Sin claves en disco: GitHub se identifica por OIDC y Google le presta la service account.
+      # Sin claves en disco: GitHub se identifica por OIDC y Google le presta la service
+      # account del ambiente. El pool vive en el proyecto de prod y sirve para los dos.
       - uses: google-github-actions/auth@v2
         with:
-          project_id: giftcards-bo
+          project_id: ${{ env.PROJECT }}
           workload_identity_provider: projects/410167250500/locations/global/workloadIdentityPools/github/providers/gh-oidc
-          service_account: ci-deploy@giftcards-bo.iam.gserviceaccount.com
+          service_account: ci-deploy@${{ env.PROJECT }}.iam.gserviceaccount.com
 
-      - run: npx firebase-tools deploy --only hosting,firestore:rules,firestore:indexes --project giftcards-bo --non-interactive
+      - run: npx firebase-tools deploy --only hosting,firestore:rules,firestore:indexes --project $PROJECT --non-interactive

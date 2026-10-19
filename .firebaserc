@@ -1,1 +1,1 @@
-{ "projects": { "default": "giftcards-bo" } }
+{ "projects": { "default": "giftcards-bo", "prod": "giftcards-bo", "dev": "giftcards-bo-dev" } }

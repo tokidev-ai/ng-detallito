@@ -310,3 +310,16 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   `gkb.tenant`), si no uno propio, si no el primero. Nunca `list[0]` a secas: con un
   comercio propio y otro ajeno, la persona caía en el ajeno y parecía haber perdido el
   rol. El selector marca cada comercio como "dueño" o "equipo".
+
+## Ambientes
+
+- **prod** = Firebase `giftcards-bo` → https://giftcards-bo.web.app, rama `main`.
+- **dev** = Firebase `giftcards-bo-dev` → https://giftcards-bo-dev.web.app, rama `dev`.
+  Otra base y otros usuarios: lo que se prueba en dev no toca datos reales.
+- El Action `Deploy` elige proyecto y build por rama (`main` → `production`, `dev` → `dev`).
+- `ng serve` usa **dev** (fileReplacements de `development`): trabajar en local nunca
+  escribe en prod. En dev se ve una etiqueta "DEV" abajo a la izquierda.
+- Config de cada uno: `src/environments/firebase.ts` (prod) y `firebase.dev.ts` (dev).
+- Scripts contra dev: `npm run seed:dev`, `npm run superadmin:dev -- correo`.
+- Alta de CI para dev (una vez): `scripts/setup-dev-ci.sh`.
+

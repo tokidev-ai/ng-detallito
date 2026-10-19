@@ -5,10 +5,13 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:dev": "ng build --configuration dev",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "seed": "node scripts/seed.mjs",
-    "superadmin": "node scripts/superadmin.mjs"
+    "seed:dev": "GKB_PROJECT=giftcards-bo-dev node scripts/seed.mjs",
+    "superadmin": "node scripts/superadmin.mjs",
+    "superadmin:dev": "GKB_PROJECT=giftcards-bo-dev node scripts/superadmin.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.8",
