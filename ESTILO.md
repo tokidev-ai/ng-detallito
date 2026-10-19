@@ -280,7 +280,8 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 - **Enviar = un modal**, no un dropdown: un menú CSS dentro del contenedor con scroll
   de la tabla queda recortado. El modal (overlay fijo) muestra el diseño + WhatsApp/Correo/link.
 - **RBAC:** cada tab del shell tiene un `perm`; `Store.can(perm)` decide (el owner puede
-  todo, `isOwner` por `ownerUid == uid`; el resto por `currentMember().perms[perm]`, buscado
+  todo, `isOwner` por `ownerUid == uid` **o** su doc de staff con `role: 'owner'`, así un
+  uid que cambia no le quita el rol; el resto por `currentMember().perms[perm]`, buscado
   por email en `staff()`). El shell muestra solo los tabs permitidos y redirige si caés en
   uno que no podés. En Equipo el dueño agrega/quita miembros y reparte permisos por tab.
 - **Membresía por correo, no por uid.** `Tenant.memberEmails` (incluye al dueño);
@@ -288,4 +289,6 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   un empleado por email lo mete en `memberEmails` (arrayUnion) → puede loguearse con esa
   cuenta Google y entrar, sin sincronizar uids. Reglas: `isMember` por correo, `hasPerm`
   lee el doc de `staff` por correo; tocar `memberEmails` o escribir `staff` exige
-  `manageStaff` (o ser owner, que cubre el arranque). La UI oculta; las Rules mandan.
+  `manageStaff` (o ser owner, que cubre el arranque). Con `manageStaff` sin ser owner no se
+  toca el doc del dueño, no se crea otro `role: 'owner'` ni se cambia `memberEmails[0]`
+  (= el dueño). La UI oculta; las Rules mandan.

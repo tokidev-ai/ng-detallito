@@ -132,13 +132,16 @@ export class Store {
   readonly monthly = computed(() => this.current()?.monthly ?? []);
 
   // ── RBAC: quién soy en el comercio activo y qué puedo ────────────────────────
-  readonly isOwner = computed(() => {
-    const uid = this.auth.uid();
-    return !!uid && this.current()?.ownerUid === uid;
-  });
   readonly currentMember = computed(() => {
     const email = this.auth.user()?.email ?? null;
     return email ? this.staff().find(m => m.email === email) ?? null : null;
+  });
+  /** Dueño = el uid que lo creó, o su doc de staff con role 'owner'. Lo segundo
+   *  cubre que el uid cambie (cuenta borrada y vuelta a crear, seed con otro
+   *  usuario): la membresía es por correo, así que el dueño también. */
+  readonly isOwner = computed(() => {
+    const uid = this.auth.uid();
+    return (!!uid && this.current()?.ownerUid === uid) || this.currentMember()?.role === 'owner';
   });
   /** El owner puede todo; el resto, según su permiso. La UI oculta con esto;
    *  las Firestore Rules son las que mandan de verdad. */

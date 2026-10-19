@@ -38,8 +38,14 @@ service cloud.firestore {
              && exists(/databases/$(database)/documents/superadmins/$(request.auth.uid));
     }
 
+    // Dueño por uid, o por su doc de staff con role 'owner' (mismo criterio que
+    // la app: si el uid cambia, el correo sigue siendo el dueño). Ese doc solo lo
+    // escribe el dueño: ver /staff abajo.
     function isOwner(tenantId) {
-      return signedIn() && request.auth.uid == tenant(tenantId).ownerUid;
+      return signedIn()
+             && (request.auth.uid == tenant(tenantId).ownerUid
+                 || (isMember(tenantId)
+                     && get(/databases/$(database)/documents/tenants/$(tenantId)/staff/$(myEmail())).data.role == 'owner'));
     }
 
     // El libro de cobros del superadmin: lee las cards de TODOS los comercios con
@@ -77,7 +83,10 @@ service cloud.firestore {
                     && request.resource.data.ownerUid == resource.data.ownerUid
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['commissionRate'])
                     && (request.resource.data.memberEmails == resource.data.memberEmails
-                        || isOwner(tenantId) || hasPerm(tenantId, 'manageStaff'));
+                        || isOwner(tenantId)
+                        // memberEmails[0] es el dueño: un empleado no lo puede sacar
+                        || (hasPerm(tenantId, 'manageStaff')
+                            && request.resource.data.memberEmails[0] == resource.data.memberEmails[0]));
 
       // el superadmin solo toca la comisión (entre 0% y 50%), nada más del comercio
       allow update: if isSuperadmin()
@@ -113,7 +122,11 @@ service cloud.firestore {
       }
       match /staff/{email} {
         allow read: if isMember(tenantId);
-        allow write: if isOwner(tenantId) || hasPerm(tenantId, 'manageStaff');
+        // quien gestiona el equipo toca empleados, nunca al dueño ni crea otro dueño
+        allow write: if isOwner(tenantId)
+                     || (hasPerm(tenantId, 'manageStaff')
+                         && (resource == null || resource.data.role == 'staff')
+                         && (request.resource == null || request.resource.data.role == 'staff'));
       }
     }
   }
