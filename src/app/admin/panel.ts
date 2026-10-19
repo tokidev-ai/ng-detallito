@@ -364,10 +364,16 @@ const PAD = 6;
             <!-- ════════════════ VENTAS ════════════════ -->
             @case ('ventas') {
               <div class="reveal flex flex-wrap items-center justify-between gap-3">
-                <select class="select select-bordered select-sm rounded-full" [ngModel]="vMonth()" (ngModelChange)="vMonth.set($event); vOpen.set(null)" name="vMonth">
-                  @for (m of months6Desc; track m) { <option [value]="m">{{ monthLabel(m) }}</option> }
-                  <option value="">Desde siempre</option>
-                </select>
+                <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                  <label class="relative min-w-0 flex-1 sm:max-w-xs">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-base-content/40"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+                    <input class="input input-bordered input-sm w-full rounded-full ps-9" [ngModel]="vq()" (ngModelChange)="vq.set($event)" name="vq" placeholder="Buscar negocio">
+                  </label>
+                  <select class="select select-bordered select-sm rounded-full" [ngModel]="vMonth()" (ngModelChange)="vMonth.set($event); vOpen.set(null)" name="vMonth">
+                    @for (m of months6Desc; track m) { <option [value]="m">{{ monthLabel(m) }}</option> }
+                    <option value="">Desde siempre</option>
+                  </select>
+                </div>
                 <button type="button" class="btn btn-sm rounded-full border-base-300 bg-base-100" (click)="exportVentas()" [disabled]="!ventas().length">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   Planilla CSV
@@ -377,7 +383,7 @@ const PAD = 6;
               <!-- las tres preguntas: cuánto se vendió, cuánto es nuestro, cuánto debemos -->
               <div class="reveal reveal-1 mt-5 grid gap-3 sm:grid-cols-3">
                 <div class="rounded-box border border-base-300 bg-base-100 p-5">
-                  <p class="text-sm text-base-content/55">Vendimos</p>
+                  <p class="text-sm text-base-content/55">Lo que vendieron todos los negocios</p>
                   <p class="mt-1 text-3xl font-extrabold tabular-nums">{{ vTotals().gross | bs }}</p>
                   <p class="text-xs text-base-content/45">{{ vTotals().count }} gift cards</p>
                 </div>
@@ -442,7 +448,7 @@ const PAD = 6;
                         </tr>
                       }
                     } @empty {
-                      <tr><td colspan="5" class="py-12 text-center text-base-content/45">Ninguna venta {{ vMonth() ? 'en ' + monthLabel(vMonth()) : 'todavía' }}.</td></tr>
+                      <tr><td colspan="5" class="py-12 text-center text-base-content/45">@if (vq().trim()) { Ningún negocio con ventas que coincida con "{{ vq().trim() }}". } @else { Ninguna venta {{ vMonth() ? 'en ' + monthLabel(vMonth()) : 'todavía' }}. }</td></tr>
                     }
                   </tbody>
                 </table>
@@ -750,7 +756,14 @@ export class AdminPanel {
   /** `yyyy-mm`, o '' = desde siempre. */
   readonly vMonth = signal(this.thisMonth);
   readonly vOpen = signal<string | null>(null);
+  /** Búsqueda por nombre o link del negocio. Los tres números de arriba siguen
+   *  el filtro: buscando uno, muestran solo lo de ese negocio. */
+  readonly vq = signal('');
   readonly ventas = computed(() => this.tenantsList()
+    .filter(t => {
+      const q = this.vq().trim().toLowerCase();
+      return !q || t.business.name.toLowerCase().includes(q) || t.business.slug.includes(q);
+    })
     .map(t => {
       const list = this.cobros().filter(c => c.tenantId === t.id && c.date.startsWith(this.vMonth()));
       return { t, rate: rateOf(t), list, tot: totals(list) };
