@@ -111,7 +111,26 @@ export class Store {
   readonly tenantsLoaded = computed(() => this.auth.ready() && this.tenantsState().loaded);
 
   readonly current = computed(() => this.tenants().find(t => t.id === this.currentId()) ?? null);
-  setCurrent(id: string | null) { this.currentId.set(id); }
+  setCurrent(id: string | null) {
+    this.currentId.set(id);
+    try { if (id) localStorage.setItem(LAST_TENANT, id); } catch { /* sin storage: entra al suyo */ }
+  }
+
+  /** ¿Es mío este comercio? uid del creador o memberEmails[0] (el dueño va primero). */
+  owns(t: Tenant) {
+    const u = this.auth.user();
+    return !!u && (t.ownerUid === u.uid || t.memberEmails?.[0] === u.email);
+  }
+
+  /** A qué comercio entrar desde /app: el último usado, si no uno propio, si no el
+   *  primero. Antes era siempre el primero por slug, y quien era dueño de uno y
+   *  empleado de otro podía caer en el ajeno y "perder" el rol de dueño. */
+  readonly homeTenant = computed(() => {
+    const list = this.tenants();
+    let last: string | null = null;
+    try { last = localStorage.getItem(LAST_TENANT); } catch { /* idem */ }
+    return list.find(t => t.id === last) ?? list.find(t => this.owns(t)) ?? list[0] ?? null;
+  });
 
   // ── subcolecciones del comercio activo ─────────────────────────────────────
   private sub<T>(name: string, idField?: string) {
@@ -319,6 +338,7 @@ export class Store {
 
 }
 
+const LAST_TENANT = 'gkb.tenant';
 const liveOf = (cards: GiftCard[]) => cards.filter(c => cardState(c) === 'activa');
 
 /** Sello `dd/mm HH:mm` para el registro de canje, en hora local. */

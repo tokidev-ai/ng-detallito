@@ -292,3 +292,7 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   `manageStaff` (o ser owner, que cubre el arranque). Con `manageStaff` sin ser owner no se
   toca el doc del dueño, no se crea otro `role: 'owner'` ni se cambia `memberEmails[0]`
   (= el dueño). La UI oculta; las Rules mandan.
+- **A qué comercio entra `/app`:** `Store.homeTenant()`: el último usado (localStorage
+  `gkb.tenant`), si no uno propio, si no el primero. Nunca `list[0]` a secas: con un
+  comercio propio y otro ajeno, la persona caía en el ajeno y parecía haber perdido el
+  rol. El selector marca cada comercio como "dueño" o "equipo".

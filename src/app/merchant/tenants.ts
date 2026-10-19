@@ -115,8 +115,8 @@ export class Tenants {
   constructor() {
     // Con comercios, el admin es el panel del comercio: entramos directo.
     effect(() => {
-      const list = this.s.tenants();
-      if (list.length) this.router.navigate(['/app', list[0].id, 'resumen'], { replaceUrl: true });
+      const home = this.s.homeTenant();
+      if (home) this.router.navigate(['/app', home.id, 'resumen'], { replaceUrl: true });
     });
   }
 

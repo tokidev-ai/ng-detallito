@@ -53,6 +53,7 @@ const TABS: Tab[] = [
             <a [routerLink]="['/app', t.id, 'resumen']" [class.menu-active]="t.id === tenant()">
               <span class="size-3 rounded-full" [style.background-color]="t.business.color"></span>
               <span class="truncate">{{ t.business.name }}</span>
+              <span class="ms-auto text-xs text-base-content/45">{{ store.owns(t) ? 'dueño' : 'equipo' }}</span>
             </a>
           </li>
         }
