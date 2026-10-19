@@ -25,7 +25,7 @@ function resolveOwner(argUid) {
 
   if (!users.length) {
     console.error('\nNo hay ningún usuario todavía.');
-    console.error('Entra una vez en https://giftcards-bo.web.app/login y vuelve a correr esto.\n');
+    console.error(`Entra una vez en https://${PROJECT}.web.app/login y vuelve a correr esto.\n`);
     process.exit(1);
   }
   if (argUid) {
@@ -164,4 +164,4 @@ for (const t of TENANTS) {
   console.log(`  ✓ ${t.business.name} — ${t.business.suggestedAmounts.length} montos, ${t.cards.length} gift cards`);
 }
 
-console.log('\nListo. https://giftcards-bo.web.app/app\n');
+console.log(`\nListo. https://${PROJECT}.web.app/app\n`);
