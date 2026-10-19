@@ -1,7 +1,7 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Business, EMPTY_BUSINESS, Store } from '../data';
+import { Business, EMPTY_BUSINESS, Store, logoDataUrl } from '../data';
 import { Storefront } from '../storefront';
 import { Wordmark } from '../brand';
 
@@ -238,9 +238,9 @@ export class Onboarding {
     this.draft.update(d => ({ ...d, name, slug: this.slugTouched ? d.slug : slugify(name) }));
   }
 
-  onLogo(e: Event) {
+  async onLogo(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) this.patch({ logoUrl: URL.createObjectURL(file) });
+    if (file) this.patch({ logoUrl: await logoDataUrl(file) });
   }
 
   goTo(i: number) { if (i <= this.furthest()) this.step.set(i); }

@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Business, CardState, GiftCard, Perm, Store, cardState } from '../data';
+import { Business, CardState, GiftCard, Perm, Store, cardState, logoDataUrl } from '../data';
 import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
 import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
@@ -528,11 +528,9 @@ export class Marca {
     }
   }
 
-  onLogo(e: Event) {
+  async onLogo(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
-    // ponytail: objectURL, no Storage: se ve al instante y no sobrevive al reload.
-    // Cuando entre Firebase Storage se sube aquí y se guarda la URL real.
-    if (file) this.edit({ logoUrl: URL.createObjectURL(file) });
+    if (file) this.edit({ logoUrl: await logoDataUrl(file) });
   }
 }
 

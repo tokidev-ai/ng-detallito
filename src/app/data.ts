@@ -12,6 +12,18 @@ export { cardState } from './card';
 export type { CardState } from './card';
 export type Perm = 'redeem' | 'viewCards' | 'viewSales' | 'manageProducts' | 'manageBranding' | 'manageStaff';
 
+/** Achica el logo a 256px y lo devuelve como data URL para guardarlo tal cual en
+ *  el doc del comercio (~20-40 KB). Un blob: URL no sirve: solo vive en la pestaña.
+ *  ponytail: data URL en Firestore, no Storage; pasar a Storage si se suben imágenes grandes. */
+export async function logoDataUrl(file: File, max = 256): Promise<string> {
+  const img = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/webp', 0.85);
+}
+
 export interface Business {
   name: string;
   slug: string;
