@@ -1,72 +1,153 @@
-import { Component, computed, inject, input, resource, signal } from '@angular/core';
+import { Component, computed, inject, input, model, resource, signal } from '@angular/core';
 import QRCode from 'qrcode';
-import { Business, GiftCard, Store, cardState } from './data';
+import { Business, CardStyle, GiftCard, Store, cardState } from './data';
 import { giftPath } from './card';
 import { BsPipe, FechaPipe, onBrand } from './ui';
 import { Wordmark } from './brand';
 
-/** El diseño de la gift card: color y logo del comercio, monto, para/de, código
- *  y un QR que lleva a esta misma página pública. Se reutiliza en el panel (para
- *  mandarla), en el checkout (recién comprada) y en la página pública del regalo. */
+export const CARD_STYLES: { id: CardStyle; label: string }[] = [
+  { id: 'degradado', label: 'Degradado' },
+  { id: 'logo', label: 'Tu logo' },
+  { id: 'claro', label: 'Claro' },
+  { id: 'oscuro', label: 'Oscuro' },
+];
+
+/** Fondo y tinta de cada diseño, a partir del color del comercio. Va dentro de
+ *  un `.storefront` con `--c1`, que deriva `--c2` (el segundo tono del degradado). */
+export function cardSurface(style: CardStyle | undefined, color: string): { bg: string; ink: string } {
+  switch (style) {
+    case 'logo': return { bg: 'var(--c1)', ink: onBrand(color) };
+    case 'claro': return { bg: '#faf8f3', ink: '#1c1b18' };
+    case 'oscuro': return {
+      bg: 'radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, var(--c1) 60%, transparent), transparent 65%), #141414',
+      ink: '#ffffff',
+    };
+    default: return { bg: 'linear-gradient(135deg, var(--c1), var(--c2))', ink: onBrand(color) };
+  }
+}
+
+/** La gift card, con dos caras. El frente es solo marca y monto, nada que sirva
+ *  para canjearla: se puede mostrar sin cuidado. El revés tiene para quién, el
+ *  código y el QR, y un ojito que los difumina. Se gira tocando la tarjeta o con
+ *  el botón de abajo. Se usa en el panel, al terminar la compra y en la página del regalo. */
 @Component({
   selector: 'app-giftcard-art',
   imports: [BsPipe, FechaPipe],
   template: `
-  <!-- .storefront solo para heredar la paleta derivada (--c2) del color del comercio -->
-  <div class="storefront shine relative overflow-hidden rounded-2xl shadow-2xl" [style.--c1]="business().color"
-       [style.background-color]="business().color" style="background-image:linear-gradient(135deg,var(--c1),var(--c2))"
-       [style.color]="ink()">
-    <!-- decoración: dos círculos como en las tarjetas de banco -->
-    <span class="pointer-events-none absolute -right-12 -top-12 size-44 rounded-full bg-white/15" aria-hidden="true"></span>
-    <span class="pointer-events-none absolute -bottom-24 -left-10 size-56 rounded-full bg-black/10" aria-hidden="true"></span>
+  <div class="storefront flip" [style.--c1]="business().color">
+    <div class="flip-inner cursor-pointer" [class.is-flipped]="flipped()" (click)="flipped.set(!flipped())">
 
-    <div class="relative p-5 sm:p-6">
-      <div class="flex items-center gap-3">
-        <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-white/25 text-[10px] ring-2 ring-white/30">
-          @if (business().logoUrl) { <img [src]="business().logoUrl" alt="" class="size-full object-cover"> }
-          @else { logo }
+      <!-- ── frente: la marca ── -->
+      <div class="flip-face shine relative flex min-h-52 flex-col justify-between overflow-hidden rounded-2xl p-5 shadow-2xl sm:p-6"
+           [style.background]="surface().bg" [style.color]="surface().ink" [attr.aria-hidden]="flipped()">
+        @switch (style()) {
+          @case ('logo') {
+            <!-- el logo grande, de marca de agua -->
+            <div class="pointer-events-none absolute -bottom-10 -right-8 grid size-56 rotate-[-12deg] place-items-center overflow-hidden rounded-[2.5rem] opacity-20" aria-hidden="true">
+              @if (business().logoUrl) { <img [src]="business().logoUrl" alt="" class="size-full object-cover"> }
+              @else { <span class="text-[9rem] font-extrabold leading-none">{{ initial() }}</span> }
+            </div>
+          }
+          @case ('claro') {
+            <span class="pointer-events-none absolute inset-y-0 left-0 w-2" style="background:linear-gradient(var(--c1),var(--c2))" aria-hidden="true"></span>
+            <span class="pointer-events-none absolute -right-14 -top-14 size-48 rounded-full opacity-15" style="background:var(--c1)" aria-hidden="true"></span>
+          }
+          @case ('oscuro') {
+            <span class="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10" aria-hidden="true"></span>
+          }
+          @default {
+            <span class="pointer-events-none absolute -right-12 -top-12 size-44 rounded-full bg-white/15" aria-hidden="true"></span>
+            <span class="pointer-events-none absolute -bottom-24 -left-10 size-56 rounded-full bg-black/10" aria-hidden="true"></span>
+          }
+        }
+
+        <div class="relative flex items-center gap-3">
+          <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-current/15 text-sm font-bold">
+            @if (business().logoUrl) { <img [src]="business().logoUrl" alt="" class="size-full object-cover"> }
+            @else { {{ initial() }} }
+          </div>
+          <p class="min-w-0 flex-1 truncate font-semibold">{{ business().name }}</p>
+          <span class="rounded-full bg-current/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]">Gift card</span>
         </div>
-        <p class="min-w-0 flex-1 truncate font-semibold">{{ business().name }}</p>
-        <span class="rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]">🎁 Gift card</span>
+
+        <div class="relative mt-8 flex items-end justify-between gap-3">
+          <p class="text-[3.25rem] font-extrabold leading-none tracking-[-0.03em] tabular-nums">{{ card().value | bs }}</p>
+          <span class="mb-1 flex items-center gap-1 text-xs font-medium opacity-60">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-3.5"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            toca para girar
+          </span>
+        </div>
       </div>
 
-      <p class="mt-6 text-[3.25rem] font-extrabold leading-none tracking-[-0.03em] tabular-nums">{{ card().value | bs }}</p>
-      @if (card().balance !== card().value) {
-        <p class="mt-1 text-sm font-medium opacity-85">saldo disponible {{ card().balance | bs }}</p>
-      }
-
-      <!-- corte tipo ticket -->
-      <div class="relative my-5 border-t-2 border-dashed border-white/35"></div>
-
-      <div class="flex items-end justify-between gap-4">
-        <div class="min-w-0 space-y-2 text-sm">
-          @if (card().to) {
-            <div><p class="text-[10px] uppercase tracking-wider opacity-70">Para</p><p class="truncate text-base font-bold">{{ card().to }}</p></div>
-          }
-          @if (card().from) {
-            <div><p class="text-[10px] uppercase tracking-wider opacity-70">De parte de</p><p class="truncate font-semibold">{{ card().from }}</p></div>
-          }
-          <div>
-            <p class="inline-block rounded-lg bg-black/15 px-2 py-1 font-mono text-base font-semibold tracking-wider">{{ card().code }}</p>
-            <p class="mt-1 text-xs opacity-75">vence {{ card().expires | fecha }}</p>
-          </div>
+      <!-- ── revés: los datos para usarla ── -->
+      <div class="flip-face flip-back relative flex min-h-52 flex-col overflow-hidden rounded-2xl p-5 shadow-2xl sm:p-6"
+           [style.background]="surface().bg" [style.color]="surface().ink" [attr.aria-hidden]="!flipped()">
+        <div class="flex items-center gap-2">
+          <p class="min-w-0 flex-1 truncate text-sm font-semibold opacity-80">{{ business().name }}</p>
+          <button type="button" class="grid size-9 place-items-center rounded-full bg-current/10 transition hover:bg-current/20"
+                  [attr.aria-label]="hidden() ? 'Mostrar datos' : 'Ocultar datos'" [attr.aria-pressed]="hidden()"
+                  (click)="$event.stopPropagation(); hidden.set(!hidden())">
+            @if (hidden()) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4.5"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.4 5.2A9.8 9.8 0 0 1 12 5c5 0 9 5 9 7a9 9 0 0 1-2.3 3.2M6.2 6.6C4 8 3 10.6 3 12c0 2 4 7 9 7a9.6 9.6 0 0 0 4.2-1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4.5"><path d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5"/></svg>
+            }
+          </button>
         </div>
-        <div class="shrink-0 rounded-xl bg-white p-2 shadow-lg">
-          @if (qr.value(); as src) {
-            <img [src]="src" alt="Código QR de la gift card" class="size-24">
-          } @else {
-            <div class="size-24 animate-pulse rounded bg-neutral-200"></div>
-          }
+
+        <div class="mt-3 flex flex-1 items-end justify-between gap-4 transition" [class.blur-md]="hidden()" [class.select-none]="hidden()">
+          <div class="min-w-0 space-y-2 text-sm">
+            @if (card().to) {
+              <div><p class="text-[10px] uppercase tracking-wider opacity-60">Para</p><p class="truncate text-base font-bold">{{ card().to }}</p></div>
+            }
+            @if (card().from) {
+              <div><p class="text-[10px] uppercase tracking-wider opacity-60">De parte de</p><p class="truncate font-semibold">{{ card().from }}</p></div>
+            }
+            <div>
+              <p class="inline-block rounded-lg bg-current/10 px-2 py-1 font-mono text-base font-semibold tracking-wider">{{ card().code }}</p>
+              <p class="mt-1 text-xs opacity-70">
+                @if (card().balance !== card().value) { saldo {{ card().balance | bs }} · }
+                vence {{ card().expires | fecha }}
+              </p>
+            </div>
+          </div>
+          <div class="shrink-0 rounded-xl bg-white p-2 shadow-lg">
+            @if (qr.value(); as src) {
+              <img [src]="src" alt="Código QR de la gift card" class="size-24">
+            } @else {
+              <div class="size-24 animate-pulse rounded bg-neutral-200"></div>
+            }
+          </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- controles accesibles (teclado y lector), además de tocar la tarjeta -->
+  <div class="mt-3 flex justify-center gap-2">
+    <button type="button" class="btn btn-sm rounded-full border-base-300 bg-base-100 text-base-content" (click)="flipped.set(!flipped())">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {{ flipped() ? 'Ver frente' : 'Ver QR y código' }}
+    </button>
+    @if (flipped()) {
+      <button type="button" class="btn btn-sm rounded-full border-base-300 bg-base-100 text-base-content" (click)="hidden.set(!hidden())">
+        {{ hidden() ? 'Mostrar datos' : 'Ocultar datos' }}
+      </button>
+    }
   </div>
   `,
 })
 export class GiftcardArt {
   readonly card = input.required<GiftCard>();
   readonly business = input.required<Business>();
-  readonly ink = computed(() => onBrand(this.business().color));
+  /** De qué lado está y si los datos del revés están difuminados. Son model()
+   *  para que la página del regalo los lea y los cambie (botón "Ver QR", código oculto). */
+  readonly flipped = model(false);
+  readonly hidden = model(false);
+
+  readonly style = computed(() => this.business().cardStyle ?? 'degradado');
+  readonly surface = computed(() => cardSurface(this.style(), this.business().color));
+  readonly initial = computed(() => (this.business().name || '?')[0].toUpperCase());
 
   /** El QR codifica el link público de la carta, así el que la recibe la abre y
    *  el local la escanea para verla/canjear. Se regenera si cambia código o slug. */
@@ -127,7 +208,7 @@ export class GiftcardArt {
 
           <div class="pop mt-8" style="animation-delay:.25s">
             <div class="float" [class.grayscale]="state(p.card) !== 'activa'" [class.opacity-70]="state(p.card) !== 'activa'">
-              <app-giftcard-art [card]="p.card" [business]="p.business" />
+              <app-giftcard-art [card]="p.card" [business]="p.business" [(flipped)]="flipped" [(hidden)]="hidden" />
             </div>
           </div>
 
@@ -155,11 +236,15 @@ export class GiftcardArt {
                     <span class="grid size-8 shrink-0 place-items-center rounded-full bg-success text-sm font-bold text-success-content">2</span>
                     <div class="min-w-0 flex-1">
                       <p class="font-semibold">Muestra el QR o el código</p>
-                      <button type="button" (click)="copy(p.card.code)"
-                              class="mt-2 flex w-full items-center justify-between gap-2 rounded-2xl bg-base-200 px-4 py-3 transition active:scale-[.98]">
-                        <span class="font-mono text-lg font-bold tracking-wider">{{ p.card.code }}</span>
-                        <span class="text-xs font-semibold text-success">{{ copied() ? '¡Copiado!' : 'Copiar' }}</span>
-                      </button>
+                      <p class="text-sm text-base-content/60">Están al reverso de la tarjeta.</p>
+                      <div class="mt-2 flex gap-2">
+                        <button type="button" class="btn btn-sm flex-1 rounded-full" (click)="flipped.set(true); hidden.set(false); scrollTop()">Ver QR</button>
+                        <button type="button" (click)="copy(p.card.code)"
+                                class="flex flex-[2] items-center justify-between gap-2 rounded-full bg-base-200 px-4 py-1.5 transition active:scale-[.98]">
+                          <span class="font-mono font-bold tracking-wider">{{ hidden() ? '••••-•••' : p.card.code }}</span>
+                          <span class="text-xs font-semibold text-success">{{ copied() ? '¡Copiado!' : 'Copiar' }}</span>
+                        </button>
+                      </div>
                     </div>
                   </li>
                   <li class="flex gap-3">
@@ -198,6 +283,9 @@ export class GiftCardView {
   readonly page = this.store.publicCard(() => `${this.slug()}|${this.code()}`);
   readonly state = (c: GiftCard) => cardState(c);
   readonly copied = signal(false);
+  readonly flipped = signal(false);
+  readonly hidden = signal(false);
+  scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   /** Confeti al abrir el regalo: posiciones al azar una sola vez, colores de la paleta. */
   readonly confetti = Array.from({ length: 44 }, (_, i) => ({

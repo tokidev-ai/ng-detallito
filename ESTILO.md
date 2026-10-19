@@ -266,6 +266,13 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   fondo con la paleta del comercio y aurora, titular personal ("Ana, te regalaron Bs 80"),
   la tarjeta flotando, "Cómo usarla" en 3 pasos (con copiar código) y confeti si está
   activa. Canjeada/vencida: tarjeta en gris y el aviso arriba.
+- **Gift card de dos caras** (`app-giftcard-art`): el frente es solo marca y monto (se
+  puede mostrar sin cuidado); el revés tiene para/de, código, QR, saldo y vencimiento, con
+  un ojito que los difumina. Se gira tocando la tarjeta o con el botón de abajo (CSS 3D:
+  `.flip*` en styles.css, caras apiladas en la misma celda de grid). Diseño a elección del
+  comercio en Editar página, `business.cardStyle`: degradado (default), logo, claro,
+  oscuro; todos salen de su color (`cardSurface`). Tinta con `bg-current/10`, no
+  `bg-white/20`, para que sirva sobre fondo claro y oscuro.
 - **Compartir la gift card = link, no imagen adjunta.** Cada carta tiene su página
   pública `/{slug}/g/{code}` (`giftcard.ts`) con diseño de marca (logo, color, QR que
   apunta a esa misma URL). WhatsApp (`wa.me`) y correo (`mailto:`) mandan ese link.

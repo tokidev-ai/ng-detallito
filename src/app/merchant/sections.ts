@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Business, CardState, GiftCard, Perm, Store, cardState, logoDataUrl } from '../data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from '../card';
 import { Storefront } from '../storefront';
-import { GiftcardArt } from '../giftcard';
+import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
 import { RedeemDialog } from './redeem';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
@@ -314,7 +314,7 @@ export class Emitidas {
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule, Storefront],
+  imports: [FormsModule, Storefront, GiftcardArt],
   // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta.
   // Ojo: un handler que devuelve `false` hace que Angular llame preventDefault()
   // solo; por eso es un método sin retorno y no `dirty() && …`.
@@ -367,6 +367,32 @@ export class Emitidas {
               +<input type="color" class="sr-only" [ngModel]="v().color" name="color"
                       (ngModelChange)="edit({ color: $event })">
             </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="mt-6">
+          <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Diseño de la gift card</legend>
+          <div class="storefront grid grid-cols-2 gap-2 sm:grid-cols-4" [style.--c1]="v().color">
+            @for (st of cardStyles; track st.id) {
+              <button type="button" (click)="edit({ cardStyle: st.id })" [attr.aria-pressed]="(v().cardStyle ?? 'degradado') === st.id"
+                      class="rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
+                      [class.ring-2]="(v().cardStyle ?? 'degradado') === st.id" [class.ring-base-content]="(v().cardStyle ?? 'degradado') === st.id">
+                <span class="relative flex h-16 items-end overflow-hidden rounded-lg p-2 text-xs font-bold shadow"
+                      [style.background]="surfaceOf(st.id).bg" [style.color]="surfaceOf(st.id).ink">
+                  @if (st.id === 'logo') {
+                    <span class="absolute -right-2 -top-2 grid size-14 rotate-[-12deg] place-items-center overflow-hidden rounded-xl opacity-25">
+                      @if (v().logoUrl) { <img [src]="v().logoUrl" alt="" class="size-full object-cover"> }
+                      @else { <span class="text-3xl">{{ (v().name || '?')[0] }}</span> }
+                    </span>
+                  }
+                  Bs 100
+                </span>
+                <span class="mt-1 block px-1 text-sm">{{ st.label }}</span>
+              </button>
+            }
+          </div>
+          <div class="mx-auto mt-4 max-w-sm">
+            <app-giftcard-art [card]="sampleCard" [business]="v()" />
           </div>
         </fieldset>
       </section>
@@ -472,6 +498,10 @@ export class Marca {
   /** Cambios pendientes sobre lo guardado. La vista previa y los campos muestran `v()`. */
   readonly draft = signal<Partial<Business>>({});
   readonly v = computed<Business>(() => ({ ...this.b(), ...this.draft() }));
+  readonly cardStyles = CARD_STYLES;
+  surfaceOf(id: Business['cardStyle']) { return cardSurface(id, this.v().color); }
+  /** Una carta de ejemplo para la vista previa del diseño. */
+  readonly sampleCard: GiftCard = { code: '1234-AB5', to: 'Lucía', from: 'Diego', value: 100, balance: 100, expires: '2027-12-31' };
   /** Solo lo que de verdad difiere de lo guardado (volver al valor original no cuenta). */
   private readonly changes = computed(() => Object.fromEntries(
     Object.entries(this.draft()).filter(([k, val]) => this.b()[k as keyof Business] !== val)) as Partial<Business>);

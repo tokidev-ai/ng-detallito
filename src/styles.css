@@ -131,6 +131,14 @@ body {
 }
 @keyframes shine { 0% { transform: translateX(-120%); } 55%,100% { transform: translateX(120%); } }
 
+/* la gift card se da vuelta: las dos caras apiladas en la misma celda de grid
+   (así miden lo mismo sin alturas fijas) y la de atrás arranca girada */
+.flip { perspective: 1400px; }
+.flip-inner { display: grid; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.3,.7,.2,1); }
+.flip-inner.is-flipped { transform: rotateY(180deg); }
+.flip-face { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flip-back { transform: rotateY(180deg); }
+
 /* el panel sube como hoja; cada paso entra deslizando */
 .sheet-up { animation: sheet-up .6s cubic-bezier(.22,.8,.3,1) both; }
 @keyframes sheet-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
@@ -261,6 +269,7 @@ body {
   .step-in, .step-pulse, .cta-brand, .confetti,
   .fan, .toast-loop, .marquee, .swatch-cycle, .scanline, .draw-loop, .bubble-loop { animation: none !important; }
   .draw-loop { stroke-dashoffset: 0; }
+  .flip-inner { transition: none; }
   .confetti { display: none; }
   .subrayado path { animation: none !important; stroke-dashoffset: 0; }
 }

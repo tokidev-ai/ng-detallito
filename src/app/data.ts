@@ -24,6 +24,9 @@ export async function logoDataUrl(file: File, max = 256): Promise<string> {
   return c.toDataURL('image/webp', 0.85);
 }
 
+/** Diseño de la gift card, a elección del comercio. Ver `cardSurface` en giftcard.ts. */
+export type CardStyle = 'degradado' | 'logo' | 'claro' | 'oscuro';
+
 export interface Business {
   name: string;
   slug: string;
@@ -36,6 +39,8 @@ export interface Business {
   /** Los únicos montos que el cliente puede comprar en la página. Un monto fuera
    *  de la lista solo lo carga el comercio desde su panel. */
   suggestedAmounts: number[];
+  /** Sin valor = 'degradado' (el diseño de siempre). */
+  cardStyle?: CardStyle;
   bank: { bank: string; account: string; holder: string; nit: string };
 }
 
