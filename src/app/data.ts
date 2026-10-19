@@ -33,13 +33,9 @@ export interface Business {
   published: boolean;
   validityMonths: number;
   terms: string;
-  /** Montos que la página ofrece como botones. El cliente igual puede escribir
-   *  uno libre, así que la lista puede estar vacía y la página sigue vendiendo. */
+  /** Los únicos montos que el cliente puede comprar en la página. Un monto fuera
+   *  de la lista solo lo carga el comercio desde su panel. */
   suggestedAmounts: number[];
-  /** Si es false, el cliente solo puede elegir uno de los montos sugeridos (sin
-   *  monto libre). undefined/true = permitido. El dueño lo controla desde la
-   *  gestión de gift cards. */
-  allowCustomAmount?: boolean;
   bank: { bank: string; account: string; holder: string; nit: string };
 }
 
@@ -77,7 +73,7 @@ export interface MonthPoint { sold: number; redeemed: number }
 
 export const EMPTY_BUSINESS: Business = {
   name: '', slug: '', description: '', logoUrl: null, color: '#1c1b18',
-  published: false, validityMonths: 12, terms: '', suggestedAmounts: [], allowCustomAmount: true,
+  published: false, validityMonths: 12, terms: '', suggestedAmounts: [],
   bank: { bank: '', account: '', holder: '', nit: '' },
 };
 

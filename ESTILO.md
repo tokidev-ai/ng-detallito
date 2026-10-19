@@ -233,8 +233,10 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   saldo y la fecha. Saldo 0 → canjeada; fecha pasada → vencida; si no, activa. `expires`
   es ISO `yyyy-mm-dd` (ordena y compara como texto; se muestra con el pipe `fecha`).
 - **No hay modelo `Product`: solo gift cards.** Lo que la página ofrece son
-  `business.suggestedAmounts` (números), botones en el storefront; el cliente además
-  escribe un monto libre, así que la lista puede estar vacía y la página igual vende.
+  `business.suggestedAmounts` (números), botones en el storefront y **lo único que el
+  cliente puede comprar** (también lo exige la regla de `cards`). Sin montos, la página no
+  vende. El panel sí acepta otro monto, para la venta en mostrador. Código autogenerado
+  (`newCode`) y saldo derivado del valor: el form no los pide.
   El dueño los edita en "Editar página"; el onboarding son 3 pasos (Marca, Banco, Publicar).
 - **La página pública (`storefront.ts`) es una landing del comercio**, no una tarjetita:
   - **Paleta derivada del color del dueño.** El componente pone `--c1` (su color) y

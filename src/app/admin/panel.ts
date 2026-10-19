@@ -586,7 +586,6 @@ const PAD = 6;
               <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Dueño</dt><dd class="truncate font-medium">{{ owner(d.t) }}</dd></div>
               <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Equipo</dt><dd>{{ d.t.memberEmails.length }} persona(s)</dd></div>
               <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Vigencia de cards</dt><dd>{{ d.t.business.validityMonths }} meses</dd></div>
-              <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Monto libre</dt><dd>{{ d.t.business.allowCustomAmount === false ? 'No' : 'Sí' }}</dd></div>
               <div class="flex justify-between gap-4 py-2">
                 <dt class="text-base-content/55">Cuenta</dt>
                 <dd class="text-right">

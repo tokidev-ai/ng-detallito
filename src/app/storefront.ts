@@ -190,14 +190,8 @@ import { Wordmark } from './brand';
                               </button>
                             }
                           </div>
-                        }
-                        @if (showCustom()) {
-                          <label class="field mt-3 flex items-center gap-2">
-                            <span class="font-bold text-base-content/45">Bs</span>
-                            <input type="number" min="1" class="h-full w-full bg-transparent text-lg font-semibold outline-none"
-                                   [(ngModel)]="amount" name="amount"
-                                   [placeholder]="amounts().length ? 'Otro monto' : 'Monto de la gift card'">
-                          </label>
+                        } @else {
+                          <p class="mt-4 text-base-content/60">Este comercio todavía no cargó sus montos. Vuelve pronto.</p>
                         }
                         <button type="button" class="cta cta-brand mt-5" [disabled]="!amount || amount < 1"
                                 [style.color]="onBrand()" (click)="next()">
@@ -368,9 +362,6 @@ export class Storefront {
   readonly amounts = computed(() => this.b().suggestedAmounts ?? []);
   /** Columnas de los montos: hasta 3, sin huecos si hay menos. */
   readonly cols = computed(() => Math.min(this.amounts().length, 3) || 1);
-  /** El dueño puede apagar el monto libre. Pero si no hay montos sugeridos,
-   *  igual lo mostramos: si no, no habría forma de comprar. */
-  readonly showCustom = computed(() => this.b().allowCustomAmount !== false || !this.amounts().length);
   readonly onBrand = computed(() => onBrand(this.b().color));
   /** Comercios viejos pueden no tener datos bancarios cargados. */
   readonly bank = computed(() => this.b().bank ?? { bank: '', account: '', holder: '', nit: '' });

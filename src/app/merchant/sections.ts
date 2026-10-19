@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Business, CardState, GiftCard, Perm, Store, cardState, logoDataUrl } from '../data';
-import { giftMessage, giftPath, mailtoLink, waLink } from '../card';
+import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from '../card';
 import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
 import { RedeemDialog } from './redeem';
@@ -44,8 +44,8 @@ const TABS: { id: CardState; label: string }[] = [
     <div class="mt-5 max-w-xl rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
       <h2 class="text-lg font-medium">Montos sugeridos</h2>
       <p class="mt-1 text-sm text-base-content/55">
-        Aparecen como botones en tu página. El cliente igual puede escribir un monto libre,
-        así que puedes dejarlo vacío.
+        Son los montos que tus clientes pueden comprar en tu página. Sin al menos uno, la
+        página no vende. Un monto distinto lo cargas tú desde "+ Nueva gift card".
       </p>
       <div class="mt-4 flex flex-wrap gap-2">
         @for (a of s.business().suggestedAmounts; track a) {
@@ -63,17 +63,6 @@ const TABS: { id: CardState; label: string }[] = [
                name="newAmount" placeholder="Bs" (keyup.enter)="addAmount()">
         <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
       </div>
-
-      <label class="mt-5 flex cursor-pointer items-start gap-3 border-t border-base-200 pt-4">
-        <input type="checkbox" class="toggle toggle-primary toggle-sm mt-0.5"
-               [checked]="s.business().allowCustomAmount !== false" (change)="toggleCustom($event)">
-        <span>
-          <span class="block text-sm font-medium">Permitir monto libre</span>
-          <span class="block text-xs text-base-content/55">
-            Si lo apagas, el cliente solo elige uno de los montos de arriba (necesitas al menos uno).
-          </span>
-        </span>
-      </label>
     </div>
   } @else {
 
@@ -115,12 +104,7 @@ const TABS: { id: CardState; label: string }[] = [
         {{ editingCode ? 'Editar ' + editingCode : 'Nueva gift card' }}
       </p>
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
-        <label class="form-control">
-          <span class="mb-1 block text-sm text-base-content/60">Código</span>
-          <input class="input input-bordered w-full font-mono" [(ngModel)]="fCode" name="code"
-                 [disabled]="!!editingCode" placeholder="1234-AB5">
-        </label>
-        <label class="form-control">
+        <label class="form-control sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">Destinatario</span>
           <input class="input input-bordered w-full" [(ngModel)]="fTo" name="to" placeholder="Nombre">
         </label>
@@ -128,15 +112,16 @@ const TABS: { id: CardState; label: string }[] = [
           <span class="mb-1 block text-sm text-base-content/60">De parte de <span class="text-base-content/40">(opcional)</span></span>
           <input class="input input-bordered w-full" [(ngModel)]="fFrom" name="from" placeholder="Quién regala — vacío = anónimo">
         </label>
-        <label class="form-control">
-          <span class="mb-1 block text-sm text-base-content/60">Valor (Bs)</span>
-          <input type="number" class="input input-bordered w-full" [(ngModel)]="fValue" name="value">
-        </label>
-        <label class="form-control">
-          <span class="mb-1 block text-sm text-base-content/60">Saldo (Bs)</span>
-          <input type="number" class="input input-bordered w-full" [(ngModel)]="fBalance" name="balance"
-                 placeholder="por defecto, el valor">
-        </label>
+        <div class="sm:col-span-2">
+          <span class="mb-1 block text-sm text-base-content/60">Valor</span>
+          <div class="flex flex-wrap gap-2">
+            @for (a of s.business().suggestedAmounts; track a) {
+              <button type="button" class="btn btn-sm" [class.btn-neutral]="fValue === a" (click)="fValue = a">{{ a | bs }}</button>
+            }
+            <input type="number" min="1" class="input input-bordered input-sm w-32" [(ngModel)]="fValue" name="value"
+                   [placeholder]="s.business().suggestedAmounts.length ? 'Otro monto' : 'Bs'">
+          </div>
+        </div>
         <label class="form-control sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">Vence</span>
           <input type="date" class="input input-bordered w-full sm:w-52" [(ngModel)]="fExpires" name="expires">
@@ -266,25 +251,23 @@ export class Emitidas {
   removeAmount(a: number) {
     this.s.saveBusiness({ suggestedAmounts: this.s.business().suggestedAmounts.filter(x => x !== a) });
   }
-  toggleCustom(e: Event) {
-    this.s.saveBusiness({ allowCustomAmount: (e.target as HTMLInputElement).checked });
-  }
 
   // ── formulario ─────────────────────────────────────────────────────────────
   readonly formOpen = signal(false);
   editingCode: string | null = null;
-  fCode = ''; fTo = ''; fFrom = ''; fValue: number | null = null; fBalance: number | null = null; fExpires = '';
+  fTo = ''; fFrom = ''; fValue: number | null = null; fExpires = '';
 
   openNew() {
     this.editingCode = null;
-    this.fCode = ''; this.fTo = ''; this.fFrom = ''; this.fValue = null; this.fBalance = null; this.fExpires = '';
+    this.fTo = ''; this.fFrom = ''; this.fValue = null;
+    this.fExpires = expiryFrom(this.s.business().validityMonths || 12);
     this.formOpen.set(true);
   }
 
   openEdit(c: GiftCard) {
     this.editingCode = c.code;
-    this.fCode = c.code; this.fTo = c.to; this.fFrom = c.from ?? '';
-    this.fValue = c.value; this.fBalance = c.balance; this.fExpires = c.expires;
+    this.fTo = c.to; this.fFrom = c.from ?? '';
+    this.fValue = c.value; this.fExpires = c.expires;
     this.formOpen.set(true);
   }
 
@@ -294,13 +277,16 @@ export class Emitidas {
   }
 
   async save() {
-    const code = this.fCode.trim();
-    if (!code || this.fValue == null || !this.fExpires) return;
+    if (!this.fValue || this.fValue < 1 || !this.fExpires) return;
     // setDoc reemplaza la carta entera: al editar conservamos cuándo y por dónde se vendió
     const prev = this.editingCode ? this.s.cards().find(c => c.code === this.editingCode) : undefined;
+    // el código lo generamos nosotros; repetimos si choca con una carta del comercio
+    let code = this.editingCode ?? newCode();
+    while (!prev && this.s.cards().some(c => c.code === code)) code = newCode();
     await this.s.saveCard({
       code, to: this.fTo.trim(), value: this.fValue,
-      balance: this.fBalance ?? this.fValue,  // saldo en blanco = carta entera
+      // el saldo sale del valor: nueva = entera; editar el valor corre el saldo lo mismo
+      balance: prev ? Math.max(0, prev.balance + this.fValue - prev.value) : this.fValue,
       expires: this.fExpires,
       ...(this.fFrom.trim() ? { from: this.fFrom.trim() } : {}),
       ...(prev ? { ...(prev.soldAt ? { soldAt: prev.soldAt } : {}), ...(prev.channel ? { channel: prev.channel } : {}) }

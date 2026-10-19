@@ -113,6 +113,8 @@ service cloud.firestore {
                       && request.resource.data.code == code
                       && request.resource.data.value is number
                       && request.resource.data.value > 0
+                      // el cliente solo compra los montos que puso el comercio
+                      && request.resource.data.value in tenant(tenantId).business.suggestedAmounts
                       && request.resource.data.balance == request.resource.data.value;
       }
       match /redemptions/{id} {
