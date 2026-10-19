@@ -8,8 +8,8 @@ export const DEFAULT_RATE = 0.05;
 
 export interface TenantLike {
   id: string;
-  business: { name: string; slug: string; color: string; published: boolean; validityMonths: number;
-              bank?: { bank: string; account: string; holder: string; nit: string } };
+  business: { name: string; slug: string; color: string; published: boolean; validityMonths: number };
+  bank?: { bank: string; account: string; holder: string; nit: string };
   memberEmails?: string[];
   commissionRate?: number;
 }

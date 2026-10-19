@@ -28,10 +28,8 @@ beforeEach(async () => {
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async ctx => {
     const db = ctx.firestore();
-    await setDoc(doc(db, 'tenants/t1'), {
-      ownerUid: 'owner', memberEmails: [OWNER, CAJERO, DISENO],
-      business: { name: 'Spa', slug: 't1', published: true, suggestedAmounts: [100, 200], bank: { account: '111' } },
-    });
+    await setDoc(doc(db, 'tenants/t1'), { ownerUid: 'owner', memberEmails: [OWNER, CAJERO, DISENO], bank: { account: '111' } });
+    await setDoc(doc(db, 'pages/t1'), { business: { name: 'Spa', slug: 't1', published: true, suggestedAmounts: [100, 200] } });
     await setDoc(doc(db, 'tenants/t1/staff', OWNER), { email: OWNER, role: 'owner', perms: ALL });
     await setDoc(doc(db, 'tenants/t1/staff', CAJERO), { email: CAJERO, role: 'staff', perms: { ...NONE, redeem: true } });
     await setDoc(doc(db, 'tenants/t1/staff', DISENO), { email: DISENO, role: 'staff', perms: { ...NONE, manageBranding: true } });
@@ -39,15 +37,23 @@ beforeEach(async () => {
   });
 });
 
+test('lo privado no se ve desde afuera; la página sí', async () => {
+  await assertFails(getDoc(doc(anon(), 'tenants/t1')));
+  await assertFails(getDoc(doc(as('x', 'otro@x.com'), 'tenants/t1')));
+  await assertSucceeds(getDoc(doc(anon(), 'pages/t1')));
+  await assertSucceeds(getDoc(doc(anon(), 'pages/libre')));  // el wizard pregunta si un link está libre
+});
+
 test('la cuenta bancaria solo la cambia el dueño', async () => {
-  await assertFails(updateDoc(doc(as('u2', DISENO), 'tenants/t1'), { 'business.bank.account': '999' }));
-  await assertFails(updateDoc(doc(as('u3', CAJERO), 'tenants/t1'), { 'business.bank.account': '999' }));
-  await assertSucceeds(updateDoc(doc(as('owner', OWNER), 'tenants/t1'), { 'business.bank.account': '999' }));
+  await assertFails(updateDoc(doc(as('u2', DISENO), 'tenants/t1'), { 'bank.account': '999' }));
+  await assertFails(updateDoc(doc(as('u3', CAJERO), 'tenants/t1'), { 'bank.account': '999' }));
+  await assertSucceeds(updateDoc(doc(as('owner', OWNER), 'tenants/t1'), { 'bank.account': '999' }));
 });
 
 test('la página la edita quien tiene el permiso, no cualquier empleado', async () => {
-  await assertSucceeds(updateDoc(doc(as('u2', DISENO), 'tenants/t1'), { 'business.name': 'Spa 2' }));
-  await assertFails(updateDoc(doc(as('u3', CAJERO), 'tenants/t1'), { 'business.name': 'Hack' }));
+  await assertSucceeds(updateDoc(doc(as('u2', DISENO), 'pages/t1'), { 'business.name': 'Spa 2' }));
+  await assertFails(updateDoc(doc(as('u3', CAJERO), 'pages/t1'), { 'business.name': 'Hack' }));
+  await assertFails(updateDoc(doc(as('u2', DISENO), 'pages/t1'), { 'business.slug': 'otro' }));
 });
 
 test('el cajero solo baja saldos; no emite ni sube saldo', async () => {
@@ -67,7 +73,6 @@ test('compra pública: solo montos del comercio y campos conocidos', async () =>
 });
 
 test('un correo sin verificar no entra al comercio', async () => {
-  await env.withSecurityRulesDisabled(ctx => updateDoc(doc(ctx.firestore(), 'tenants/t1'), { 'business.published': false }));
   await assertFails(getDoc(doc(as('x', OWNER, false), 'tenants/t1')));
   await assertSucceeds(getDoc(doc(as('owner', OWNER), 'tenants/t1')));
 });

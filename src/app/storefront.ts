@@ -287,7 +287,7 @@ import { Wordmark } from './brand';
 
                         <p class="mt-3 text-center text-4xl font-extrabold tracking-[-0.03em] tabular-nums">{{ amount | bs }}</p>
                         <p class="text-center text-xs text-base-content/50">
-                          A nombre de {{ bank().holder || b().name }}@if (bank().bank) { · {{ bank().bank }} }
+                          A nombre de {{ b().name }}
                         </p>
 
                         <div class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-base-200 py-2.5 text-sm font-medium">
@@ -363,8 +363,6 @@ export class Storefront {
   /** Columnas de los montos: hasta 3, sin huecos si hay menos. */
   readonly cols = computed(() => Math.min(this.amounts().length, 3) || 1);
   readonly onBrand = computed(() => onBrand(this.b().color));
-  /** Comercios viejos pueden no tener datos bancarios cargados. */
-  readonly bank = computed(() => this.b().bank ?? { bank: '', account: '', holder: '', nit: '' });
   readonly trust = computed(() => [
     'Un código al instante',
     'Se canjea con QR o código',

@@ -1,7 +1,7 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Business, EMPTY_BUSINESS, Store, logoDataUrl } from '../data';
+import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, Store, logoDataUrl } from '../data';
 import { Storefront } from '../storefront';
 import { Wordmark } from '../brand';
 
@@ -130,7 +130,7 @@ export const slugify = (s: string) =>
                 @for (f of bankFields; track f.key) {
                   <label class="form-control block">
                     <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">{{ f.label }}</span>
-                    <input class="input input-bordered w-full" [ngModel]="draft().bank[f.key]" [name]="f.key"
+                    <input class="input input-bordered w-full" [ngModel]="bank()[f.key]" [name]="f.key"
                            (ngModelChange)="patchBank(f.key, $event)" [placeholder]="f.placeholder">
                   </label>
                 }
@@ -214,7 +214,7 @@ export class Onboarding {
 
   readonly checklist = computed(() => [
     { label: 'Nombre y link público', ok: !!this.draft().name && this.slugFree(), step: 0 },
-    { label: 'Datos bancarios completos', ok: Object.values(this.draft().bank).every(Boolean), step: 1 },
+    { label: 'Datos bancarios completos', ok: Object.values(this.bank()).every(Boolean), step: 1 },
   ]);
   readonly canPublish = computed(() => this.checklist().every(c => c.ok) && !this.publishing());
 
@@ -234,8 +234,10 @@ export class Onboarding {
     this.draft.update(d => ({ ...d, ...p }));
   }
 
-  patchBank(key: keyof Business['bank'], value: string) {
-    this.draft.update(d => ({ ...d, bank: { ...d.bank, [key]: value } }));
+  /** Aparte de la página: es privado y va a `tenants/{id}`, no a `pages/{id}`. */
+  readonly bank = signal<Bank>({ ...EMPTY_BANK });
+  patchBank(key: keyof Bank, value: string) {
+    this.bank.update(b => ({ ...b, [key]: value }));
   }
 
   onName(name: string) {
@@ -266,7 +268,7 @@ export class Onboarding {
     this.publishing.set(true);
     this.publishError.set('');
     try {
-      const id = await this.store.createTenant({ ...this.draft(), published: true });
+      const id = await this.store.createTenant({ ...this.draft(), published: true }, this.bank());
       this.store.setCurrent(id);
       await this.router.navigate(['/app', id, 'resumen']);
     } catch {

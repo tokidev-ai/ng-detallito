@@ -23,6 +23,10 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/tenants/$(tenantId)).data;
     }
 
+    function page(tenantId) {
+      return get(/databases/$(database)/documents/pages/$(tenantId)).data;
+    }
+
     function isMember(tenantId) {
       return signedIn() && myEmail() in tenant(tenantId).memberEmails;
     }
@@ -67,11 +71,30 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // La página pública del comercio: `pages/{id}` = { business }. Es lo único que ve
+    // alguien de afuera. Lo privado (equipo, cuenta bancaria, comisión) vive en
+    // `tenants/{id}`, porque las reglas no pueden ocultar campos sueltos de un doc.
+    match /pages/{tenantId} {
+      // get de una que no existe: así el wizard sabe si un link está libre
+      allow get: if resource == null
+                 || resource.data.business.published == true
+                 || isMember(tenantId) || isSuperadmin();
+      allow list: if resource.data.business.published == true || isSuperadmin();
+      // la crea el dueño junto con su tenant; el id es el slug y no cambia
+      allow create: if isOwner(tenantId)
+                    && request.resource.data.keys().hasOnly(['business'])
+                    && request.resource.data.business.slug == tenantId;
+      allow update: if (isOwner(tenantId)
+                        || hasPerm(tenantId, 'manageBranding') || hasPerm(tenantId, 'manageProducts'))
+                    && request.resource.data.keys().hasOnly(['business'])
+                    && request.resource.data.business.slug == resource.data.business.slug;
+      allow delete: if isOwner(tenantId);
+    }
+
     match /tenants/{tenantId} {
       // Leer el propio doc del tenant no puede usar get(): en una query las reglas
       // se evalúan por documento y `resource` ya trae todo. get() acá rompe el list.
-      allow get, list: if resource.data.business.published == true
-                       || (signedIn() && myEmail() in resource.data.memberEmails)
+      allow get, list: if (signedIn() && myEmail() in resource.data.memberEmails)
                        || isSuperadmin();
 
       // el alta la hace el propio dueño y se pone a sí mismo como único miembro.
@@ -79,28 +102,19 @@ service cloud.firestore {
       allow create: if signedIn()
                     && request.resource.data.ownerUid == request.auth.uid
                     && request.resource.data.memberEmails == [myEmail()]
-                    && request.resource.data.business.slug == tenantId
-                    && !('commissionRate' in request.resource.data);
+                    && request.resource.data.keys().hasOnly(['ownerUid', 'memberEmails', 'bank']);
 
-      // el ownerUid no cambia nunca; la lista de miembros solo la toca quien
-      // administra el equipo (owner incluido, que tiene manageStaff). La comisión,
-      // nunca: si no, un comercio se la bajaría a 0.
-      // La página (business) la edita quien tiene el tab "Editar página" o los montos;
-      // la cuenta bancaria, solo el dueño: si no, un empleado se desviaría los pagos.
+      // El dueño cambia todo menos ownerUid y la comisión (si no, se la bajaría a 0):
+      // la cuenta bancaria es solo suya, o un empleado se desviaría los pagos.
+      // Un empleado solo toca memberEmails, con manageStaff y sin sacar al dueño
+      // (memberEmails[0]).
       allow update: if isMember(tenantId)
                     && request.resource.data.ownerUid == resource.data.ownerUid
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['commissionRate'])
                     && (isOwner(tenantId)
-                        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['business', 'memberEmails']))
-                    && (request.resource.data.memberEmails == resource.data.memberEmails
-                        || isOwner(tenantId)
-                        // memberEmails[0] es el dueño: un empleado no lo puede sacar
-                        || (hasPerm(tenantId, 'manageStaff')
-                            && request.resource.data.memberEmails[0] == resource.data.memberEmails[0]))
-                    && (request.resource.data.business == resource.data.business
-                        || isOwner(tenantId)
-                        || ((hasPerm(tenantId, 'manageBranding') || hasPerm(tenantId, 'manageProducts'))
-                            && request.resource.data.business.bank == resource.data.business.bank));
+                        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberEmails'])
+                            && hasPerm(tenantId, 'manageStaff')
+                            && request.resource.data.memberEmails[0] == resource.data.memberEmails[0]));
 
       // el superadmin solo toca la comisión (entre 0% y 50%), nada más del comercio
       allow update: if isSuperadmin()
@@ -125,13 +139,13 @@ service cloud.firestore {
 
         // …salvo la carta puntual: quien recibe el regalo la abre por su código
         // (el código es el secreto). Solo get, nunca list, y con el comercio publicado.
-        allow get: if tenant(tenantId).business.published == true;
+        allow get: if page(tenantId).business.published == true;
 
         // la página pública emite la gift card al comprar, sin sesión.
         // ponytail: sin pago ni verificación — cualquiera puede crear una carta.
         // Antes de producción esto va detrás de una Cloud Function/pasarela; acá
         // solo se valida la forma (código == id, saldo == valor, valor > 0).
-        allow create: if tenant(tenantId).business.published == true
+        allow create: if page(tenantId).business.published == true
                       && request.resource.data.keys().hasOnly(['code', 'to', 'from', 'value', 'balance', 'expires', 'soldAt', 'channel'])
                       && request.resource.data.channel == 'qr'
                       && request.resource.data.to is string && request.resource.data.to.size() <= 80
@@ -141,7 +155,7 @@ service cloud.firestore {
                       && request.resource.data.value is number
                       && request.resource.data.value > 0
                       // el cliente solo compra los montos que puso el comercio
-                      && request.resource.data.value in tenant(tenantId).business.suggestedAmounts
+                      && request.resource.data.value in page(tenantId).business.suggestedAmounts
                       && request.resource.data.balance == request.resource.data.value;
       }
       match /redemptions/{id} {

@@ -420,8 +420,8 @@ const PAD = 6;
                         <td class="text-right text-base font-extrabold tabular-nums">{{ v.tot.net | bs:2 }}</td>
                         <td class="text-sm">
                           @if (hasBank(v.t)) {
-                            <p class="font-medium">{{ v.t.business.bank!.holder }}</p>
-                            <p class="text-xs text-base-content/55">{{ v.t.business.bank!.bank }} · <span class="font-mono">{{ v.t.business.bank!.account }}</span></p>
+                            <p class="font-medium">{{ v.t.bank!.holder }}</p>
+                            <p class="text-xs text-base-content/55">{{ v.t.bank!.bank }} · <span class="font-mono">{{ v.t.bank!.account }}</span></p>
                           } @else {
                             <span class="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs font-semibold text-warning">⚠ Sin datos bancarios</span>
                           }
@@ -524,8 +524,8 @@ const PAD = 6;
                 <dt class="text-base-content/55">Cuenta</dt>
                 <dd class="text-right">
                   @if (hasBank(d.t)) {
-                    {{ d.t.business.bank!.bank }} · <span class="font-mono">{{ d.t.business.bank!.account }}</span><br>
-                    <span class="text-xs text-base-content/55">{{ d.t.business.bank!.holder }} · NIT {{ d.t.business.bank!.nit || '—' }}</span>
+                    {{ d.t.bank!.bank }} · <span class="font-mono">{{ d.t.bank!.account }}</span><br>
+                    <span class="text-xs text-base-content/55">{{ d.t.bank!.holder }} · NIT {{ d.t.bank!.nit || '—' }}</span>
                   } @else { <span class="font-semibold text-warning">⚠ Sin datos bancarios</span> }
                 </dd>
               </div>
@@ -576,8 +576,10 @@ export class AdminPanel {
   // ── datos: todos los comercios + todas las cards (collectionGroup) ──────────
   readonly tenants = resource({
     loader: async () => {
-      const snap = await getDocs(query(collection(this.db, 'tenants')));
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Tenant);
+      // lo privado (tenants) + la página (pages), unidos por id
+      const [ts, ps] = await Promise.all([getDocs(collection(this.db, 'tenants')), getDocs(collection(this.db, 'pages'))]);
+      const pages = new Map(ps.docs.map(d => [d.id, d.data()['business']]));
+      return ts.docs.filter(d => pages.has(d.id)).map(d => ({ id: d.id, ...d.data(), business: pages.get(d.id) }) as Tenant);
     },
   });
   /** ponytail: lee TODAS las cards al abrir el panel. Con unos miles va bien; si
@@ -705,7 +707,7 @@ export class AdminPanel {
   }
 
   owner(t: Tenant) { return t.memberEmails?.[0] ?? '—'; }
-  hasBank(t: Tenant) { return !!(t.business.bank?.bank && t.business.bank?.account); }
+  hasBank(t: Tenant) { return !!(t.bank?.bank && t.bank?.account); }
   pct(rate: number) { return `${(rate * 100).toLocaleString('es-BO', { maximumFractionDigits: 2 })}%`; }
   private daysAgo(n: number) { return new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10); }
 
@@ -775,8 +777,8 @@ export class AdminPanel {
   exportVentas() {
     this.download(`ventas-${this.vMonth() || 'todo'}.csv`, toCsv([
       ['Comercio', 'Titular', 'Banco', 'Cuenta', 'NIT', 'Cartas', 'Vendió', 'Comisión %', 'Comisión', 'Le debemos'],
-      ...this.ventas().map(v => [v.t.business.name, v.t.business.bank?.holder ?? '', v.t.business.bank?.bank ?? '',
-        v.t.business.bank?.account ?? '', v.t.business.bank?.nit ?? '', v.tot.count, v.tot.gross,
+      ...this.ventas().map(v => [v.t.business.name, v.t.bank?.holder ?? '', v.t.bank?.bank ?? '',
+        v.t.bank?.account ?? '', v.t.bank?.nit ?? '', v.tot.count, v.tot.gross,
         +(v.rate * 100).toFixed(2), v.tot.fee, v.tot.net]),
     ]));
   }

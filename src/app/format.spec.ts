@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { redemptionMonth } from './data';
 import { BsPipe, FechaPipe, onBrand } from './ui';
 import { cardState, daysUntil, expiryFrom, giftMessage, giftPath, newCode, pctChange, stampKey, waLink } from './card';
 import { slugify } from './onboarding/wizard';
@@ -140,5 +141,13 @@ describe('libro de cobros (superadmin)', () => {
 
   it('toCsv escapa y usa coma decimal para Excel en español', () => {
     expect(toCsv([['a;b', 'x"y', 12.5]])).toBe('﻿"a;b";"x""y";12,5');
+  });
+});
+
+describe('redemptionMonth', () => {
+  it('pone el año: un mes posterior al actual es del año pasado', () => {
+    const hoy = new Date('2026-03-15T12:00:00');
+    expect(redemptionMonth('11/03 14:22', hoy)).toBe('2026-03');
+    expect(redemptionMonth('02/12 09:00', hoy)).toBe('2025-12');
   });
 });

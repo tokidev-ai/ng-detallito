@@ -326,6 +326,12 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 ## Seguridad
 
 - No hay backend: **las Firestore Rules son toda la seguridad**. La UI oculta, las reglas mandan.
+- **Público y privado en docs separados** (las reglas no ocultan campos sueltos):
+  `pages/{id}` = `{ business }`, lo único legible desde afuera; `tenants/{id}` =
+  `memberEmails`, `ownerUid`, `bank`, `commissionRate`, solo equipo y superadmin. El
+  `Store` los une en `Tenant`. Dato privado nuevo → a `tenants`, nunca a `business`.
+- Ventas del dashboard: se calculan de cards y redemptions (`Store.monthly`), no hay
+  contadores guardados.
 - Cada permiso de tab también vale en las reglas: emitir/editar cartas = `viewCards`;
   canjear = `redeem` y solo baja `balance`; página = `manageBranding`/`manageProducts`;
   **cuenta bancaria = solo el dueño**.

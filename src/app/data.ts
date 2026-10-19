@@ -1,10 +1,11 @@
 import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  Firestore, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, getDoc, getDocs,
-  query, runTransaction, setDoc, updateDoc, where,
+  Firestore, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, docData, getDoc, getDocs,
+  query, runTransaction, setDoc, updateDoc, where, writeBatch,
 } from '@angular/fire/firestore';
-import { Observable, map, of, startWith, switchMap } from 'rxjs';
+import { Observable, combineLatest, map, of, startWith, switchMap } from 'rxjs';
+import { lastMonths, soldDate } from './admin/ledger';
 import { AuthService } from './auth';
 import { cardState } from './card';
 
@@ -65,8 +66,11 @@ export interface Business {
   suggestedAmounts: number[];
   /** Sin valor = 'degradado' (el diseño de siempre). */
   cardStyle?: CardStyle;
-  bank: { bank: string; account: string; holder: string; nit: string };
 }
+
+/** Cuenta donde liquidamos al comercio. Privada: vive en `tenants/{id}`, nunca en la página. */
+export interface Bank { bank: string; account: string; holder: string; nit: string }
+export const EMPTY_BANK: Bank = { bank: '', account: '', holder: '', nit: '' };
 
 /** `expires` es ISO `yyyy-mm-dd` (comparable y ordenable como texto). El estado
  *  no se guarda: se deriva con `cardState`. `code` es la clave del documento.
@@ -82,28 +86,31 @@ export interface GiftCard {
 export interface Redemption { by: string; code: string; amount: number; at: string }
 export interface StaffMember { email: string; role: 'owner' | 'staff'; lastSeen: string; perms: Record<Perm, boolean> }
 
-/** `tenants/{id}` en Firestore. Las listas son subcolecciones. */
+/** Un comercio, armado con dos documentos (las reglas no pueden ocultar campos
+ *  sueltos, así que lo público y lo privado van separados):
+ *  - `pages/{id}` = `{ business }`: la página, legible por cualquiera si está publicada.
+ *  - `tenants/{id}` = el resto: solo el equipo del comercio y el superadmin.
+ *  Las listas (cards, staff, redemptions) son subcolecciones de `tenants/{id}`. */
 export interface Tenant {
   id: string;
   business: Business;
   ownerUid: string;
   /** Membresía por correo: agregar un empleado por email basta para que entre,
-   *  sin sincronizar uids. El dueño va incluido. */
+   *  sin sincronizar uids. El dueño va primero. */
   memberEmails: string[];
-  soldThisMonth: number;
-  /** Firestore no permite arrays de arrays: cada mes es un objeto. */
-  monthly: MonthPoint[];
+  bank?: Bank;
   /** Nuestra comisión con este comercio (0.05 = 5%), negociada uno a uno. Solo
    *  la escribe el superadmin; sin valor, rige `DEFAULT_RATE`. */
   commissionRate?: number;
 }
+/** Lo que ve cualquiera: la página, sin nada de `tenants/{id}`. */
+export type PublicTenant = Pick<Tenant, 'id' | 'business'>;
 
 export interface MonthPoint { sold: number; redeemed: number }
 
 export const EMPTY_BUSINESS: Business = {
   name: '', slug: '', description: '', logoUrl: null, color: '#1c1b18',
   published: false, validityMonths: 12, terms: '', suggestedAmounts: [],
-  bank: { bank: '', account: '', holder: '', nit: '' },
 };
 
 export const ALL_PERMS: Record<Perm, boolean> = {
@@ -124,8 +131,13 @@ export class Store {
     switchMap(email => email
       ? (collectionData(
           query(collection(this.db, 'tenants'), where('memberEmails', 'array-contains', email)),
-          { idField: 'id' }) as Observable<Tenant[]>).pipe(
-          map(list => ({ list: list.map(cleanTenant), loaded: true })),
+          { idField: 'id' }) as Observable<Omit<Tenant, 'business'>[]>).pipe(
+          // a cada tenant le sumamos su página (pages/{id}); sin página todavía, no se lista
+          switchMap(ts => ts.length
+            ? combineLatest(ts.map(t => (docData(doc(this.db, 'pages', t.id)) as Observable<{ business: Business } | undefined>)
+                .pipe(map(p => (p ? cleanTenant({ ...t, business: p.business }) : null)))))
+            : of([])),
+          map(list => ({ list: list.filter((t): t is Tenant => !!t), loaded: true })),
           startWith({ list: [] as Tenant[], loaded: false }))  // "cargando", no "vacío"
       : of({ list: [] as Tenant[], loaded: true })),  // sin sesión: no hay comercios, punto
   );
@@ -173,7 +185,6 @@ export class Store {
   readonly staff = this.sub<StaffMember>('staff');
 
   readonly business = computed(() => this.current()?.business ?? EMPTY_BUSINESS);
-  readonly monthly = computed(() => this.current()?.monthly ?? []);
 
   // ── RBAC: quién soy en el comercio activo y qué puedo ────────────────────────
   readonly currentMember = computed(() => {
@@ -193,8 +204,16 @@ export class Store {
     return this.isOwner() || (this.currentMember()?.perms[p] ?? false);
   }
 
-  readonly soldThisMonth = computed(() => this.current()?.soldThisMonth ?? 0);
-  readonly netToCollect = computed(() => Math.round(this.soldThisMonth() * (1 - this.commissionRate)));
+  /** Ventas y canjes de los últimos 6 meses, sacados de las cartas y los canjes
+   *  reales (antes eran contadores del tenant que nadie actualizaba). */
+  readonly monthly = computed<MonthPoint[]>(() => {
+    const vm = this.business().validityMonths;
+    const sold = this.cards().map(c => ({ ym: soldDate(c, vm).slice(0, 7), v: c.value }));
+    const used = this.redemptions().map(r => ({ ym: redemptionMonth(r.at), v: r.amount }));
+    const sum = (rows: { ym: string; v: number }[], ym: string) => rows.filter(r => r.ym === ym).reduce((s, r) => s + r.v, 0);
+    return lastMonths(6).map(ym => ({ sold: sum(sold, ym), redeemed: sum(used, ym) }));
+  });
+  readonly soldThisMonth = computed(() => this.monthly().at(-1)?.sold ?? 0);
 
   /** Plata cobrada que el cliente todavía no consumió: deuda, no ingreso. */
   readonly debt = computed(() => liveOf(this.cards()).reduce((sum, c) => sum + c.balance, 0));
@@ -213,11 +232,11 @@ export class Store {
       loader: async ({ params }) => {
         if (!params) return null;
         const snap = await getDocs(query(
-          collection(this.db, 'tenants'),
+          collection(this.db, 'pages'),
           where('business.slug', '==', params),
           where('business.published', '==', true)));
         if (snap.empty) return null;
-        const tenant = cleanTenant({ id: snap.docs[0].id, ...snap.docs[0].data() } as Tenant);
+        const tenant = cleanTenant({ id: snap.docs[0].id, ...snap.docs[0].data() } as PublicTenant);
         return { tenant };
       },
     });
@@ -233,11 +252,11 @@ export class Store {
         const [slug, code] = (params ?? '').split('|');
         if (!slug || !code) return null;
         const snap = await getDocs(query(
-          collection(this.db, 'tenants'),
+          collection(this.db, 'pages'),
           where('business.slug', '==', slug),
           where('business.published', '==', true)));
         if (snap.empty) return null;
-        const business = cleanTenant(snap.docs[0].data() as Tenant).business;
+        const business = cleanTenant(snap.docs[0].data() as { business: Business }).business;
         const cardSnap = await getDoc(doc(this.db, 'tenants', snap.docs[0].id, 'cards', code));
         if (!cardSnap.exists()) return null;
         return { business, card: cardSnap.data() as GiftCard };
@@ -250,18 +269,20 @@ export class Store {
     return resource({
       loader: async () => {
         const snap = await getDocs(query(
-          collection(this.db, 'tenants'),
+          collection(this.db, 'pages'),
           where('business.published', '==', true)));
-        return snap.docs.map(d => cleanTenant({ id: d.id, ...d.data() } as Tenant));
+        return snap.docs.map(d => cleanTenant({ id: d.id, ...d.data() } as PublicTenant));
       },
     });
   }
 
-  /** ¿Está libre ese link público? Consulta global, no solo mis comercios. */
-  async slugTaken(slug: string, exceptId?: string) {
+  /** ¿Está libre ese link público? El id del comercio es su slug, así que basta
+   *  con mirar si existe `pages/{slug}`. Una página ajena sin publicar no se puede
+   *  leer (permiso denegado): eso también cuenta como ocupado. */
+  async slugTaken(slug: string) {
     if (!slug) return false;
-    const snap = await getDocs(query(collection(this.db, 'tenants'), where('business.slug', '==', slug)));
-    return snap.docs.some(d => d.id !== exceptId);
+    try { return (await getDoc(doc(this.db, 'pages', slug))).exists(); }
+    catch { return true; }
   }
 
   // ── escrituras ─────────────────────────────────────────────────────────────
@@ -271,7 +292,7 @@ export class Store {
     const id = this.currentId();
     if (!id) return;
     const flat = Object.fromEntries(Object.entries(patch).map(([k, v]) => [`business.${k}`, v]));
-    await updateDoc(this.tenantRef(id), flat);
+    await updateDoc(doc(this.db, 'pages', id), flat);
   }
 
   /** Alta y edición de gift card: `code` es la clave, así que setDoc sirve para
@@ -338,26 +359,27 @@ export class Store {
    *  subcolecciones quedan huérfanas pero inaccesibles (sin el doc no hay
    *  membresía ni publicación). Una Cloud Function las limpiaría en producción. */
   async deleteTenant(id = this.currentId()) {
-    if (id) await deleteDoc(doc(this.db, 'tenants', id));
+    if (!id) return;
+    await deleteDoc(doc(this.db, 'pages', id));    // primero la página: deja de verse
+    await deleteDoc(doc(this.db, 'tenants', id));
   }
 
-  /** Alta de comercio: lo que produce el wizard. Devuelve el id del tenant. */
-  async createTenant(business: Business): Promise<string> {
+  /** Alta de comercio: lo que produce el wizard. Devuelve el id del tenant.
+   *  Primero el tenant (lo privado): las reglas de la página y del staff miran
+   *  ahí quién es el dueño. */
+  async createTenant(business: Business, bank: Bank): Promise<string> {
     const user = this.auth.user();
     if (!user) throw new Error('sin sesión');
 
     const id = business.slug;
     const ownerEmail = user.email ?? user.uid;
-    await setDoc(doc(this.db, 'tenants', id), {
-      business,
-      ownerUid: user.uid,
-      memberEmails: [ownerEmail],
-      soldThisMonth: 0,
-      monthly: Array.from({ length: 6 }, () => ({ sold: 0, redeemed: 0 })),
-    });
-    await setDoc(doc(this.db, 'tenants', id, 'staff', ownerEmail), {
+    await setDoc(doc(this.db, 'tenants', id), { ownerUid: user.uid, memberEmails: [ownerEmail], bank });
+    const batch = writeBatch(this.db);
+    batch.set(doc(this.db, 'tenants', id, 'staff', ownerEmail), {
       email: ownerEmail, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS,
     });
+    batch.set(doc(this.db, 'pages', id), { business });
+    await batch.commit();
     return id;
   }
 
@@ -371,6 +393,14 @@ const LAST_TENANT = 'gkb.tenant';
 function cleanTenant<T extends { business: Business }>(t: T): T {
   return t.business?.logoUrl?.startsWith('blob:') ? { ...t, business: { ...t.business, logoUrl: null } } : t;
 }
+/** Mes `yyyy-mm` de un canje sellado `dd/mm HH:mm` (sin año): si el mes es
+ *  posterior al actual, fue el año pasado. Alcanza para la ventana de 6 meses. */
+export function redemptionMonth(at: string, today = new Date()): string {
+  const m = +at.slice(3, 5);
+  const y = today.getFullYear() - (m > today.getMonth() + 1 ? 1 : 0);
+  return `${y}-${String(m).padStart(2, '0')}`;
+}
+
 const liveOf = (cards: GiftCard[]) => cards.filter(c => cardState(c) === 'activa');
 
 /** Sello `dd/mm HH:mm` para el registro de canje, en hora local. */
