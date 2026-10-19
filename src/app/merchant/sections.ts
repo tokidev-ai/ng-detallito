@@ -544,9 +544,16 @@ export class Marca {
     }
   }
 
+  /** El logo se guarda al subirlo, sin esperar a "Guardar cambios": es lo que uno
+   *  espera de una subida, y así un reload no lo pierde. */
   async onLogo(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) this.edit({ logoUrl: await logoDataUrl(file) });
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const logoUrl = await logoDataUrl(file);
+    await this.s.saveBusiness({ logoUrl });
+    this.draft.update(({ logoUrl: _, ...rest }) => rest);
+    input.value = '';  // permite volver a elegir el mismo archivo
   }
 }
 

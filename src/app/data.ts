@@ -101,7 +101,7 @@ export class Store {
       ? (collectionData(
           query(collection(this.db, 'tenants'), where('memberEmails', 'array-contains', email)),
           { idField: 'id' }) as Observable<Tenant[]>).pipe(
-          map(list => ({ list, loaded: true })),
+          map(list => ({ list: list.map(cleanTenant), loaded: true })),
           startWith({ list: [] as Tenant[], loaded: false }))  // "cargando", no "vacío"
       : of({ list: [] as Tenant[], loaded: true })),  // sin sesión: no hay comercios, punto
   );
@@ -193,7 +193,7 @@ export class Store {
           where('business.slug', '==', params),
           where('business.published', '==', true)));
         if (snap.empty) return null;
-        const tenant = { id: snap.docs[0].id, ...snap.docs[0].data() } as Tenant;
+        const tenant = cleanTenant({ id: snap.docs[0].id, ...snap.docs[0].data() } as Tenant);
         return { tenant };
       },
     });
@@ -213,7 +213,7 @@ export class Store {
           where('business.slug', '==', slug),
           where('business.published', '==', true)));
         if (snap.empty) return null;
-        const business = (snap.docs[0].data() as Tenant).business;
+        const business = cleanTenant(snap.docs[0].data() as Tenant).business;
         const cardSnap = await getDoc(doc(this.db, 'tenants', snap.docs[0].id, 'cards', code));
         if (!cardSnap.exists()) return null;
         return { business, card: cardSnap.data() as GiftCard };
@@ -228,7 +228,7 @@ export class Store {
         const snap = await getDocs(query(
           collection(this.db, 'tenants'),
           where('business.published', '==', true)));
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }) as Tenant);
+        return snap.docs.map(d => cleanTenant({ id: d.id, ...d.data() } as Tenant));
       },
     });
   }
@@ -340,6 +340,13 @@ export class Store {
 }
 
 const LAST_TENANT = 'gkb.tenant';
+
+/** Antes el logo se guardaba como `blob:` URL, que solo vale en la pestaña que lo
+ *  creó: leído después es una imagen rota. Lo tratamos como "sin logo" (se ve la
+ *  inicial) hasta que el comercio lo vuelva a subir. */
+function cleanTenant<T extends { business: Business }>(t: T): T {
+  return t.business?.logoUrl?.startsWith('blob:') ? { ...t, business: { ...t.business, logoUrl: null } } : t;
+}
 const liveOf = (cards: GiftCard[]) => cards.filter(c => cardState(c) === 'activa');
 
 /** Sello `dd/mm HH:mm` para el registro de canje, en hora local. */
