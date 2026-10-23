@@ -83,7 +83,7 @@ export class LocationPicker implements OnDestroy {
       // pin propio (divIcon): los íconos por defecto de Leaflet se rompen al empaquetar.
       this.pin = L.marker([at.lat, at.lng], {
         draggable: true,
-        icon: L.divIcon({ className: 'map-pin', iconSize: [28, 28], iconAnchor: [14, 28] }),
+        icon: L.divIcon({ className: 'map-pin', html: '<span></span>', iconSize: [28, 36], iconAnchor: [14, 36] }),
       }).addTo(map);
       this.pin.on('dragend', () => { const p = this.pin!.getLatLng(); this.set(p.lat, p.lng); });
     } else {
