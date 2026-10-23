@@ -195,10 +195,11 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
                   <!-- sus gift cards, apiladas -->
                   <div class="relative my-auto h-28" aria-hidden="true">
                     @for (m of montos(t); track m; let j = $index) {
-                      <span class="biz-chip absolute left-1/2 top-1/2 flex h-20 w-36 flex-col justify-between rounded-xl border border-current/20 bg-current/10 p-2.5 shadow-xl backdrop-blur-md"
-                            [style.--i]="j - (montos(t).length - 1) / 2">
-                        <span class="text-[8px] font-semibold uppercase tracking-[0.2em] opacity-70">Gift card</span>
-                        <span class="text-lg font-extrabold tabular-nums">{{ m | bs }}</span>
+                      <span class="biz-chip absolute left-1/2 top-1/2 flex h-20 w-32 flex-col justify-between overflow-hidden rounded-xl bg-white p-2.5 text-neutral-900 shadow-2xl shadow-black/30"
+                            [style.--i]="(montos(t).length - 1) / 2 - j" [style.z-index]="10 - j">
+                        <span class="absolute inset-x-0 top-0 h-1.5" style="background: linear-gradient(90deg, var(--c1), var(--c2))"></span>
+                        <span class="mt-1 text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-400">Gift card</span>
+                        <span class="text-xl font-extrabold tabular-nums tracking-tight" style="color: var(--c1)">{{ m | bs }}</span>
                       </span>
                     }
                   </div>
@@ -210,7 +211,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
                       <p class="mt-1 line-clamp-2 text-sm opacity-75">{{ t.business.description }}</p>
                     }
                     <div class="mt-5 flex items-center justify-between gap-3">
-                      <p class="text-sm"><span class="opacity-70">desde</span> <span class="text-lg font-extrabold tabular-nums">{{ desde(t) | bs }}</span></p>
+                      <p class="text-sm"><span class="me-1 opacity-70">desde</span><span class="text-lg font-extrabold tabular-nums">{{ desde(t) | bs }}</span></p>
                       <span class="flex h-11 items-center gap-2 overflow-hidden rounded-full bg-white px-3.5 text-sm font-bold text-neutral-900 shadow-lg transition-all duration-300">
                         <span class="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-24">Regalar</span>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-4 shrink-0 transition-transform group-hover:translate-x-0.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>

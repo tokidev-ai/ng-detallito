@@ -330,7 +330,7 @@ body {
   transition: translate .5s cubic-bezier(.22,.8,.3,1), rotate .5s cubic-bezier(.22,.8,.3,1);
 }
 .biz-card:hover .biz-chip, .biz-card:focus-visible .biz-chip {
-  translate: calc(-50% + var(--i) * 58px) calc(-50% + var(--i) * var(--i) * 10px);
+  translate: calc(-50% + var(--i) * 74px) calc(-50% + var(--i) * var(--i) * 12px);
   rotate: calc(var(--i) * 12deg);
 }
 @media (prefers-reduced-motion: reduce) { .biz-chip { transition: none; } }
