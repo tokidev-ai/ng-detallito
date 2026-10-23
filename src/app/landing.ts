@@ -140,12 +140,12 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
         <div class="pointer-events-none absolute -right-40 top-10 size-[30rem] rounded-full bg-primary/15 blur-3xl" aria-hidden="true"></div>
         <div class="pointer-events-none absolute -left-40 bottom-0 size-[26rem] rounded-full bg-[#f59e0b]/10 blur-3xl" aria-hidden="true"></div>
         <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <div class="flex flex-wrap items-end justify-between gap-6">
+          <div class="flex flex-col items-center gap-6 text-center">
             <div reveal class="min-w-0">
               <h2 class="text-3xl font-extrabold tracking-[-0.04em] sm:text-5xl lg:whitespace-nowrap xl:text-6xl">
                 Negocios que ya usan <span class="text-primary">GiftKBol</span>
               </h2>
-              <p class="mt-4 max-w-2xl text-lg text-base-content/65">
+              <p class="mx-auto mt-4 max-w-2xl text-lg text-base-content/65">
                 Elige dónde regalar, nosotros hacemos el resto: pagas por QR y la gift card llega al instante.
               </p>
             </div>
@@ -161,7 +161,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
             }
           </div>
 
-          <ul class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul class="mt-12 flex flex-wrap justify-center gap-5 *:w-full sm:*:w-[calc(50%-0.625rem)] lg:*:w-[calc((100%-2.5rem)/3)]">
             @if (catalog.isLoading()) {
               @for (i of [1, 2, 3]; track i) {
                 <li class="h-80 animate-pulse rounded-3xl bg-base-200"></li>
@@ -212,7 +212,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
               </li>
             }
             @if (!catalog.isLoading() && !filtrados().length) {
-              <li class="col-span-full py-10 text-center text-base-content/50">Ningún negocio coincide con “{{ q() }}”.</li>
+              <li class="py-10 text-center text-base-content/50">Ningún negocio coincide con “{{ q() }}”.</li>
             }
           </ul>
         </div>
