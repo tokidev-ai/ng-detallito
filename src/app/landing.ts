@@ -141,19 +141,11 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
         <div class="pointer-events-none absolute -left-40 bottom-0 size-[26rem] rounded-full bg-[#f59e0b]/10 blur-3xl" aria-hidden="true"></div>
         <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
           <div class="flex flex-wrap items-end justify-between gap-6">
-            <div reveal class="max-w-2xl">
-              <p class="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-sm font-semibold text-[#c2410c]">
-                <span class="relative flex size-2">
-                  <span class="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-60"></span>
-                  <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
-                </span>
-                @if (negocios().length) { {{ negocios().length }} {{ negocios().length === 1 ? 'negocio vende' : 'negocios venden' }} con nosotros }
-                @else { Cargando negocios… }
-              </p>
-              <h2 class="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-balance sm:text-6xl">
+            <div reveal class="min-w-0">
+              <h2 class="text-3xl font-extrabold tracking-[-0.04em] sm:text-5xl lg:whitespace-nowrap lg:text-6xl">
                 Negocios que ya usan <span class="text-primary">GiftKBol</span>
               </h2>
-              <p class="mt-4 text-lg text-base-content/65">
+              <p class="mt-4 max-w-2xl text-lg text-base-content/65">
                 Elige dónde regalar, nosotros hacemos el resto: pagas por QR y la gift card llega al instante.
               </p>
             </div>
