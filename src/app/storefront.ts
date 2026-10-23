@@ -50,7 +50,7 @@ import { Wordmark } from './brand';
             <div class="px-5 pb-14 pt-2 text-center @2xl:px-8 @5xl:p-0 @5xl:text-left">
               <h1 class="reveal reveal-1 mt-3 text-[2.3rem] font-extrabold leading-[0.98] tracking-[-0.045em] text-balance @2xl:text-5xl @5xl:text-[4.1rem]">
                 Regala algo especial en
-                <span class="relative inline-block">
+                <span class="relative inline-block max-w-full wrap-anywhere">
                   <span class="text-aurora">{{ b().name || 'tu comercio' }}</span>
                   <svg class="subrayado absolute -bottom-1.5 left-0 w-full" height="14" style="color:var(--c2-soft)"
                        viewBox="0 0 200 14" preserveAspectRatio="none" fill="none" aria-hidden="true">

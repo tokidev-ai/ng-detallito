@@ -115,3 +115,23 @@ test('máximo 3 comercios por persona, contados en owners/{uid}', async () => {
   await assertSucceeds(updateDoc(doc(as('sa', 'sa@x.com'), 'owners/nuevo'), { max: 5 }));
   await assertSucceeds(alta('e', 4));
 });
+
+test('textos sin < > y página con forma válida', async () => {
+  const pub = anon(), dueña = as('owner', OWNER);
+  await assertFails(setDoc(doc(pub, 'tenants/t1/cards/AAAA-EEEE'), card({ code: 'AAAA-EEEE', to: '<img src=x onerror=alert(1)>' })));
+  await assertFails(setDoc(doc(pub, 'tenants/t1/cards/AAAA-FFFF'), card({ code: 'AAAA-FFFF', to: 'x'.repeat(41) })));
+  await assertSucceeds(setDoc(doc(pub, 'tenants/t1/cards/AAAA-GGGG'), card({ code: 'AAAA-GGGG', to: 'José Ñuñez 🎁' })));
+
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.name': '<b>Spa</b>' }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.color': 'red;background:url(//x)' }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.logoUrl': 'https://otro.com/logo.png' }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.hack': true }));
+  await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), {
+    'business.description': 'Masajes\ny faciales', 'business.color': '#0f766e',
+    'business.logoUrl': 'data:image/webp;base64,UklGRg==', 'business.location': { lat: -16.5, lng: -68.1 },
+  }));
+
+  await assertFails(updateDoc(doc(dueña, 'tenants/t1'), { 'bank.holder': '<script>' }));
+  await assertFails(setDoc(doc(dueña, 'tenants/t1/staff/no-es-correo'), { email: 'no-es-correo', role: 'staff', perms: NONE }));
+  await assertSucceeds(setDoc(doc(dueña, 'tenants/t1/staff/nuevo@x.com'), { email: 'nuevo@x.com', role: 'staff', perms: NONE }));
+});

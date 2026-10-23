@@ -51,6 +51,10 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   @apply bg-base-200 text-base-content antialiased;
+  /* Red de seguridad: una palabra larguísima escrita por un usuario (nombre, destinatario,
+     dirección) se parte en vez de empujar la página de costado. Las celdas y filas flex
+     que no deben crecer usan además `truncate` o `wrap-anywhere`. */
+  overflow-wrap: break-word;
   font-feature-settings: "cv11", "ss01";
 }
 

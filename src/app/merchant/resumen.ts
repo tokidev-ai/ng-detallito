@@ -17,7 +17,7 @@ const PAD = 6;  // margen del gráfico, en % del viewBox, para que los puntos no
 
     <!-- ── saludo + acciones rápidas ── -->
     <div class="reveal flex flex-wrap items-end justify-between gap-4">
-      <div>
+      <div class="min-w-0 wrap-anywhere">
         <p class="text-sm text-base-content/50 first-letter:uppercase">{{ today }}</p>
         <h2 class="mt-0.5 text-2xl font-extrabold tracking-tight sm:text-3xl">Hola, {{ firstName() }} 👋</h2>
         <p class="mt-1 text-sm text-base-content/60">Así va {{ s.business().name }} este mes.</p>

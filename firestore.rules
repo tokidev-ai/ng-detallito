@@ -66,6 +66,47 @@ service cloud.firestore {
     }
 
     // Quién es superadmin: cada uno lee solo el suyo, nadie se lo puede dar.
+    // Texto que escribe la gente: con tope y sin < > ni caracteres de control (sí
+    // saltos de línea). Angular ya escapa al mostrar; esto es la segunda barrera y
+    // la única que no depende de nuestra app.
+    function okText(s, max) {
+      return s is string && s.size() <= max && s.matches('(?:[^<>\\p{Cc}]|\\n)*');
+    }
+
+    // Los campos de la página que cambian en esta escritura (o todos, al crearla).
+    function okBusiness(b, keys) {
+      return keys.hasOnly(['name', 'slug', 'description', 'logoUrl', 'color', 'published',
+                           'validityMonths', 'terms', 'suggestedAmounts', 'cardStyle',
+                           'address', 'location'])
+          && (!('name' in keys) || (okText(b.name, 60) && b.name.size() > 0))
+          && (!('slug' in keys) || (b.slug is string && b.slug.matches('[a-z0-9-]{1,40}')))
+          && (!('description' in keys) || okText(b.description, 160))
+          && (!('address' in keys) || okText(b.address, 160))
+          && (!('terms' in keys) || okText(b.terms, 500))
+          && (!('color' in keys) || (b.color is string && b.color.matches('#[0-9a-fA-F]{6}')))
+          // el logo es una imagen embebida (ver logoDataUrl), nunca un link a otro lado
+          && (!('logoUrl' in keys) || b.logoUrl == null
+              || (b.logoUrl is string && b.logoUrl.size() <= 60000
+                  && b.logoUrl.matches('data:image/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+')))
+          && (!('cardStyle' in keys) || b.cardStyle in ['degradado', 'logo', 'cubierta', 'claro', 'oscuro'])
+          && (!('published' in keys) || b.published is bool)
+          && (!('validityMonths' in keys) || (b.validityMonths is int && b.validityMonths > 0 && b.validityMonths <= 60))
+          && (!('suggestedAmounts' in keys) || (b.suggestedAmounts is list && b.suggestedAmounts.size() <= 20))
+          && (!('location' in keys) || b.location == null
+              || (b.location is map && b.location.keys().hasOnly(['lat', 'lng'])
+                  && b.location.lat is number && b.location.lng is number));
+    }
+
+    function okBank(b) {
+      return b is map && b.keys().hasOnly(['bank', 'account', 'holder', 'nit'])
+          && okText(b.get('bank', ''), 40) && okText(b.get('account', ''), 30)
+          && okText(b.get('holder', ''), 80) && okText(b.get('nit', ''), 20);
+    }
+
+    function okEmail(e) {
+      return e is string && e.size() <= 100 && e.matches('[^<>\\s@]+@[^<>\\s@]+\\.[^<>\\s@]+');
+    }
+
     function ownerPath(uid) { return /databases/$(database)/documents/owners/$(uid); }
     function tenantPath(id) { return /databases/$(database)/documents/tenants/$(id); }
 
@@ -126,11 +167,14 @@ service cloud.firestore {
       // la crea el dueño junto con su tenant; el id es el slug y no cambia
       allow create: if isOwner(tenantId)
                     && request.resource.data.keys().hasOnly(['business'])
-                    && request.resource.data.business.slug == tenantId;
+                    && request.resource.data.business.slug == tenantId
+                    && okBusiness(request.resource.data.business, request.resource.data.business.keys());
       allow update: if (isOwner(tenantId)
                         || hasPerm(tenantId, 'manageBranding') || hasPerm(tenantId, 'manageProducts'))
                     && request.resource.data.keys().hasOnly(['business'])
-                    && request.resource.data.business.slug == resource.data.business.slug;
+                    && request.resource.data.business.slug == resource.data.business.slug
+                    && okBusiness(request.resource.data.business,
+                                  request.resource.data.business.diff(resource.data.business).affectedKeys());
       allow delete: if isOwner(tenantId);
     }
 
@@ -146,7 +190,8 @@ service cloud.firestore {
                     && countedNew(tenantId)
                     && request.resource.data.ownerUid == request.auth.uid
                     && request.resource.data.memberEmails == [myEmail()]
-                    && request.resource.data.keys().hasOnly(['ownerUid', 'memberEmails', 'bank']);
+                    && request.resource.data.keys().hasOnly(['ownerUid', 'memberEmails', 'bank'])
+                    && okBank(request.resource.data.bank);
 
       // El dueño cambia todo menos ownerUid y la comisión (si no, se la bajaría a 0):
       // la cuenta bancaria es solo suya, o un empleado se desviaría los pagos.
@@ -154,6 +199,8 @@ service cloud.firestore {
       // (memberEmails[0]).
       allow update: if isMember(tenantId)
                     && request.resource.data.ownerUid == resource.data.ownerUid
+                    && (!('bank' in request.resource.data.diff(resource.data).affectedKeys())
+                        || okBank(request.resource.data.bank))
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['commissionRate'])
                     && (isOwner(tenantId)
                         || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberEmails'])
@@ -173,7 +220,10 @@ service cloud.firestore {
       match /cards/{code} {
         allow read: if isMember(tenantId);
         // emitir, editar y borrar: quien tiene el tab Gift cards (o el dueño)
-        allow create, update, delete: if ownerOrPerm(tenantId, 'viewCards');
+        allow delete: if ownerOrPerm(tenantId, 'viewCards');
+        allow create, update: if ownerOrPerm(tenantId, 'viewCards')
+                              && okText(request.resource.data.get('to', ''), 80)
+                              && okText(request.resource.data.get('from', ''), 80);
         // canjear: solo baja el saldo, nada más de la carta
         allow update: if hasPerm(tenantId, 'redeem')
                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance'])
@@ -192,8 +242,8 @@ service cloud.firestore {
         allow create: if page(tenantId).business.published == true
                       && request.resource.data.keys().hasOnly(['code', 'to', 'from', 'value', 'balance', 'expires', 'soldAt', 'channel'])
                       && request.resource.data.channel == 'qr'
-                      && request.resource.data.to is string && request.resource.data.to.size() <= 40
-                      && (!('from' in request.resource.data) || (request.resource.data.from is string && request.resource.data.from.size() <= 40))
+                      && okText(request.resource.data.to, 40)
+                      && okText(request.resource.data.get('from', ''), 40)
                       && request.resource.data.expires is string && request.resource.data.expires.size() == 10
                       && request.resource.data.code == code
                       && request.resource.data.value is number
@@ -212,10 +262,12 @@ service cloud.firestore {
       match /staff/{email} {
         allow read: if isMember(tenantId);
         // quien gestiona el equipo toca empleados, nunca al dueño ni crea otro dueño
-        allow write: if isOwner(tenantId)
+        allow write: if (request.resource == null
+                         || (okEmail(email) && request.resource.data.email == email))
+                     && (isOwner(tenantId)
                      || (hasPerm(tenantId, 'manageStaff')
                          && (resource == null || resource.data.role == 'staff')
-                         && (request.resource == null || request.resource.data.role == 'staff'));
+                         && (request.resource == null || request.resource.data.role == 'staff')));
       }
     }
   }

@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Business, CardState, GiftCard, LIMITS, Perm, Store, cardState, logoDataUrl } from '../data';
+import { Business, CardState, GiftCard, LIMITS, Perm, Store, cardState, isEmail, logoDataUrl } from '../data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from '../card';
 import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
@@ -632,7 +632,7 @@ export class Equipo {
 
   add() {
     const email = this.email.trim().toLowerCase();
-    if (!email || !email.includes('@')) { this.error.set('Ingresa un correo válido.'); return; }
+    if (!isEmail(email)) { this.error.set('Ingresa un correo válido (ej: nombre@gmail.com).'); return; }
     if (this.s.staff().some(m => m.email === email)) { this.error.set('Ese correo ya está en el equipo.'); return; }
     this.error.set('');
     this.s.addStaff(email, { ...CASHIER });

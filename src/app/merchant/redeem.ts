@@ -50,7 +50,7 @@ const BD: any = (globalThis as any).BarcodeDetector;
         } @else {
           <div class="mt-4 rounded-box border border-base-300 p-3">
             <p class="font-mono">{{ found()!.code }}</p>
-            <p class="text-sm text-base-content/60">{{ found()!.to }} · saldo {{ found()!.balance | bs }}</p>
+            <p class="text-sm text-base-content/60 wrap-anywhere">{{ found()!.to }} · saldo {{ found()!.balance | bs }}</p>
           </div>
 
           @if (state(found()!) !== 'activa') {

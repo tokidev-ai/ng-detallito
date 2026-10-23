@@ -83,6 +83,19 @@ export const LIMITS = {
   bank: 40, account: 30, holder: 80, nit: 20,
 } as const;
 
+/** Quita `<`, `>` y caracteres de control (deja los saltos de línea). Angular ya
+ *  escapa todo al mostrarlo; esto es defensa extra, y las reglas exigen lo mismo
+ *  (`okText` en firestore.rules), así que lo limpiamos antes de guardar. */
+export const cleanText = (s: string) => s.replace(/[<>]|[^\P{Cc}\n]/gu, '');
+
+/** Aplica `cleanText` a los campos de texto de un objeto (un nivel). */
+export function cleanStrings<T extends object>(o: T): T {
+  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === 'string' ? cleanText(v) : v])) as T;
+}
+
+/** Correo razonable: algo@algo.algo, sin espacios ni < >. Igual que `okEmail` en las reglas. */
+export const isEmail = (s: string) => s.length <= LIMITS.email && /^[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+$/.test(s);
+
 /** Cuántos comercios puede crear una persona; para más, nos escribe (el
  *  superadmin le sube `owners/{uid}.max`). Las reglas usan el mismo 3. */
 export const MAX_OWNED = 3;
@@ -315,7 +328,7 @@ export class Store {
   async saveBusiness(patch: Partial<Business>) {
     const id = this.currentId();
     if (!id) return;
-    const flat = Object.fromEntries(Object.entries(patch).map(([k, v]) => [`business.${k}`, v]));
+    const flat = Object.fromEntries(Object.entries(cleanStrings(patch)).map(([k, v]) => [`business.${k}`, v]));
     await updateDoc(doc(this.db, 'pages', id), flat);
   }
 
@@ -323,7 +336,7 @@ export class Store {
    *  ambas. Editar no cambia el código (es la identidad de la carta). */
   async saveCard(card: GiftCard) {
     const id = this.currentId();
-    if (id) await setDoc(doc(this.db, 'tenants', id, 'cards', card.code), card);
+    if (id) await setDoc(doc(this.db, 'tenants', id, 'cards', card.code), cleanStrings(card));
   }
 
   async removeCard(code: string) {
@@ -354,7 +367,7 @@ export class Store {
    *  dejen crear `cards` a una función/servidor, no a cualquier visitante. */
   async issueCard(tenantId: string, card: GiftCard) {
     await setDoc(doc(this.db, 'tenants', tenantId, 'cards', card.code),
-      { ...card, soldAt: new Date().toISOString(), channel: 'qr' });
+      { ...cleanStrings(card), soldAt: new Date().toISOString(), channel: 'qr' });
   }
 
   async togglePerm(email: string, perm: Perm) {
@@ -367,7 +380,7 @@ export class Store {
 
   async addStaff(email: string, perms: Record<Perm, boolean>) {
     const id = this.currentId();
-    if (!id) return;
+    if (!id || !isEmail(email)) return;
     await setDoc(doc(this.db, 'tenants', id, 'staff', email), { email, role: 'staff', lastSeen: '—', perms });
     await updateDoc(this.tenantRef(id), { memberEmails: arrayUnion(email) });  // así puede entrar
   }
@@ -401,6 +414,8 @@ export class Store {
    *  Primero el tenant (lo privado): las reglas de la página y del staff miran
    *  ahí quién es el dueño. */
   async createTenant(business: Business, bank: Bank): Promise<string> {
+    business = cleanStrings(business);
+    bank = cleanStrings(bank);
     const user = this.auth.user();
     if (!user) throw new Error('sin sesión');
 

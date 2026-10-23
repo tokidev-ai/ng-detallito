@@ -248,6 +248,13 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   **Todo input donde se escribe un dato lleva su tope y el aviso** (montos: "Entre Bs 1 y
   Bs 10.000."); los buscadores no. Destinatario y "de parte de": 40 (`LIMITS.person`, igual
   que la regla de compra pública).
+- **Caracteres permitidos (anti-XSS):** Angular escapa todo lo que muestra y no usamos
+  `innerHTML`. Además, `cleanText` (data.ts) quita `<`, `>` y caracteres de control antes de
+  guardar, y las reglas lo exigen (`okText`, `okBusiness`, `okBank`, `okEmail`): color solo
+  `#rrggbb`, logo solo `data:image/...;base64`, slug `[a-z0-9-]`. Acentos, ñ, emojis y
+  comillas sí se permiten (son nombres reales).
+- **Texto largo:** `body` tiene `overflow-wrap: break-word`; en filas flex y celdas, `min-w-0`
+  + `truncate` o `wrap-anywhere`.
 - **Listas con texto del usuario: se corta (`truncate` + `title`) y hay un botón "ver"**
   con el detalle completo en un modal; nunca scroll horizontal por un nombre largo.
 - **Máximo 3 comercios propios por persona** (`MAX_OWNED`). Al llegar, el wizard muestra un

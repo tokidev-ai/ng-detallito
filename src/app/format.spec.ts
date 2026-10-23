@@ -164,3 +164,17 @@ describe('ubicación del local', async () => {
     expect(osmEmbedUrl({ lat: -16.5, lng: -68.13 })).toContain('marker=-16.500000,-68.130000');
   });
 });
+
+describe('textos del usuario', async () => {
+  const { cleanText, isEmail } = await import('./data');
+  it('cleanText quita < > y control, deja acentos, emojis y saltos de línea', () => {
+    expect(cleanText('<script>alert(1)</script>')).toBe('scriptalert(1)/script');
+    expect(cleanText('Café D\'Ana 🎁\nLa Paz\u0007')).toBe('Café D\'Ana 🎁\nLa Paz');
+  });
+  it('isEmail', () => {
+    expect(isEmail('ana@gmail.com')).toBe(true);
+    expect(isEmail('ana@gmail')).toBe(false);
+    expect(isEmail('<a>@x.com')).toBe(false);
+    expect(isEmail('a b@x.com')).toBe(false);
+  });
+});

@@ -208,10 +208,10 @@ export class GiftcardArt {
 
         <main class="relative z-10 mx-auto max-w-md px-5 pb-10 pt-4">
           <p class="reveal text-center text-sm font-medium text-white/70">🎁 Tienes un regalo</p>
-          <h1 class="reveal reveal-1 mt-2 text-center text-[2.4rem] font-extrabold leading-[1] tracking-[-0.045em] text-balance">
+          <h1 class="reveal reveal-1 mt-2 text-center text-[2.4rem] font-extrabold leading-[1] tracking-[-0.045em] text-balance wrap-anywhere">
             {{ p.card.to }}, te regalaron <span class="text-aurora">{{ p.card.value | bs }}</span>
           </h1>
-          <p class="reveal reveal-2 mt-3 text-center text-white/75">
+          <p class="reveal reveal-2 mt-3 text-center text-white/75 wrap-anywhere">
             @if (p.card.from) { De parte de <span class="font-semibold text-white">{{ p.card.from }}</span>, para usar en }
             @else { Para usar en }
             <span class="font-semibold text-white">{{ p.business.name }}</span>

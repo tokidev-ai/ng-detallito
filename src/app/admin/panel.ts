@@ -411,14 +411,14 @@ const PAD = 6;
                       <tr class="cursor-pointer hover:bg-base-200/60" (click)="vOpen.set(vOpen() === v.t.id ? null : v.t.id)">
                         <td>
                           <span class="flex items-center gap-2 font-semibold">
-                            <span class="size-2.5 shrink-0 rounded-full" [style.background-color]="v.t.business.color"></span>{{ v.t.business.name }}
+                            <span class="size-2.5 shrink-0 rounded-full" [style.background-color]="v.t.business.color"></span><span class="max-w-48 truncate" [title]="v.t.business.name">{{ v.t.business.name }}</span>
                             <span class="text-xs font-normal text-base-content/40">{{ vOpen() === v.t.id ? '▾' : '▸' }}</span>
                           </span>
                         </td>
                         <td class="text-right tabular-nums">{{ v.tot.gross | bs }} <span class="block text-xs text-base-content/40">{{ v.tot.count }} cartas</span></td>
                         <td class="whitespace-nowrap text-right tabular-nums text-[#c2410c]">{{ v.tot.fee | bs:2 }} <span class="block text-xs text-base-content/40">{{ pct(v.rate) }}</span></td>
                         <td class="text-right text-base font-extrabold tabular-nums">{{ v.tot.net | bs:2 }}</td>
-                        <td class="text-sm">
+                        <td class="max-w-56 text-sm wrap-anywhere">
                           @if (hasBank(v.t)) {
                             <p class="font-medium">{{ v.t.bank!.holder }}</p>
                             <p class="text-xs text-base-content/55">{{ v.t.bank!.bank }} · <span class="font-mono">{{ v.t.bank!.account }}</span></p>
