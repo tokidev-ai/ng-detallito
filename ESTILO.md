@@ -243,8 +243,8 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 - **El alta muestra las mismas opciones que la edición.** Color + diseño de la gift card es un
   solo componente (`merchant/brand-design.ts`) que usan el wizard y "Editar página": una
   opción nueva se agrega ahí y aparece en los dos. Topes de los campos en `LIMITS` (data.ts),
-  como `maxlength` y un contador "12/60" junto a la etiqueta; el placeholder es solo un
-  ejemplo ("Ej: Spa Aurora").
+  como `maxlength` y un texto bajo el campo ("Hasta 60 caracteres."); el placeholder es
+  solo un ejemplo ("Ej: Spa Aurora").
 - **Máximo 3 comercios propios por persona** (`MAX_OWNED`). Al llegar, el wizard muestra un
   aviso con `SUPPORT_EMAIL` en vez del formulario; con 2, avisa que es el último. Lo exigen
   las reglas: `owners/{uid}` = { count, max? } sube/baja en el mismo batch que crea/borra el

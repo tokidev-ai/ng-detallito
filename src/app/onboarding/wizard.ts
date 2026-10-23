@@ -85,20 +85,22 @@ export const slugify = (s: string) =>
 
                 <div class="flex-1 space-y-4">
                   <label class="form-control block">
-                    <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">Nombre <span class="normal-case tracking-normal tabular-nums">{{ draft().name.length }}/{{ limits.name }}</span></span>
+                    <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Nombre</span>
                     <input class="input input-bordered w-full" [ngModel]="draft().name"
                            (ngModelChange)="onName($event)" name="name" [maxlength]="limits.name"
                            placeholder="Ej: Spa Aurora">
+                    <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.name }} caracteres.</span>
                   </label>
 
                   <label class="form-control block">
-                    <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">Link público <span class="normal-case tracking-normal tabular-nums">{{ draft().slug.length }}/{{ limits.slug }}</span></span>
+                    <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Link público</span>
                     <div class="join w-full">
                       <span class="join-item flex items-center border border-base-300 bg-base-200 px-3 text-sm text-base-content/60">giftcards.bo/</span>
                       <input class="input input-bordered join-item w-full" [ngModel]="draft().slug"
                              (ngModelChange)="patch({ slug: slugify($event) })" name="slug" [maxlength]="limits.slug"
                              placeholder="ej: spa-aurora">
                     </div>
+                    <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.slug }} caracteres.</span>
                     @if (draft().slug) {
                       @if (slugChecking()) {
                         <span class="mt-1 block text-sm text-base-content/50">Verificando…</span>
@@ -113,10 +115,11 @@ export const slugify = (s: string) =>
               </div>
 
               <label class="form-control mt-4 block">
-                <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">Descripción corta <span class="normal-case tracking-normal tabular-nums">{{ draft().description.length }}/{{ limits.description }}</span></span>
+                <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Descripción corta</span>
                 <textarea class="textarea textarea-bordered h-24 w-full" [ngModel]="draft().description"
                           (ngModelChange)="patch({ description: $event })" name="desc" [maxlength]="limits.description"
                           placeholder="Ej: Masajes, faciales y estética en Sopocachi."></textarea>
+                <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.description }} caracteres.</span>
               </label>
 
               <app-brand-design [business]="draft()" (change)="patch($event)" />
@@ -153,9 +156,10 @@ export const slugify = (s: string) =>
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 @for (f of bankFields; track f.key) {
                   <label class="form-control block">
-                    <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">{{ f.label }} <span class="normal-case tracking-normal tabular-nums">{{ bank()[f.key].length }}/{{ limits[f.key] }}</span></span>
+                    <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">{{ f.label }}</span>
                     <input class="input input-bordered w-full" [ngModel]="bank()[f.key]" [name]="f.key" [maxlength]="limits[f.key]"
                            (ngModelChange)="patchBank(f.key, $event)" [placeholder]="'Ej: ' + f.placeholder">
+                    <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits[f.key] }} caracteres.</span>
                   </label>
                 }
               </div>

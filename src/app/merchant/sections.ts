@@ -343,16 +343,18 @@ export class Emitidas {
 
           <div class="flex-1 space-y-4">
             <label class="form-control block">
-              <span class="mb-1 flex justify-between text-xs font-medium uppercase tracking-wider text-base-content/50">Nombre <span class="normal-case tracking-normal tabular-nums">{{ v().name.length }}/{{ limits.name }}</span></span>
+              <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Nombre</span>
               <input class="input input-bordered w-full" [ngModel]="v().name" name="name" [maxlength]="limits.name"
                      placeholder="Ej: Spa Aurora" (ngModelChange)="edit({ name: $event })">
+              <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.name }} caracteres.</span>
             </label>
 
             <label class="form-control block">
-              <span class="mb-1 flex justify-between text-xs font-medium uppercase tracking-wider text-base-content/50">Descripción corta <span class="normal-case tracking-normal tabular-nums">{{ v().description.length }}/{{ limits.description }}</span></span>
+              <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Descripción corta</span>
               <textarea class="textarea textarea-bordered h-20 w-full" [ngModel]="v().description" name="desc"
                         [maxlength]="limits.description" placeholder="Ej: Masajes, faciales y estética en Sopocachi."
                         (ngModelChange)="edit({ description: $event })"></textarea>
+              <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.description }} caracteres.</span>
             </label>
           </div>
         </div>
