@@ -52,7 +52,9 @@ export class LocationPicker implements OnDestroy {
   constructor() {
     // Leaflet toca el DOM: se carga solo en el navegador y cuando hace falta.
     afterNextRender(async () => {
-      const L = this.L = await import('leaflet');
+      // leaflet es CommonJS: según el bundler, la API viene en `default` o suelta.
+      const mod = await import('leaflet') as typeof Leaflet & { default?: typeof Leaflet };
+      const L = this.L = mod.default ?? mod;
       const at = this.b().location ?? LA_PAZ;
       this.map = L.map(this.el().nativeElement, { scrollWheelZoom: false })
         .setView([at.lat, at.lng], this.b().location ? 16 : 13);
