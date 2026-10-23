@@ -66,13 +66,18 @@ export interface Business {
   suggestedAmounts: number[];
   /** Sin valor = 'degradado' (el diseño de siempre). */
   cardStyle?: CardStyle;
+  /** Dónde se canjean las gift cards: la dirección escrita y el punto en el mapa. */
+  address?: string;
+  location?: GeoPoint | null;
 }
+
+export interface GeoPoint { lat: number; lng: number }
 
 /** Cuenta donde liquidamos al comercio. Privada: vive en `tenants/{id}`, nunca en la página. */
 export interface Bank { bank: string; account: string; holder: string; nit: string }
 /** Topes de los campos que escribe el comercio (se muestran en el placeholder). */
 export const LIMITS = {
-  name: 60, slug: 40, description: 160, amountMax: 10_000,
+  name: 60, slug: 40, description: 160, address: 160, amountMax: 10_000,
   bank: 40, account: 30, holder: 80, nit: 20,
 } as const;
 

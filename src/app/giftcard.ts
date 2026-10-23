@@ -4,6 +4,7 @@ import { Business, CardStyle, GiftCard, Store, cardState } from './data';
 import { giftPath } from './card';
 import { BsPipe, FechaPipe, onBrand } from './ui';
 import { Wordmark } from './brand';
+import { BusinessLocation } from './location';
 
 export const CARD_STYLES: { id: CardStyle; label: string }[] = [
   { id: 'degradado', label: 'Degradado' },
@@ -176,7 +177,7 @@ export class GiftcardArt {
  *  personal, la tarjeta flotando, cómo usarla y confeti si está activa. */
 @Component({
   selector: 'app-giftcard-view',
-  imports: [GiftcardArt, BsPipe, FechaPipe, Wordmark],
+  imports: [GiftcardArt, BsPipe, FechaPipe, Wordmark, BusinessLocation],
   template: `
     @if (page.isLoading()) {
       <div class="grid min-h-dvh place-items-center bg-base-200"><span class="loading loading-spinner loading-lg"></span></div>
@@ -237,9 +238,10 @@ export class GiftcardArt {
                 <ol class="mt-4 space-y-5">
                   <li class="flex gap-3">
                     <span class="grid size-8 shrink-0 place-items-center rounded-full bg-success text-sm font-bold text-success-content">1</span>
-                    <div>
+                    <div class="min-w-0 flex-1">
                       <p class="font-semibold">Ve a {{ p.business.name }}</p>
                       <p class="text-sm text-base-content/60">Cuando quieras, antes del {{ p.card.expires | fecha }}.</p>
+                      <app-business-location class="mt-3 block" [business]="p.business" />
                     </div>
                   </li>
                   <li class="flex gap-3">

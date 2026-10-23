@@ -6,6 +6,7 @@ import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from '
 import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
 import { BrandDesign } from './brand-design';
+import { LocationPicker } from './location-picker';
 import { RedeemDialog } from './redeem';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
@@ -317,7 +318,7 @@ export class Emitidas {
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule, Storefront, BrandDesign],
+  imports: [FormsModule, Storefront, BrandDesign, LocationPicker],
   // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta.
   // Ojo: un handler que devuelve `false` hace que Angular llame preventDefault()
   // solo; por eso es un método sin retorno y no `dirty() && …`.
@@ -360,6 +361,12 @@ export class Emitidas {
         </div>
 
         <app-brand-design [business]="v()" (change)="edit($event)" />
+      </section>
+
+      <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+        <h2 class="text-lg font-medium">Dónde canjear</h2>
+        <p class="mt-1 text-sm text-base-content/55">Se muestra en la gift card de tus clientes, con el mapa y un botón para llegar.</p>
+        <div class="mt-4"><app-location-picker [business]="v()" (change)="edit($event)" /></div>
       </section>
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">

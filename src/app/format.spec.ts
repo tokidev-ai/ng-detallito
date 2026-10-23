@@ -151,3 +151,16 @@ describe('redemptionMonth', () => {
     expect(redemptionMonth('02/12 09:00', hoy)).toBe('2025-12');
   });
 });
+
+describe('ubicación del local', async () => {
+  const { directionsUrl, osmEmbedUrl } = await import('./location');
+  it('cómo llegar usa el punto si hay, si no la dirección', () => {
+    expect(directionsUrl({ name: 'Spa', address: 'Av. 6 de Agosto', location: { lat: -16.5, lng: -68.13 } }))
+      .toBe('https://www.google.com/maps/dir/?api=1&destination=-16.5%2C-68.13');
+    expect(directionsUrl({ name: 'Spa', address: 'Av. 6 de Agosto', location: null }))
+      .toContain('destination=Av.%206%20de%20Agosto%2C%20Spa');
+  });
+  it('el mapa embebido lleva el pin en el punto', () => {
+    expect(osmEmbedUrl({ lat: -16.5, lng: -68.13 })).toContain('marker=-16.500000,-68.130000');
+  });
+});

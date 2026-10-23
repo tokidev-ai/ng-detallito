@@ -249,6 +249,12 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   aviso con `SUPPORT_EMAIL` en vez del formulario; con 2, avisa que es el último. Lo exigen
   las reglas: `owners/{uid}` = { count, max? } sube/baja en el mismo batch que crea/borra el
   tenant. Recontar: `npm run cupo`; dar más: `npm run cupo -- correo 5`.
+- **Dirección y mapa del local** (`business.address` + `business.location {lat,lng}`):
+  obligatorios en el alta, editables en "Editar página → Dónde canjear". Para marcar el punto
+  se usa Leaflet + teselas de OpenStreetMap (gratis, sin API key, carga diferida solo en el
+  panel), con búsqueda en Nominatim y "Usar mi ubicación". Para mostrarlo, la gift card usa
+  un iframe de OSM sin librería y un botón "Cómo llegar" a Google Maps (abre la app en el
+  celular). Ver `location.ts`.
 - **Foco de inputs:** un solo borde del color primario (sin el anillo extra de daisyUI).
 - **La página pública (`storefront.ts`) es una landing del comercio**, no una tarjetita:
   - **Paleta derivada del color del dueño.** El componente pone `--c1` (su color) y

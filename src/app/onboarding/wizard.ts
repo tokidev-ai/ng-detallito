@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, SUPPORT_EMAIL, Store, logoDataUrl } from '../data';
 import { BrandDesign } from '../merchant/brand-design';
+import { LocationPicker } from '../merchant/location-picker';
 import { BsPipe } from '../ui';
 import { Storefront } from '../storefront';
 import { Wordmark } from '../brand';
@@ -15,7 +16,7 @@ export const slugify = (s: string) =>
 
 @Component({
   selector: 'app-onboarding',
-  imports: [FormsModule, RouterLink, Storefront, Wordmark, BrandDesign, BsPipe],
+  imports: [FormsModule, RouterLink, Storefront, Wordmark, BrandDesign, BsPipe, LocationPicker],
   template: `
   <div class="min-h-dvh bg-base-200 text-base-content">
     <header class="border-b border-base-300 bg-base-100">
@@ -121,6 +122,8 @@ export const slugify = (s: string) =>
                           placeholder="Ej: Masajes, faciales y estética en Sopocachi."></textarea>
                 <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.description }} caracteres.</span>
               </label>
+
+              <div class="mt-4"><app-location-picker [business]="draft()" (change)="patch($event)" /></div>
 
               <app-brand-design [business]="draft()" (change)="patch($event)" />
             }
@@ -248,6 +251,7 @@ export class Onboarding {
 
   readonly checklist = computed(() => [
     { label: 'Nombre y link público', ok: !!this.draft().name && this.slugFree(), step: 0 },
+    { label: 'Dirección y ubicación del local', ok: !!this.draft().address?.trim() && !!this.draft().location, step: 0 },
     { label: 'Al menos un monto para vender', ok: this.draft().suggestedAmounts.length > 0, step: 1 },
     { label: 'Datos bancarios completos', ok: Object.values(this.bank()).every(Boolean), step: 2 },
   ]);

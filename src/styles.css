@@ -304,3 +304,13 @@ body {
 
 /* la bottom nav móvil es fija: que el contenido no quede debajo */
 .pb-safe { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+
+/* Pin del mapa del local (Leaflet divIcon): una gota con el color primario. */
+.map-pin {
+  background: var(--color-primary);
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform-origin: center;
+  rotate: -45deg;
+  box-shadow: 0 2px 6px rgb(0 0 0 / .35);
+}
