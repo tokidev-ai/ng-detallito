@@ -185,12 +185,7 @@ export const slugify = (s: string) =>
                 <p class="mt-1 break-all font-mono">giftcards.bo/{{ draft().slug || '…' }}</p>
               </div>
 
-              <button type="button" class="btn btn-primary mt-5 w-full sm:w-auto"
-                      [disabled]="!canPublish()" (click)="publish()">
-                @if (publishing()) { <span class="loading loading-spinner loading-sm"></span> }
-                Publicar mi página
-              </button>
-              @if (publishError()) { <p class="mt-2 text-sm text-error">{{ publishError() }}</p> }
+              @if (publishError()) { <p class="mt-4 text-sm text-error">{{ publishError() }}</p> }
               @if (!canPublish()) {
                 <p class="mt-2 text-sm text-error">Falta completar lo marcado arriba.</p>
               }
@@ -202,6 +197,11 @@ export const slugify = (s: string) =>
             <button type="button" class="btn btn-ghost" [disabled]="step() === 0" (click)="back()">Atrás</button>
             @if (step() < steps.length - 1) {
               <button type="button" class="btn btn-primary" (click)="next()">Guardar y seguir</button>
+            } @else {
+              <button type="button" class="btn btn-primary" [disabled]="!canPublish()" (click)="publish()">
+                @if (publishing()) { <span class="loading loading-spinner loading-sm"></span> }
+                Publicar mi página
+              </button>
             }
           </div>
         </section>
