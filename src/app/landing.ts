@@ -194,12 +194,12 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
 
                   <!-- sus gift cards, apiladas -->
                   <div class="relative my-auto h-28" aria-hidden="true">
-                    @for (m of montos(t); track m; let j = $index) {
+                    @for (c of pila(t); track c.m) {
                       <span class="biz-chip absolute left-1/2 top-1/2 flex h-20 w-32 flex-col justify-between overflow-hidden rounded-xl bg-white p-2.5 text-neutral-900 shadow-2xl shadow-black/30"
-                            [style.--i]="(montos(t).length - 1) / 2 - j" [style.z-index]="10 - j">
+                            [class.items-end]="c.i > 0" [style.--i]="c.i" [style.z-index]="10 - abs(c.i)">
                         <span class="absolute inset-x-0 top-0 h-1.5" style="background: linear-gradient(90deg, var(--c1), var(--c2))"></span>
                         <span class="mt-1 text-[8px] font-bold uppercase tracking-[0.2em] text-neutral-400">Gift card</span>
-                        <span class="text-xl font-extrabold tabular-nums tracking-tight" style="color: var(--c1)">{{ m | bs }}</span>
+                        <span class="text-xl font-extrabold tabular-nums tracking-tight" style="color: var(--c1)">{{ c.m | bs }}</span>
                       </span>
                     }
                   </div>
@@ -383,8 +383,14 @@ export class Landing {
   });
   surface(t: PublicTenant) { return cardSurface(t.business.cardStyle, t.business.color, t.business.logoUrl); }
   desde(t: PublicTenant) { return Math.min(...t.business.suggestedAmounts); }
-  /** Hasta 3 montos para la pila de tarjetas. */
-  montos(t: PublicTenant) { return [...t.business.suggestedAmounts].sort((x, y) => x - y).slice(0, 3); }
+  /** Hasta 3 montos para la pila: el más bajo al centro y arriba; los otros a los
+   *  costados (i = -1 izquierda, 1 derecha), que se abren al pasar el mouse. */
+  pila(t: PublicTenant) {
+    const [a, b, c] = [...t.business.suggestedAmounts].sort((x, y) => x - y);
+    return [b !== undefined && { m: b, i: -1 }, c !== undefined && { m: c, i: 1 }, { m: a, i: 0 }]
+      .filter((x): x is { m: number; i: number } => !!x);
+  }
+  readonly abs = Math.abs;
   /** La zona, no la dirección entera: lo que va después de la primera coma ("Sopocachi, La Paz"). */
   zona(t: PublicTenant) {
     const parts = (t.business.address ?? '').split(',').map(p => p.trim()).filter(Boolean);
