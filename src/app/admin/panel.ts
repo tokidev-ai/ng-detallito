@@ -109,51 +109,38 @@ const PAD = 6;
                   <h2 class="mt-0.5 text-2xl font-extrabold tracking-tight sm:text-3xl">Así va la plataforma 🚀</h2>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  <article class="reveal reveal-1 col-span-2 rounded-box bg-neutral p-5 text-neutral-content lg:col-span-1">
-                    <div class="flex items-center justify-between">
-                      <p class="text-sm text-neutral-content/65">Nuestros ingresos del mes</p>
-                      <span class="grid size-8 place-items-center rounded-xl bg-primary/20 text-primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M12 3v18M17 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H6" stroke-linecap="round"/></svg>
-                      </span>
-                    </div>
-                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().fee | bs:2 }}</p>
-                    <p class="mt-1 text-xs text-neutral-content/55">comisión sobre {{ month().gross | bs }} vendidos</p>
+                <!-- lo que importa: cuánto se vendió, cuánto es nuestro y cuánto les debemos -->
+                <div class="grid gap-3 sm:grid-cols-3">
+                  <article class="reveal reveal-1 rounded-box bg-neutral p-5 text-neutral-content">
+                    <p class="text-sm text-neutral-content/65">Lo que vendieron todos los negocios</p>
+                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().gross | bs }}</p>
+                    <p class="mt-1 text-xs text-neutral-content/55">
+                      {{ month().count }} gift cards
+                      @if (gmvDelta() !== null) {
+                        · <span [class]="gmvDelta()! >= 0 ? 'text-success' : 'text-error'">{{ gmvDelta()! >= 0 ? '↑' : '↓' }} {{ abs(gmvDelta()!) }}% vs mes anterior</span>
+                      }
+                    </p>
                   </article>
 
                   <article class="reveal reveal-2 rounded-box border border-base-300 bg-base-100 p-5">
-                    <p class="text-sm text-base-content/55">Vendido del mes</p>
-                    <p class="mt-3 text-2xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().gross | bs }}</p>
-                    @if (gmvDelta() !== null) {
-                      <p class="mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold"
-                         [class]="gmvDelta()! >= 0 ? 'bg-success/10 text-success' : 'bg-error/10 text-error'">
-                        {{ gmvDelta()! >= 0 ? '↑' : '↓' }} {{ abs(gmvDelta()!) }}% vs mes anterior
-                      </p>
-                    } @else { <p class="mt-1 text-xs text-base-content/45">sin mes anterior para comparar</p> }
+                    <p class="text-sm text-base-content/55">Nuestra comisión</p>
+                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums text-[#c2410c]">{{ month().fee | bs:2 }}</p>
+                    <p class="mt-1 text-xs text-base-content/45">lo que ganamos este mes</p>
                   </article>
 
-                  <article class="reveal reveal-3 rounded-box border border-base-300 bg-base-100 p-5">
-                    <p class="text-sm text-base-content/55">Gift cards vendidas</p>
-                    <p class="mt-3 text-2xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().count }}</p>
-                    <p class="mt-1 text-xs text-base-content/45">ticket promedio {{ avgTicket() | bs }}</p>
-                  </article>
-
-                  <article class="reveal reveal-4 col-span-2 rounded-box border border-base-300 bg-base-100 p-5 lg:col-span-1">
-                    <p class="text-sm text-base-content/55">Comercios</p>
-                    <p class="mt-3 text-2xl font-extrabold tracking-[-0.03em] tabular-nums">{{ published() }} <span class="text-base font-semibold text-base-content/40">/ {{ tenantsList().length }}</span></p>
-                    <p class="mt-1 text-xs text-base-content/45">publicados · {{ sellingThisMonth() }} vendieron este mes</p>
-                  </article>
+                  <button type="button" class="reveal reveal-3 group rounded-box border border-base-300 bg-base-100 p-5 text-left transition hover:border-base-content/20"
+                          (click)="section.set('ventas')">
+                    <p class="text-sm text-base-content/55">Les debemos a los negocios</p>
+                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().net | bs:2 }}</p>
+                    <p class="mt-1 text-xs font-semibold text-[#c2410c] group-hover:underline">Ver a quién y cuánto →</p>
+                  </button>
                 </div>
 
                 <div class="grid gap-4 lg:grid-cols-3">
                   <!-- evolución -->
                   <section class="reveal reveal-2 rounded-box border border-base-300 bg-base-100 p-5 sm:p-6 lg:col-span-2">
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <h3 class="font-bold">Ventas de la plataforma</h3>
-                        <p class="text-sm text-base-content/50">Últimos 6 meses · nuestra comisión {{ fee6() | bs }}</p>
-                      </div>
-                    </div>
+                    <h3 class="font-bold">Ventas de los últimos 6 meses</h3>
+                    <p class="text-sm text-base-content/50">Nuestra comisión en el período: {{ fee6() | bs }}</p>
                     <div class="relative mt-6 h-52" (mouseleave)="hovered.set(-1)">
                       <div class="pointer-events-none absolute inset-0 flex flex-col justify-between" aria-hidden="true">
                         @for (g of [0, 1, 2, 3]; track g) { <span class="border-t border-dashed border-base-300"></span> }
@@ -177,7 +164,7 @@ const PAD = 6;
                           <p class="font-semibold first-letter:uppercase">{{ monthLabel(months6[hovered()]) }}</p>
                           <p class="mt-1 flex justify-between"><span class="text-base-content/55">Vendido</span><span class="font-semibold tabular-nums">{{ pts()[hovered()].t.gross | bs }}</span></p>
                           <p class="flex justify-between"><span class="text-base-content/55">Comisión</span><span class="font-semibold tabular-nums text-[#c2410c]">{{ pts()[hovered()].t.fee | bs:2 }}</span></p>
-                          <p class="flex justify-between"><span class="text-base-content/55">Cobros</span><span class="font-semibold tabular-nums">{{ pts()[hovered()].t.count }}</span></p>
+                          <p class="flex justify-between"><span class="text-base-content/55">Gift cards</span><span class="font-semibold tabular-nums">{{ pts()[hovered()].t.count }}</span></p>
                         </div>
                       }
                     </div>
@@ -189,43 +176,10 @@ const PAD = 6;
                     </div>
                   </section>
 
-                  <!-- salud -->
-                  <section class="reveal reveal-3 rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-                    <h3 class="font-bold">Salud de la plataforma</h3>
-                    <dl class="mt-4 space-y-4">
-                      <div>
-                        <dt class="text-sm text-base-content/55">Saldo vivo sin canjear</dt>
-                        <dd class="text-xl font-extrabold tabular-nums">{{ liveDebt() | bs }}</dd>
-                        <p class="text-xs text-base-content/45">lo que los comercios todavía deben entregar</p>
-                      </div>
-                      <div>
-                        <div class="flex items-baseline justify-between">
-                          <dt class="text-sm text-base-content/55">Tasa de canje</dt>
-                          <dd class="font-bold tabular-nums">{{ redeemRate() }}%</dd>
-                        </div>
-                        <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-base-200">
-                          <div class="h-full rounded-full bg-success transition-all duration-700" [style.width.%]="redeemRate()"></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div class="flex items-baseline justify-between">
-                          <dt class="text-sm text-base-content/55">Ventas por la página (QR)</dt>
-                          <dd class="font-bold tabular-nums">{{ qrShare() }}%</dd>
-                        </div>
-                        <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-base-200">
-                          <div class="h-full rounded-full bg-primary transition-all duration-700" [style.width.%]="qrShare()"></div>
-                        </div>
-                        <p class="mt-1 text-xs text-base-content/45">el resto las carga el comercio desde su panel</p>
-                      </div>
-                    </dl>
-                  </section>
-                </div>
-
-                <div class="grid gap-4 lg:grid-cols-2">
                   <!-- ranking -->
                   <section class="reveal reveal-3 rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-                    <h3 class="font-bold">Top comercios del mes</h3>
-                    <p class="text-sm text-base-content/50">Por monto vendido</p>
+                    <h3 class="font-bold">Top negocios del mes</h3>
+                    <p class="text-sm text-base-content/50">{{ sellingThisMonth() }} de {{ published() }} publicados vendieron</p>
                     <ol class="mt-4 space-y-3">
                       @for (r of ranking(); track r.t.id; let i = $index) {
                         <li>
@@ -246,15 +200,16 @@ const PAD = 6;
                       }
                     </ol>
                   </section>
+                </div>
 
-                  <!-- alertas -->
-                  <section class="reveal reveal-4 rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+                <!-- seguimiento: solo aparece si hay algo que atender -->
+                @if (alerts().length) {
+                  <section class="reveal reveal-4 rounded-box border border-warning/30 bg-warning/5 p-5 sm:p-6">
                     <h3 class="font-bold">Para hacer seguimiento</h3>
-                    <p class="text-sm text-base-content/50">Comercios que necesitan una mano</p>
-                    <ul class="mt-4 divide-y divide-base-200">
+                    <ul class="mt-3 grid gap-x-6 sm:grid-cols-2">
                       @for (a of alerts(); track a.t.id + a.kind) {
                         <li>
-                          <button type="button" class="flex w-full items-center gap-3 py-3 text-left" (click)="openTenant(a.t.id)">
+                          <button type="button" class="flex w-full items-center gap-3 py-2.5 text-left" (click)="openTenant(a.t.id)">
                             <span class="grid size-9 shrink-0 place-items-center rounded-xl text-base" [class]="a.bg">{{ a.icon }}</span>
                             <div class="min-w-0 flex-1">
                               <p class="truncate text-sm font-semibold">{{ a.t.business.name }}</p>
@@ -263,12 +218,10 @@ const PAD = 6;
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4 text-base-content/30"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                           </button>
                         </li>
-                      } @empty {
-                        <li class="py-6 text-center text-sm text-base-content/45">Todo en orden 👌</li>
                       }
                     </ul>
                   </section>
-                </div>
+                }
               </div>
             }
 
@@ -621,19 +574,8 @@ export class AdminPanel {
     const prev = totals(this.inMonth(this.months6[4])).gross;
     return prev ? Math.round(((this.month().gross - prev) / prev) * 100) : null;
   });
-  readonly avgTicket = computed(() => (this.month().count ? this.month().gross / this.month().count : 0));
   readonly published = computed(() => this.tenantsList().filter(t => t.business.published).length);
   readonly sellingThisMonth = computed(() => new Set(this.inMonth(this.thisMonth).map(c => c.tenantId)).size);
-  readonly liveDebt = computed(() => this.cobros().filter(c => c.state === 'activa').reduce((s, c) => s + c.balance, 0));
-  readonly redeemRate = computed(() => {
-    const sold = this.cobros().reduce((s, c) => s + c.value, 0);
-    const used = this.cobros().reduce((s, c) => s + (c.value - c.balance), 0);
-    return sold ? Math.round((used / sold) * 100) : 0;
-  });
-  readonly qrShare = computed(() => {
-    const known = this.cobros().filter(c => c.channel !== '—');
-    return known.length ? Math.round((known.filter(c => c.channel === 'qr').length / known.length) * 100) : 0;
-  });
 
   readonly hovered = signal(-1);
   private readonly series = computed(() => this.months6.map(m => totals(this.inMonth(m))));
