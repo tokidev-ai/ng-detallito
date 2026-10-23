@@ -60,6 +60,13 @@ body {
   outline-offset: 2px;
 }
 
+/* Los campos ya tienen borde: al enfocarlos se pinta ese borde, sin un segundo anillo. */
+:is(.input, .textarea, .select):is(:focus, :focus-within) {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
 /* La página del comercio es del comercio: neutra, para que lo único que
    tiña sea SU color de marca y no el naranja nuestro. */
 .storefront {

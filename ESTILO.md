@@ -238,7 +238,13 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   cliente puede comprar** (también lo exige la regla de `cards`). Sin montos, la página no
   vende. El panel sí acepta otro monto, para la venta en mostrador. Código autogenerado
   (`newCode`) y saldo derivado del valor: el form no los pide.
-  El dueño los edita en "Editar página"; el onboarding son 3 pasos (Marca, Banco, Publicar).
+  El dueño los edita en "Gift cards → Montos sugeridos"; el onboarding son 4 pasos (Marca,
+  Montos, Datos bancarios, Publicar) y arranca con 100/200/500.
+- **El alta muestra las mismas opciones que la edición.** Color + diseño de la gift card es un
+  solo componente (`merchant/brand-design.ts`) que usan el wizard y "Editar página": una
+  opción nueva se agrega ahí y aparece en los dos. Topes de los campos en `LIMITS` (data.ts),
+  como `maxlength` y en el placeholder ("· máx. 60").
+- **Foco de inputs:** un solo borde del color primario (sin el anillo extra de daisyUI).
 - **La página pública (`storefront.ts`) es una landing del comercio**, no una tarjetita:
   - **Paleta derivada del color del dueño.** El componente pone `--c1` (su color) y
     `styles.css` deriva con color relativo `oklch(from …)`: `--c2`/`--c3` (tono ±40°),

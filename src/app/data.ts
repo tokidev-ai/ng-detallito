@@ -70,6 +70,12 @@ export interface Business {
 
 /** Cuenta donde liquidamos al comercio. Privada: vive en `tenants/{id}`, nunca en la página. */
 export interface Bank { bank: string; account: string; holder: string; nit: string }
+/** Topes de los campos que escribe el comercio (se muestran en el placeholder). */
+export const LIMITS = {
+  name: 60, slug: 40, description: 160, amountMax: 10_000,
+  bank: 40, account: 30, holder: 80, nit: 20,
+} as const;
+
 export const EMPTY_BANK: Bank = { bank: '', account: '', holder: '', nit: '' };
 
 /** `expires` es ISO `yyyy-mm-dd` (comparable y ordenable como texto). El estado

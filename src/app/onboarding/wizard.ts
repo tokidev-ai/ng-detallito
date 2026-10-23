@@ -1,20 +1,21 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, Store, logoDataUrl } from '../data';
+import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, Store, logoDataUrl } from '../data';
+import { BrandDesign } from '../merchant/brand-design';
+import { BsPipe } from '../ui';
 import { Storefront } from '../storefront';
 import { Wordmark } from '../brand';
 
-const STEPS = ['Marca', 'Datos bancarios', 'Publicar'] as const;
-const SWATCHES = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
+const STEPS = ['Marca', 'Montos', 'Datos bancarios', 'Publicar'] as const;
 
 export const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, LIMITS.slug);
 
 @Component({
   selector: 'app-onboarding',
-  imports: [FormsModule, RouterLink, Storefront, Wordmark],
+  imports: [FormsModule, RouterLink, Storefront, Wordmark, BrandDesign, BsPipe],
   template: `
   <div class="min-h-dvh bg-base-200 text-base-content">
     <header class="border-b border-base-300 bg-base-100">
@@ -70,7 +71,8 @@ export const slugify = (s: string) =>
                   <label class="form-control block">
                     <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Nombre</span>
                     <input class="input input-bordered w-full" [ngModel]="draft().name"
-                           (ngModelChange)="onName($event)" name="name" placeholder="Spa Aurora">
+                           (ngModelChange)="onName($event)" name="name" [maxlength]="limits.name"
+                           [placeholder]="'Spa Aurora · máx. ' + limits.name">
                   </label>
 
                   <label class="form-control block">
@@ -78,7 +80,8 @@ export const slugify = (s: string) =>
                     <div class="join w-full">
                       <span class="join-item flex items-center border border-base-300 bg-base-200 px-3 text-sm text-base-content/60">giftcards.bo/</span>
                       <input class="input input-bordered join-item w-full" [ngModel]="draft().slug"
-                             (ngModelChange)="patch({ slug: slugify($event) })" name="slug" placeholder="spa-aurora">
+                             (ngModelChange)="patch({ slug: slugify($event) })" name="slug" [maxlength]="limits.slug"
+                             [placeholder]="'spa-aurora · máx. ' + limits.slug">
                     </div>
                     @if (draft().slug) {
                       @if (slugChecking()) {
@@ -96,33 +99,37 @@ export const slugify = (s: string) =>
               <label class="form-control mt-4 block">
                 <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Descripción corta</span>
                 <textarea class="textarea textarea-bordered h-24 w-full" [ngModel]="draft().description"
-                          (ngModelChange)="patch({ description: $event })" name="desc"
-                          placeholder="Masajes, faciales y estética en Sopocachi."></textarea>
+                          (ngModelChange)="patch({ description: $event })" name="desc" [maxlength]="limits.description"
+                          [placeholder]="'Masajes, faciales y estética en Sopocachi. · máx. ' + limits.description"></textarea>
               </label>
 
-              <fieldset class="mt-4">
-                <legend class="mb-2 text-xs uppercase tracking-wider text-base-content/50">Color de marca</legend>
-                <div class="flex flex-wrap items-center gap-2">
-                  @for (c of swatches; track c) {
-                    <button type="button" (click)="patch({ color: c })" [style.background-color]="c"
-                            [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="draft().color === c"
-                            class="size-10 rounded-field border-2"
-                            [class.border-primary]="draft().color === c"
-                            [class.border-base-300]="draft().color !== c"></button>
-                  }
-                  <label class="grid size-10 cursor-pointer place-items-center rounded-field border-2 border-dashed border-base-300 text-lg leading-none">
-                    +<input type="color" class="sr-only" [ngModel]="draft().color" name="color"
-                            (ngModelChange)="patch({ color: $event })">
-                  </label>
-                </div>
-              </fieldset>
-
-              <p class="mt-4 text-sm text-warning">
-                Sin plantillas de diseño en el MVP: logo + 1 color + descripción.
-              </p>
+              <app-brand-design [business]="draft()" (change)="patch($event)" />
             }
 
             @case (1) {
+              <p class="text-sm text-base-content/60">
+                Son los montos que tus clientes pueden comprar en tu página. Un monto distinto lo
+                cargas tú desde el panel. Los puedes cambiar después en "Gift cards → Montos sugeridos".
+              </p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                @for (a of draft().suggestedAmounts; track a) {
+                  <span class="badge badge-lg gap-2 py-3">
+                    {{ a | bs }}
+                    <button type="button" class="text-base-content/50 hover:text-error" aria-label="Quitar"
+                            (click)="removeAmount(a)">✕</button>
+                  </span>
+                } @empty {
+                  <span class="text-sm text-base-content/45">Sin montos todavía.</span>
+                }
+              </div>
+              <div class="mt-3 flex gap-2">
+                <input type="number" min="1" [max]="limits.amountMax" class="input input-bordered input-sm w-40" [(ngModel)]="newAmount"
+                       name="newAmount" [placeholder]="'Bs 1 a ' + limits.amountMax" (keyup.enter)="addAmount()">
+                <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
+              </div>
+            }
+
+            @case (2) {
               <p class="text-sm text-base-content/60">
                 A esta cuenta te depositamos cada fin de mes. No se comparte con tus empleados.
               </p>
@@ -130,14 +137,14 @@ export const slugify = (s: string) =>
                 @for (f of bankFields; track f.key) {
                   <label class="form-control block">
                     <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">{{ f.label }}</span>
-                    <input class="input input-bordered w-full" [ngModel]="bank()[f.key]" [name]="f.key"
-                           (ngModelChange)="patchBank(f.key, $event)" [placeholder]="f.placeholder">
+                    <input class="input input-bordered w-full" [ngModel]="bank()[f.key]" [name]="f.key" [maxlength]="limits[f.key]"
+                           (ngModelChange)="patchBank(f.key, $event)" [placeholder]="f.placeholder + ' · máx. ' + limits[f.key]">
                   </label>
                 }
               </div>
             }
 
-            @case (2) {
+            @case (3) {
               <ul class="space-y-2">
                 @for (c of checklist(); track c.label) {
                   <li class="flex items-center gap-3 rounded-field border border-base-300 p-3">
@@ -196,7 +203,7 @@ export class Onboarding {
   private readonly router = inject(Router);
 
   readonly steps = STEPS;
-  readonly swatches = SWATCHES;
+  readonly limits = LIMITS;
   readonly bankFields = [
     { key: 'bank' as const, label: 'Banco', placeholder: 'BNB' },
     { key: 'account' as const, label: 'Cuenta', placeholder: '10-2345678' },
@@ -207,14 +214,16 @@ export class Onboarding {
 
   readonly step = signal(0);
   readonly furthest = signal(0);
-  readonly draft = signal<Business>({ ...EMPTY_BUSINESS });
+  /** Arranca con montos típicos: sin al menos uno la página no vende. */
+  readonly draft = signal<Business>({ ...EMPTY_BUSINESS, suggestedAmounts: [100, 200, 500] });
 
   /** El slug lo escribe el nombre hasta que el usuario lo edita a mano. */
   private slugTouched = false;
 
   readonly checklist = computed(() => [
     { label: 'Nombre y link público', ok: !!this.draft().name && this.slugFree(), step: 0 },
-    { label: 'Datos bancarios completos', ok: Object.values(this.bank()).every(Boolean), step: 1 },
+    { label: 'Al menos un monto para vender', ok: this.draft().suggestedAmounts.length > 0, step: 1 },
+    { label: 'Datos bancarios completos', ok: Object.values(this.bank()).every(Boolean), step: 2 },
   ]);
   readonly canPublish = computed(() => this.checklist().every(c => c.ok) && !this.publishing());
 
@@ -238,6 +247,18 @@ export class Onboarding {
   readonly bank = signal<Bank>({ ...EMPTY_BANK });
   patchBank(key: keyof Bank, value: string) {
     this.bank.update(b => ({ ...b, [key]: value }));
+  }
+
+  newAmount: number | null = null;
+  addAmount() {
+    const a = this.newAmount;
+    if (!a || a <= 0 || a > LIMITS.amountMax) return;
+    const list = this.draft().suggestedAmounts;
+    if (!list.includes(a)) this.patch({ suggestedAmounts: [...list, a].sort((x, y) => x - y) });
+    this.newAmount = null;
+  }
+  removeAmount(a: number) {
+    this.patch({ suggestedAmounts: this.draft().suggestedAmounts.filter(x => x !== a) });
   }
 
   onName(name: string) {

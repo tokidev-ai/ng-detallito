@@ -1,10 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Business, CardState, GiftCard, Perm, Store, cardState, logoDataUrl } from '../data';
+import { Business, CardState, GiftCard, LIMITS, Perm, Store, cardState, logoDataUrl } from '../data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from '../card';
 import { Storefront } from '../storefront';
-import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
+import { GiftcardArt } from '../giftcard';
+import { BrandDesign } from './brand-design';
 import { RedeemDialog } from './redeem';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
@@ -59,8 +60,8 @@ const TABS: { id: CardState; label: string }[] = [
         }
       </div>
       <div class="mt-3 flex gap-2">
-        <input type="number" min="1" class="input input-bordered input-sm w-32" [(ngModel)]="newAmount"
-               name="newAmount" placeholder="Bs" (keyup.enter)="addAmount()">
+        <input type="number" min="1" [max]="limits.amountMax" class="input input-bordered input-sm w-40" [(ngModel)]="newAmount"
+               name="newAmount" [placeholder]="'Bs 1 a ' + limits.amountMax" (keyup.enter)="addAmount()">
         <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
       </div>
     </div>
@@ -214,6 +215,7 @@ const TABS: { id: CardState; label: string }[] = [
   `,
 })
 export class Emitidas {
+  readonly limits = LIMITS;
   readonly s = inject(Store);
   readonly tabs = TABS;
   /** Las 3 pestañas de estado + una de configuración (montos sugeridos). */
@@ -243,7 +245,7 @@ export class Emitidas {
   newAmount: number | null = null;
   addAmount() {
     const a = this.newAmount;
-    if (!a || a <= 0) return;
+    if (!a || a <= 0 || a > LIMITS.amountMax) return;
     const list = this.s.business().suggestedAmounts;
     if (!list.includes(a)) this.s.saveBusiness({ suggestedAmounts: [...list, a].sort((x, y) => x - y) });
     this.newAmount = null;
@@ -314,7 +316,7 @@ export class Emitidas {
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule, Storefront, GiftcardArt],
+  imports: [FormsModule, Storefront, BrandDesign],
   // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta.
   // Ojo: un handler que devuelve `false` hace que Angular llame preventDefault()
   // solo; por eso es un método sin retorno y no `dirty() && …`.
@@ -341,64 +343,20 @@ export class Emitidas {
           <div class="flex-1 space-y-4">
             <label class="form-control block">
               <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Nombre</span>
-              <input class="input input-bordered w-full" [ngModel]="v().name" name="name"
-                     (ngModelChange)="edit({ name: $event })">
+              <input class="input input-bordered w-full" [ngModel]="v().name" name="name" [maxlength]="limits.name"
+                     [placeholder]="'Spa Aurora · máx. ' + limits.name" (ngModelChange)="edit({ name: $event })">
             </label>
 
             <label class="form-control block">
               <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Descripción corta</span>
               <textarea class="textarea textarea-bordered h-20 w-full" [ngModel]="v().description" name="desc"
+                        [maxlength]="limits.description" [placeholder]="'Masajes, faciales y estética en Sopocachi. · máx. ' + limits.description"
                         (ngModelChange)="edit({ description: $event })"></textarea>
             </label>
           </div>
         </div>
 
-        <fieldset class="mt-5">
-          <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Color de marca</legend>
-          <div class="flex flex-wrap items-center gap-2">
-            @for (c of swatches; track c) {
-              <button type="button" (click)="edit({ color: c })" [style.background-color]="c"
-                      [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="v().color === c"
-                      class="grid size-10 place-items-center rounded-xl text-white ring-offset-2 transition hover:scale-105"
-                      [class.ring-2]="v().color === c" [class.ring-base-content]="v().color === c">
-                @if (v().color === c) {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="size-4"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                }
-              </button>
-            }
-            <label class="grid size-10 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-base-300 text-lg leading-none transition hover:border-base-content/30"
-                   title="Otro color">
-              +<input type="color" class="sr-only" [ngModel]="v().color" name="color"
-                      (ngModelChange)="edit({ color: $event })">
-            </label>
-          </div>
-        </fieldset>
-
-        <fieldset class="mt-6">
-          <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Diseño de la gift card</legend>
-          <div class="storefront grid grid-cols-2 gap-2 sm:grid-cols-4" [style.--c1]="v().color">
-            @for (st of cardStyles; track st.id) {
-              <button type="button" (click)="edit({ cardStyle: st.id })" [attr.aria-pressed]="(v().cardStyle ?? 'degradado') === st.id"
-                      class="rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
-                      [class.ring-2]="(v().cardStyle ?? 'degradado') === st.id" [class.ring-base-content]="(v().cardStyle ?? 'degradado') === st.id">
-                <span class="relative flex h-16 items-end overflow-hidden rounded-lg p-2 text-xs font-bold shadow"
-                      [style.background]="surfaceOf(st.id).bg" [style.color]="surfaceOf(st.id).ink">
-                  @if (st.id === 'logo') {
-                    <span class="absolute -right-2 -top-2 grid size-14 rotate-[-12deg] place-items-center overflow-hidden rounded-xl opacity-25">
-                      @if (v().logoUrl) { <img [src]="v().logoUrl" alt="" class="size-full object-cover"> }
-                      @else { <span class="text-3xl">{{ (v().name || '?')[0] }}</span> }
-                    </span>
-                  }
-                  Bs 100
-                </span>
-                <span class="mt-1 block px-1 text-sm">{{ st.label }}</span>
-              </button>
-            }
-          </div>
-          <div class="mx-auto mt-4 max-w-sm">
-            <app-giftcard-art [card]="sampleCard" [business]="v()" />
-          </div>
-        </fieldset>
+        <app-brand-design [business]="v()" (change)="edit($event)" />
       </section>
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
@@ -496,16 +454,12 @@ export class Marca {
   readonly s = inject(Store);
   private readonly router = inject(Router);
   readonly b = this.s.business;
-  readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
+  readonly limits = LIMITS;
 
   // ── borrador: nada se guarda hasta "Guardar cambios" ─────────────────────────
   /** Cambios pendientes sobre lo guardado. La vista previa y los campos muestran `v()`. */
   readonly draft = signal<Partial<Business>>({});
   readonly v = computed<Business>(() => ({ ...this.b(), ...this.draft() }));
-  readonly cardStyles = CARD_STYLES;
-  surfaceOf(id: Business['cardStyle']) { return cardSurface(id, this.v().color); }
-  /** Una carta de ejemplo para la vista previa del diseño. */
-  readonly sampleCard: GiftCard = { code: 'K7QM-3XPA', to: 'Lucía', from: 'Diego', value: 100, balance: 100, expires: '2027-12-31' };
   /** Solo lo que de verdad difiere de lo guardado (volver al valor original no cuenta). */
   private readonly changes = computed(() => Object.fromEntries(
     Object.entries(this.draft()).filter(([k, val]) => this.b()[k as keyof Business] !== val)) as Partial<Business>);
