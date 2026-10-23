@@ -26,7 +26,6 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
     <header class="sticky top-0 z-40 border-b border-base-300/70 bg-base-100/75 backdrop-blur-xl">
       <nav class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
         <a routerLink="/" class="flex-1"><app-wordmark /></a>
-        <a href="#negocios" class="btn btn-ghost btn-sm hidden md:inline-flex">Negocios</a>
         <a href="#como-funciona" class="btn btn-ghost btn-sm hidden md:inline-flex">Cómo funciona</a>
         <a href="#beneficios" class="btn btn-ghost btn-sm hidden md:inline-flex">Beneficios</a>
         <a routerLink="/login" class="btn btn-ghost btn-sm">Entrar</a>
@@ -135,33 +134,27 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
       </div>
     </section>
 
-    <!-- ── rubros en marquesina ────────────────────────────── -->
-    <section class="border-y border-base-300 bg-base-200/60 py-6">
-      <p class="text-center text-xs uppercase tracking-wider text-base-content/45">Pensado para negocios de todo tipo</p>
-      <div class="marquee-mask mt-4 overflow-hidden">
-        <ul class="marquee">
-          @for (r of rubrosX2; track $index) {
-            <li class="flex items-center gap-8 pr-8 text-lg font-semibold tracking-tight text-base-content/55">
-              {{ r }} <span class="text-primary/60">✦</span>
-            </li>
-          }
-        </ul>
-      </div>
-    </section>
-
     <!-- ── catálogo: los negocios donde ya se puede regalar ───── -->
     @if (catalog.isLoading() || negocios().length) {
-      <section id="negocios" class="relative scroll-mt-20 overflow-hidden py-20 lg:py-28">
-        <div class="pointer-events-none absolute -right-40 top-10 size-[30rem] rounded-full bg-primary/10 blur-3xl" aria-hidden="true"></div>
+      <section id="negocios" class="relative scroll-mt-20 overflow-hidden border-t border-base-300 bg-gradient-to-b from-primary/5 to-transparent py-20 lg:py-28">
+        <div class="pointer-events-none absolute -right-40 top-10 size-[30rem] rounded-full bg-primary/15 blur-3xl" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -left-40 bottom-0 size-[26rem] rounded-full bg-[#f59e0b]/10 blur-3xl" aria-hidden="true"></div>
         <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
           <div class="flex flex-wrap items-end justify-between gap-6">
             <div reveal class="max-w-2xl">
-              <p class="text-sm font-semibold text-[#c2410c]">Para regalar</p>
-              <h2 class="mt-2 text-4xl font-extrabold tracking-[-0.04em] text-balance sm:text-5xl">
-                Elige dónde, <span class="text-primary">nosotros hacemos el resto</span>
+              <p class="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-sm font-semibold text-[#c2410c]">
+                <span class="relative flex size-2">
+                  <span class="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-60"></span>
+                  <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
+                </span>
+                @if (negocios().length) { {{ negocios().length }} {{ negocios().length === 1 ? 'negocio vende' : 'negocios venden' }} con nosotros }
+                @else { Cargando negocios… }
+              </p>
+              <h2 class="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-balance sm:text-6xl">
+                Negocios que ya usan <span class="text-primary">GiftKBol</span>
               </h2>
-              <p class="mt-3 text-lg text-base-content/65">
-                Estos negocios ya venden gift cards con GiftKBol. Entra, elige el monto y llega al instante.
+              <p class="mt-4 text-lg text-base-content/65">
+                Elige dónde regalar, nosotros hacemos el resto: pagas por QR y la gift card llega al instante.
               </p>
             </div>
             @if (negocios().length > 6) {
@@ -233,6 +226,20 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
         </div>
       </section>
     }
+
+    <!-- ── rubros en marquesina ────────────────────────────── -->
+    <section class="border-y border-base-300 bg-base-200/60 py-6">
+      <p class="text-center text-xs uppercase tracking-wider text-base-content/45">Pensado para negocios de todo tipo</p>
+      <div class="marquee-mask mt-4 overflow-hidden">
+        <ul class="marquee">
+          @for (r of rubrosX2; track $index) {
+            <li class="flex items-center gap-8 pr-8 text-lg font-semibold tracking-tight text-base-content/55">
+              {{ r }} <span class="text-primary/60">✦</span>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
 
     <!-- ── cómo funciona ───────────────────────────────────── -->
     <section id="como-funciona" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6 lg:py-28">
