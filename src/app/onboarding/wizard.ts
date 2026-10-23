@@ -85,19 +85,19 @@ export const slugify = (s: string) =>
 
                 <div class="flex-1 space-y-4">
                   <label class="form-control block">
-                    <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Nombre</span>
+                    <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">Nombre <span class="normal-case tracking-normal tabular-nums">{{ draft().name.length }}/{{ limits.name }}</span></span>
                     <input class="input input-bordered w-full" [ngModel]="draft().name"
                            (ngModelChange)="onName($event)" name="name" [maxlength]="limits.name"
-                           [placeholder]="'Spa Aurora · máx. ' + limits.name">
+                           placeholder="Ej: Spa Aurora">
                   </label>
 
                   <label class="form-control block">
-                    <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Link público</span>
+                    <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">Link público <span class="normal-case tracking-normal tabular-nums">{{ draft().slug.length }}/{{ limits.slug }}</span></span>
                     <div class="join w-full">
                       <span class="join-item flex items-center border border-base-300 bg-base-200 px-3 text-sm text-base-content/60">giftcards.bo/</span>
                       <input class="input input-bordered join-item w-full" [ngModel]="draft().slug"
                              (ngModelChange)="patch({ slug: slugify($event) })" name="slug" [maxlength]="limits.slug"
-                             [placeholder]="'spa-aurora · máx. ' + limits.slug">
+                             placeholder="ej: spa-aurora">
                     </div>
                     @if (draft().slug) {
                       @if (slugChecking()) {
@@ -113,10 +113,10 @@ export const slugify = (s: string) =>
               </div>
 
               <label class="form-control mt-4 block">
-                <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">Descripción corta</span>
+                <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">Descripción corta <span class="normal-case tracking-normal tabular-nums">{{ draft().description.length }}/{{ limits.description }}</span></span>
                 <textarea class="textarea textarea-bordered h-24 w-full" [ngModel]="draft().description"
                           (ngModelChange)="patch({ description: $event })" name="desc" [maxlength]="limits.description"
-                          [placeholder]="'Masajes, faciales y estética en Sopocachi. · máx. ' + limits.description"></textarea>
+                          placeholder="Ej: Masajes, faciales y estética en Sopocachi."></textarea>
               </label>
 
               <app-brand-design [business]="draft()" (change)="patch($event)" />
@@ -140,9 +140,10 @@ export const slugify = (s: string) =>
               </div>
               <div class="mt-3 flex gap-2">
                 <input type="number" min="1" [max]="limits.amountMax" class="input input-bordered input-sm w-40" [(ngModel)]="newAmount"
-                       name="newAmount" [placeholder]="'Bs 1 a ' + limits.amountMax" (keyup.enter)="addAmount()">
+                       name="newAmount" placeholder="Ej: 150" (keyup.enter)="addAmount()">
                 <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
               </div>
+              <p class="mt-1 text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}.</p>
             }
 
             @case (2) {
@@ -152,9 +153,9 @@ export const slugify = (s: string) =>
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 @for (f of bankFields; track f.key) {
                   <label class="form-control block">
-                    <span class="mb-1 block text-xs uppercase tracking-wider text-base-content/50">{{ f.label }}</span>
+                    <span class="mb-1 flex justify-between text-xs uppercase tracking-wider text-base-content/50">{{ f.label }} <span class="normal-case tracking-normal tabular-nums">{{ bank()[f.key].length }}/{{ limits[f.key] }}</span></span>
                     <input class="input input-bordered w-full" [ngModel]="bank()[f.key]" [name]="f.key" [maxlength]="limits[f.key]"
-                           (ngModelChange)="patchBank(f.key, $event)" [placeholder]="f.placeholder + ' · máx. ' + limits[f.key]">
+                           (ngModelChange)="patchBank(f.key, $event)" [placeholder]="'Ej: ' + f.placeholder">
                   </label>
                 }
               </div>
