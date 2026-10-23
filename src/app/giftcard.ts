@@ -8,14 +8,21 @@ import { Wordmark } from './brand';
 export const CARD_STYLES: { id: CardStyle; label: string }[] = [
   { id: 'degradado', label: 'Degradado' },
   { id: 'logo', label: 'Tu logo' },
+  { id: 'cubierta', label: 'Logo completo' },
   { id: 'claro', label: 'Claro' },
   { id: 'oscuro', label: 'Oscuro' },
 ];
 
 /** Fondo y tinta de cada diseño, a partir del color del comercio. Va dentro de
  *  un `.storefront` con `--c1`, que deriva `--c2` (el segundo tono del degradado). */
-export function cardSurface(style: CardStyle | undefined, color: string): { bg: string; ink: string } {
+export function cardSurface(style: CardStyle | undefined, color: string, logo?: string | null): { bg: string; ink: string } {
   switch (style) {
+    // el logo cubre toda la tarjeta; un velo oscuro arriba y abajo deja leer el texto.
+    // Sin logo, el color de marca.
+    case 'cubierta': return {
+      bg: `linear-gradient(rgba(0,0,0,.4), rgba(0,0,0,.05) 40%, rgba(0,0,0,.6))${logo ? `, url("${logo}") center / cover` : ''}, var(--c1)`,
+      ink: logo ? '#ffffff' : onBrand(color),
+    };
     case 'logo': return { bg: 'var(--c1)', ink: onBrand(color) };
     case 'claro': return { bg: '#faf8f3', ink: '#1c1b18' };
     case 'oscuro': return {
@@ -62,10 +69,12 @@ export function cardSurface(style: CardStyle | undefined, color: string): { bg: 
         }
 
         <div class="relative flex items-center gap-3">
-          <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-current/15 text-sm font-bold">
-            @if (business().logoUrl) { <img [src]="business().logoUrl" alt="" class="size-full object-cover"> }
-            @else { {{ initial() }} }
-          </div>
+          @if (style() !== 'cubierta' || !business().logoUrl) {
+            <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-current/15 text-sm font-bold">
+              @if (business().logoUrl) { <img [src]="business().logoUrl" alt="" class="size-full object-cover"> }
+              @else { {{ initial() }} }
+            </div>
+          }
           <p class="min-w-0 flex-1 truncate font-semibold">{{ business().name }}</p>
           <span class="rounded-full bg-current/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]">Gift card</span>
         </div>
@@ -146,7 +155,7 @@ export class GiftcardArt {
   readonly hidden = model(false);
 
   readonly style = computed(() => this.business().cardStyle ?? 'degradado');
-  readonly surface = computed(() => cardSurface(this.style(), this.business().color));
+  readonly surface = computed(() => cardSurface(this.style(), this.business().color, this.business().logoUrl));
   readonly initial = computed(() => (this.business().name || '?')[0].toUpperCase());
 
   /** El QR codifica el link público de la carta, así el que la recibe la abre y

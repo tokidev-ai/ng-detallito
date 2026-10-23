@@ -32,7 +32,7 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
 
   <fieldset class="mt-6">
     <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Diseño de la gift card</legend>
-    <div class="storefront grid grid-cols-2 gap-2 sm:grid-cols-4" [style.--c1]="b().color">
+    <div class="storefront grid grid-cols-2 gap-2 sm:grid-cols-5" [style.--c1]="b().color">
       @for (st of cardStyles; track st.id) {
         <button type="button" (click)="change.emit({ cardStyle: st.id })" [attr.aria-pressed]="style() === st.id"
                 class="rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
@@ -64,7 +64,7 @@ export class BrandDesign {
   readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
   readonly cardStyles = CARD_STYLES;
   style() { return this.b().cardStyle ?? 'degradado'; }
-  surfaceOf(id: Business['cardStyle']) { return cardSurface(id, this.b().color); }
+  surfaceOf(id: Business['cardStyle']) { return cardSurface(id, this.b().color, this.b().logoUrl); }
   /** Una carta de ejemplo para la vista previa del diseño. */
   readonly sampleCard: GiftCard = { code: 'K7QM-3XPA', to: 'Lucía', from: 'Diego', value: 100, balance: 100, expires: '2027-12-31' };
 }

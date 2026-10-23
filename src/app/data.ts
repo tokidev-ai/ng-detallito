@@ -50,7 +50,7 @@ export async function logoDataUrl(file: File, max = 256, budget = 40_000): Promi
 }
 
 /** Diseño de la gift card, a elección del comercio. Ver `cardSurface` en giftcard.ts. */
-export type CardStyle = 'degradado' | 'logo' | 'claro' | 'oscuro';
+export type CardStyle = 'degradado' | 'logo' | 'cubierta' | 'claro' | 'oscuro';
 
 export interface Business {
   name: string;
