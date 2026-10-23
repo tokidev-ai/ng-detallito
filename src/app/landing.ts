@@ -142,7 +142,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
         <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
           <div class="flex flex-wrap items-end justify-between gap-6">
             <div reveal class="min-w-0">
-              <h2 class="text-3xl font-extrabold tracking-[-0.04em] sm:text-5xl lg:whitespace-nowrap lg:text-6xl">
+              <h2 class="text-3xl font-extrabold tracking-[-0.04em] sm:text-5xl lg:whitespace-nowrap xl:text-6xl">
                 Negocios que ya usan <span class="text-primary">GiftKBol</span>
               </h2>
               <p class="mt-4 max-w-2xl text-lg text-base-content/65">
