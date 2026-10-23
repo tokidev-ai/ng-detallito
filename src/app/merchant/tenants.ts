@@ -74,12 +74,12 @@ const PITCH = [
               <div class="min-w-0 flex-1">
                 <h2 class="text-xl font-medium">Lo que vas a configurar</h2>
                 <p class="mt-1 text-base-content/60">
-                  Cinco pasos, con la vista previa de tu página al lado mientras la armas.
+                  Cuatro pasos, con la vista previa de tu página al lado mientras la armas.
                 </p>
               </div>
               <a routerLink="/onboarding" class="btn btn-primary">Empezar</a>
             </div>
-            <ol class="mt-6 grid gap-2 sm:grid-cols-5">
+            <ol class="mt-6 grid gap-2 sm:grid-cols-4">
               @for (s of steps; track s; let i = $index) {
                 <li class="flex items-center gap-2 rounded-field border border-base-300 px-3 py-2.5">
                   <span class="text-xs font-semibold text-base-content/40">{{ i + 1 }}</span>
@@ -100,7 +100,7 @@ export class Tenants {
   readonly auth = inject(AuthService);
 
   readonly pitch = PITCH;
-  readonly steps = ['Marca', 'Datos bancarios', 'Publicar'];
+  readonly steps = ['Marca', 'Montos', 'Datos bancarios', 'Publicar'];
 
   readonly email = computed(() => this.auth.user()?.email ?? '');
   readonly firstName = computed(() => {

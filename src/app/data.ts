@@ -76,6 +76,10 @@ export const LIMITS = {
   bank: 40, account: 30, holder: 80, nit: 20,
 } as const;
 
+/** Cuántos comercios puede crear una persona sola; para más, nos escribe. */
+export const MAX_OWNED = 3;
+export const SUPPORT_EMAIL = 'soporte@giftkbol.com';
+
 export const EMPTY_BANK: Bank = { bank: '', account: '', holder: '', nit: '' };
 
 /** `expires` es ISO `yyyy-mm-dd` (comparable y ordenable como texto). El estado
@@ -160,6 +164,9 @@ export class Store {
   }
 
   /** ¿Es mío este comercio? uid del creador o memberEmails[0] (el dueño va primero). */
+  /** Comercios que esta persona creó (no los que ve como empleada). */
+  readonly ownedCount = computed(() => this.tenants().filter(t => this.owns(t)).length);
+
   owns(t: Tenant) {
     const u = this.auth.user();
     return !!u && (t.ownerUid === u.uid || t.memberEmails?.[0] === u.email);

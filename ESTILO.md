@@ -244,6 +244,9 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   solo componente (`merchant/brand-design.ts`) que usan el wizard y "Editar página": una
   opción nueva se agrega ahí y aparece en los dos. Topes de los campos en `LIMITS` (data.ts),
   como `maxlength` y en el placeholder ("· máx. 60").
+- **Máximo 3 comercios propios por persona** (`MAX_OWNED`). Al llegar, el wizard muestra un
+  aviso con `SUPPORT_EMAIL` en vez del formulario; con 2, avisa que es el último. Solo en la
+  app: las reglas no lo exigen.
 - **Foco de inputs:** un solo borde del color primario (sin el anillo extra de daisyUI).
 - **La página pública (`storefront.ts`) es una landing del comercio**, no una tarjetita:
   - **Paleta derivada del color del dueño.** El componente pone `--c1` (su color) y

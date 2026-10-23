@@ -1,7 +1,7 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, Store, logoDataUrl } from '../data';
+import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, MAX_OWNED, SUPPORT_EMAIL, Store, logoDataUrl } from '../data';
 import { BrandDesign } from '../merchant/brand-design';
 import { BsPipe } from '../ui';
 import { Storefront } from '../storefront';
@@ -26,6 +26,17 @@ export const slugify = (s: string) =>
     </header>
 
     <div class="p-4 sm:p-6">
+    @if (limitReached()) {
+      <div class="mx-auto max-w-xl rounded-box border border-base-300 bg-base-100 p-6 text-center sm:p-8">
+        <h1 class="text-xl font-semibold">Llegaste al máximo de {{ maxOwned }} comercios</h1>
+        <p class="mt-2 text-base-content/65">
+          Para crear más, escríbenos a
+          <a class="link link-primary" [href]="'mailto:' + supportEmail + '?subject=Quiero%20crear%20m%C3%A1s%20comercios'">{{ supportEmail }}</a>
+          y te habilitamos.
+        </p>
+        <a routerLink="/app" class="btn btn-primary mt-6">Volver a mis comercios</a>
+      </div>
+    } @else {
     <div class="mx-auto max-w-6xl overflow-hidden rounded-box border border-base-300 bg-base-100">
 
       <!-- pasos -->
@@ -52,6 +63,11 @@ export const slugify = (s: string) =>
       <div class="grid lg:grid-cols-[1fr_380px]">
         <!-- formulario -->
         <section class="p-4 sm:p-6">
+          @if (store.ownedCount() === maxOwned - 1) {
+            <p class="mb-4 rounded-field bg-base-200 p-3 text-sm text-base-content/70">
+              Este será tu último comercio: puedes tener hasta {{ maxOwned }}. Para más, escríbenos a {{ supportEmail }}.
+            </p>
+          }
           @switch (step()) {
 
             @case (0) {
@@ -194,16 +210,22 @@ export const slugify = (s: string) =>
         </aside>
       </div>
     </div>
+    }
     </div>
   </div>
   `,
 })
 export class Onboarding {
-  private readonly store = inject(Store);
+  readonly store = inject(Store);
   private readonly router = inject(Router);
 
   readonly steps = STEPS;
   readonly limits = LIMITS;
+  readonly maxOwned = MAX_OWNED;
+  readonly supportEmail = SUPPORT_EMAIL;
+  /** ponytail: tope solo en la app; las reglas no cuentan comercios (haría falta un contador). */
+  readonly limitReached = computed(() =>
+    this.store.tenantsLoaded() && this.store.ownedCount() >= MAX_OWNED && !this.publishing());
   readonly bankFields = [
     { key: 'bank' as const, label: 'Banco', placeholder: 'BNB' },
     { key: 'account' as const, label: 'Cuenta', placeholder: '10-2345678' },
