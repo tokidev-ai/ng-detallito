@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Wordmark } from './brand';
 import { Reveal } from './reveal';
+import { PublicTenant, Store } from './data';
+import { cardSurface } from './card-style';
+import { BsPipe } from './ui';
 
 /** Tarjetas del abanico del hero: comercios de ejemplo (inventados), cada uno con
  *  su color. Se ven como las gift cards reales porque usan la misma paleta derivada. */
@@ -16,13 +19,14 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, Wordmark, Reveal],
+  imports: [RouterLink, Wordmark, Reveal, BsPipe],
   template: `
   <div class="min-h-dvh overflow-x-clip bg-base-100">
 
     <header class="sticky top-0 z-40 border-b border-base-300/70 bg-base-100/75 backdrop-blur-xl">
       <nav class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
         <a routerLink="/" class="flex-1"><app-wordmark /></a>
+        <a href="#negocios" class="btn btn-ghost btn-sm hidden md:inline-flex">Negocios</a>
         <a href="#como-funciona" class="btn btn-ghost btn-sm hidden md:inline-flex">Cómo funciona</a>
         <a href="#beneficios" class="btn btn-ghost btn-sm hidden md:inline-flex">Beneficios</a>
         <a routerLink="/login" class="btn btn-ghost btn-sm">Entrar</a>
@@ -144,6 +148,91 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
         </ul>
       </div>
     </section>
+
+    <!-- ── catálogo: los negocios donde ya se puede regalar ───── -->
+    @if (catalog.isLoading() || negocios().length) {
+      <section id="negocios" class="relative scroll-mt-20 overflow-hidden py-20 lg:py-28">
+        <div class="pointer-events-none absolute -right-40 top-10 size-[30rem] rounded-full bg-primary/10 blur-3xl" aria-hidden="true"></div>
+        <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
+          <div class="flex flex-wrap items-end justify-between gap-6">
+            <div reveal class="max-w-2xl">
+              <p class="text-sm font-semibold text-[#c2410c]">Para regalar</p>
+              <h2 class="mt-2 text-4xl font-extrabold tracking-[-0.04em] text-balance sm:text-5xl">
+                Elige dónde, <span class="text-primary">nosotros hacemos el resto</span>
+              </h2>
+              <p class="mt-3 text-lg text-base-content/65">
+                Estos negocios ya venden gift cards con GiftKBol. Entra, elige el monto y llega al instante.
+              </p>
+            </div>
+            @if (negocios().length > 6) {
+              <label reveal="1" class="relative w-full sm:w-72">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-base-content/40">
+                  <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+                </svg>
+                <input class="input input-bordered w-full rounded-full ps-10" [value]="q()" (input)="q.set($any($event.target).value)"
+                       placeholder="Buscar negocio o zona" aria-label="Buscar negocio">
+              </label>
+            }
+          </div>
+
+          <ul class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            @if (catalog.isLoading()) {
+              @for (i of [1, 2, 3]; track i) {
+                <li class="h-80 animate-pulse rounded-3xl bg-base-200"></li>
+              }
+            }
+            @for (t of filtrados(); track t.id; let i = $index) {
+              <li [reveal]="(i % 3) + 1">
+                <a [routerLink]="'/' + t.id"
+                   class="group flex h-full flex-col overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl">
+                  <!-- su gift card, con el diseño que eligió el negocio -->
+                  <div class="storefront p-4 pb-0" [style.--c1]="t.business.color">
+                    <div class="relative flex h-40 flex-col justify-between overflow-hidden rounded-2xl p-4 shadow-lg transition duration-500 group-hover:-rotate-1 group-hover:scale-[1.02]"
+                         [style.background]="surface(t).bg" [style.color]="surface(t).ink">
+                      <span class="pointer-events-none absolute -right-10 -top-10 size-36 rounded-full bg-current opacity-10" aria-hidden="true"></span>
+                      <div class="relative flex items-center gap-2.5">
+                        <span class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-current/15 text-sm font-bold">
+                          @if (t.business.logoUrl) { <img [src]="t.business.logoUrl" alt="" class="size-full object-cover" loading="lazy"> }
+                          @else { {{ t.business.name[0] }} }
+                        </span>
+                        <span class="min-w-0 flex-1 truncate text-sm font-semibold">{{ t.business.name }}</span>
+                        <span class="rounded-full bg-current/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em]">Gift card</span>
+                      </div>
+                      @if (desde(t); as d) {
+                        <p class="relative text-3xl font-extrabold tracking-[-0.03em] tabular-nums">
+                          <span class="text-sm font-semibold opacity-70">desde</span> {{ d | bs }}
+                        </p>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="flex flex-1 flex-col p-5">
+                    <h3 class="truncate text-lg font-bold tracking-tight">{{ t.business.name }}</h3>
+                    @if (t.business.description) {
+                      <p class="mt-1 line-clamp-2 text-sm text-base-content/60">{{ t.business.description }}</p>
+                    }
+                    @if (t.business.address) {
+                      <p class="mt-3 flex items-center gap-1.5 text-xs text-base-content/50">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-3.5 shrink-0"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+                        <span class="truncate">{{ t.business.address }}</span>
+                      </p>
+                    }
+                    <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-[#c2410c]">
+                      Regalar aquí
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-4 transition-transform group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                </a>
+              </li>
+            }
+            @if (!catalog.isLoading() && !filtrados().length) {
+              <li class="col-span-full py-10 text-center text-base-content/50">Ningún negocio coincide con “{{ q() }}”.</li>
+            }
+          </ul>
+        </div>
+      </section>
+    }
 
     <!-- ── cómo funciona ───────────────────────────────────── -->
     <section id="como-funciona" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6 lg:py-28">
@@ -269,6 +358,22 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
 })
 export class Landing {
   readonly fan = FAN;
+
+  // ── catálogo ──
+  // ponytail: trae todas las páginas publicadas de una; paginar cuando pasen de ~60.
+  readonly catalog = inject(Store).publishedTenants();
+  /** Solo los que pueden vender (tienen montos), por nombre. */
+  readonly negocios = computed(() => (this.catalog.value() ?? [])
+    .filter(t => t.business.suggestedAmounts?.length)
+    .sort((a, b) => a.business.name.localeCompare(b.business.name, 'es')));
+  readonly q = signal('');
+  readonly filtrados = computed(() => {
+    const q = this.q().trim().toLowerCase();
+    return q ? this.negocios().filter(t =>
+      `${t.business.name} ${t.business.description} ${t.business.address ?? ''}`.toLowerCase().includes(q)) : this.negocios();
+  });
+  surface(t: PublicTenant) { return cardSurface(t.business.cardStyle, t.business.color, t.business.logoUrl); }
+  desde(t: PublicTenant) { return Math.min(...t.business.suggestedAmounts); }
   /** Duplicada: la marquesina se desplaza la mitad y vuelve a empezar sin salto. */
   readonly rubrosX2 = [...RUBROS, ...RUBROS];
   readonly verificados = ['Sin instalar nada', 'Tu propio link', 'Cobras por QR'];

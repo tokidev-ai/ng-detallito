@@ -109,26 +109,37 @@ const PAD = 6;
                   <h2 class="mt-0.5 text-2xl font-extrabold tracking-tight sm:text-3xl">Así va la plataforma 🚀</h2>
                 </div>
 
-                <!-- lo que importa: cuánto se vendió, cuánto es nuestro y cuánto les debemos -->
-                <div class="grid gap-3 sm:grid-cols-3">
-                  <article class="reveal reveal-1 rounded-box bg-neutral p-5 text-neutral-content">
-                    <p class="text-sm text-neutral-content/65">Lo que vendieron todos los negocios</p>
-                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().gross | bs }}</p>
+                <!-- lo que importa: lo que ganamos, cuántos negocios se movieron, cuánto se vendió y cuánto debemos -->
+                <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                  <article class="reveal reveal-1 col-span-2 rounded-box bg-neutral p-5 text-neutral-content lg:col-span-1">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm text-neutral-content/65">Nuestros ingresos netos</p>
+                      <span class="grid size-8 place-items-center rounded-xl bg-primary/20 text-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4"><path d="M12 3v18M17 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H6" stroke-linecap="round"/></svg>
+                      </span>
+                    </div>
+                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().fee | bs:2 }}</p>
                     <p class="mt-1 text-xs text-neutral-content/55">
-                      {{ month().count }} gift cards
-                      @if (gmvDelta() !== null) {
-                        · <span [class]="gmvDelta()! >= 0 ? 'text-success' : 'text-error'">{{ gmvDelta()! >= 0 ? '↑' : '↓' }} {{ abs(gmvDelta()!) }}% vs mes anterior</span>
+                      nuestra comisión este mes
+                      @if (feeDelta() !== null) {
+                        · <span [class]="feeDelta()! >= 0 ? 'text-success' : 'text-error'">{{ feeDelta()! >= 0 ? '↑' : '↓' }} {{ abs(feeDelta()!) }}% vs mes anterior</span>
                       }
                     </p>
                   </article>
 
                   <article class="reveal reveal-2 rounded-box border border-base-300 bg-base-100 p-5">
-                    <p class="text-sm text-base-content/55">Nuestra comisión</p>
-                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums text-[#c2410c]">{{ month().fee | bs:2 }}</p>
-                    <p class="mt-1 text-xs text-base-content/45">lo que ganamos este mes</p>
+                    <p class="text-sm text-base-content/55">Negocios activos</p>
+                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ sellingThisMonth() }} <span class="text-base font-semibold text-base-content/40">/ {{ published() }}</span></p>
+                    <p class="mt-1 text-xs text-base-content/45">vendieron este mes, de los publicados</p>
                   </article>
 
-                  <button type="button" class="reveal reveal-3 group rounded-box border border-base-300 bg-base-100 p-5 text-left transition hover:border-base-content/20"
+                  <article class="reveal reveal-3 rounded-box border border-base-300 bg-base-100 p-5">
+                    <p class="text-sm text-base-content/55">Gift cards vendidas</p>
+                    <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().count }}</p>
+                    <p class="mt-1 text-xs text-base-content/45">{{ month().gross | bs }} en total · promedio {{ avgTicket() | bs }}</p>
+                  </article>
+
+                  <button type="button" class="reveal reveal-4 group col-span-2 rounded-box border border-base-300 bg-base-100 p-5 text-left transition hover:border-base-content/20 lg:col-span-1"
                           (click)="section.set('ventas')">
                     <p class="text-sm text-base-content/55">Les debemos a los negocios</p>
                     <p class="mt-3 text-3xl font-extrabold tracking-[-0.03em] tabular-nums">{{ month().net | bs:2 }}</p>
@@ -179,7 +190,7 @@ const PAD = 6;
                   <!-- ranking -->
                   <section class="reveal reveal-3 rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
                     <h3 class="font-bold">Top negocios del mes</h3>
-                    <p class="text-sm text-base-content/50">{{ sellingThisMonth() }} de {{ published() }} publicados vendieron</p>
+                    <p class="text-sm text-base-content/50">Por monto vendido</p>
                     <ol class="mt-4 space-y-3">
                       @for (r of ranking(); track r.t.id; let i = $index) {
                         <li>
@@ -570,10 +581,11 @@ export class AdminPanel {
 
   // ── resumen ────────────────────────────────────────────────────────────────
   readonly month = computed(() => totals(this.inMonth(this.thisMonth)));
-  readonly gmvDelta = computed(() => {
-    const prev = totals(this.inMonth(this.months6[4])).gross;
-    return prev ? Math.round(((this.month().gross - prev) / prev) * 100) : null;
+  readonly feeDelta = computed(() => {
+    const prev = totals(this.inMonth(this.months6[4])).fee;
+    return prev ? Math.round(((this.month().fee - prev) / prev) * 100) : null;
   });
+  readonly avgTicket = computed(() => (this.month().count ? this.month().gross / this.month().count : 0));
   readonly published = computed(() => this.tenantsList().filter(t => t.business.published).length);
   readonly sellingThisMonth = computed(() => new Set(this.inMonth(this.thisMonth).map(c => c.tenantId)).size);
 

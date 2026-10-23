@@ -248,6 +248,9 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   **Todo input donde se escribe un dato lleva su tope y el aviso** (montos: "Entre Bs 1 y
   Bs 10.000."); los buscadores no. Destinatario y "de parte de": 40 (`LIMITS.person`, igual
   que la regla de compra pública).
+- **Catálogo en la landing** (`#negocios`): todas las páginas publicadas con montos, cada
+  una mostrada como SU gift card (`cardSurface` de `card-style.ts`, sin cargar el QR), con
+  "desde Bs X", descripción, zona y "Regalar aquí" → `/{slug}`. Buscador solo con más de 6.
 - **Caracteres permitidos (anti-XSS):** Angular escapa todo lo que muestra y no usamos
   `innerHTML`. Además, `cleanText` (data.ts) quita `<`, `>` y caracteres de control antes de
   guardar, y las reglas lo exigen (`okText`, `okBusiness`, `okBank`, `okEmail`): color solo
