@@ -248,9 +248,12 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   **Todo input donde se escribe un dato lleva su tope y el aviso** (montos: "Entre Bs 1 y
   Bs 10.000."); los buscadores no. Destinatario y "de parte de": 40 (`LIMITS.person`, igual
   que la regla de compra pública).
-- **Catálogo en la landing** (`#negocios`, justo después del hero, título "Negocios que ya usan GiftKBol" en una línea): todas las páginas publicadas con montos, cada
-  una mostrada como SU gift card (`cardSurface` de `card-style.ts`, sin cargar el QR), con
-  "desde Bs X", descripción, zona y "Regalar aquí" → `/{slug}`. Buscador solo con más de 6.
+- **Catálogo en la landing** (`#negocios`, justo después del hero, título centrado "Negocios
+  que ya usan GiftKBol" en una línea): cada negocio es una **vitrina** 4:5 pintada con SU
+  diseño de gift card (`cardSurface` de `card-style.ts`, sin cargar el QR): logo, zona, una pila
+  de sus gift cards blancas (hasta 3 montos, el más bajo al centro) que se abre en abanico al
+  pasar el mouse (`.biz-chip`), nombre, "desde Bs X" y un botón blanco que se estira a
+  "Regalar". Tarjetas centradas; buscador solo con más de 6.
 - **Caracteres permitidos (anti-XSS):** Angular escapa todo lo que muestra y no usamos
   `innerHTML`. Además, `cleanText` (data.ts) quita `<`, `>` y caracteres de control antes de
   guardar, y las reglas lo exigen (`okText`, `okBusiness`, `okBank`, `okEmail`): color solo
