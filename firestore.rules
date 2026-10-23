@@ -66,9 +66,52 @@ service cloud.firestore {
     }
 
     // Quién es superadmin: cada uno lee solo el suyo, nadie se lo puede dar.
+    function ownerPath(uid) { return /databases/$(database)/documents/owners/$(uid); }
+    function tenantPath(id) { return /databases/$(database)/documents/tenants/$(id); }
+
+    // +1 al crear un tenant (que no existía y existe después, sin pasarse del tope)
+    // o -1 al borrar uno propio (que existía y ya no). La persona no toca su `max`.
+    function counterStep(uid) {
+      let d = request.resource.data;
+      let prev = resource == null ? 0 : resource.data.count;
+      let max = resource == null ? 3 : resource.data.get('max', 3);
+      return d.keys().hasOnly(['count', 'created', 'deleted', 'max'])
+          && d.get('max', 3) == max
+          && ((d.count == prev + 1 && d.count <= max
+               && d.created is string
+               && !exists(tenantPath(d.created)) && existsAfter(tenantPath(d.created)))
+              || (resource != null && d.count == prev - 1
+                  && d.deleted is string
+                  && exists(tenantPath(d.deleted))
+                  && get(tenantPath(d.deleted)).data.ownerUid == uid
+                  && !existsAfter(tenantPath(d.deleted))));
+    }
+
+    // El alta del tenant tiene que subir el contador del dueño en la misma escritura.
+    function countedNew(tenantId) {
+      let path = ownerPath(request.auth.uid);
+      let prev = exists(path) ? get(path).data.count : 0;
+      return existsAfter(path)
+          && getAfter(path).data.count == prev + 1
+          && getAfter(path).data.created == tenantId;
+    }
+
     match /superadmins/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow write: if false;
+    }
+
+    // Cuántos comercios creó cada persona: `owners/{uid}` = { count, created, deleted, max? }.
+    // Las reglas no pueden contar documentos, así que el alta y la baja del tenant
+    // mueven este contador en la misma escritura (batch) y lo prueban con
+    // `created`/`deleted` = el id del tenant. `max` (3 si falta) solo lo cambia el
+    // superadmin, cuando alguien nos pide más.
+    match /owners/{uid} {
+      allow get: if (signedIn() && request.auth.uid == uid) || isSuperadmin();
+      allow create, update: if signedIn() && request.auth.uid == uid && counterStep(uid);
+      allow update: if isSuperadmin()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['max'])
+                    && request.resource.data.max is int && request.resource.data.max >= 0;
     }
 
     // La página pública del comercio: `pages/{id}` = { business }. Es lo único que ve
@@ -100,6 +143,7 @@ service cloud.firestore {
       // el alta la hace el propio dueño y se pone a sí mismo como único miembro.
       // La comisión no la elige el comercio: la negociamos y la ponemos nosotros.
       allow create: if signedIn()
+                    && countedNew(tenantId)
                     && request.resource.data.ownerUid == request.auth.uid
                     && request.resource.data.memberEmails == [myEmail()]
                     && request.resource.data.keys().hasOnly(['ownerUid', 'memberEmails', 'bank']);

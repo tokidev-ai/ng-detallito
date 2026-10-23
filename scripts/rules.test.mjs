@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
 
 const ALL = { redeem: true, viewCards: true, viewSales: true, manageProducts: true, manageBranding: true, manageStaff: true };
 const NONE = Object.fromEntries(Object.keys(ALL).map(k => [k, false]));
@@ -84,4 +84,34 @@ test('un empleado no se vuelve dueño ni toca al dueño', async () => {
   await assertFails(setDoc(doc(db, 'tenants/t1/staff', CAJERO), { email: CAJERO, role: 'owner', perms: ALL }));
   await assertFails(updateDoc(doc(db, 'tenants/t1/staff', OWNER), { role: 'staff' }));
   await assertFails(updateDoc(doc(db, 'tenants/t1'), { memberEmails: [CAJERO, DISENO] }));
+});
+
+test('máximo 3 comercios por persona, contados en owners/{uid}', async () => {
+  const db = as('nuevo', 'nuevo@x.com');
+  const alta = (id, count, extra = {}) => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'tenants', id), { ownerUid: 'nuevo', memberEmails: ['nuevo@x.com'], bank: {} });
+    b.set(doc(db, 'owners/nuevo'), { count, created: id, ...extra }, { merge: true });
+    return b.commit();
+  };
+  await assertFails(setDoc(doc(db, 'tenants/a'), { ownerUid: 'nuevo', memberEmails: ['nuevo@x.com'], bank: {} }));
+  await assertFails(alta('a', 2));                     // saltarse la cuenta
+  await assertSucceeds(alta('a', 1));
+  await assertSucceeds(alta('b', 2));
+  await assertSucceeds(alta('c', 3));
+  await assertFails(alta('d', 4));                     // el cuarto no
+  await assertFails(alta('d', 4, { max: 9 }));         // ni subiéndose el tope
+
+  // borrar uno propio devuelve el cupo; inventarse una baja no
+  await assertFails(updateDoc(doc(db, 'owners/nuevo'), { count: 2, deleted: 'a' }));
+  const baja = writeBatch(db);
+  baja.delete(doc(db, 'tenants/a'));
+  baja.update(doc(db, 'owners/nuevo'), { count: 2, deleted: 'a' });
+  await assertSucceeds(baja.commit());
+  await assertSucceeds(alta('d', 3));
+
+  // el superadmin le sube el tope
+  await env.withSecurityRulesDisabled(ctx => setDoc(doc(ctx.firestore(), 'superadmins/sa'), {}));
+  await assertSucceeds(updateDoc(doc(as('sa', 'sa@x.com'), 'owners/nuevo'), { max: 5 }));
+  await assertSucceeds(alta('e', 4));
 });

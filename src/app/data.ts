@@ -76,7 +76,8 @@ export const LIMITS = {
   bank: 40, account: 30, holder: 80, nit: 20,
 } as const;
 
-/** Cuántos comercios puede crear una persona sola; para más, nos escribe. */
+/** Cuántos comercios puede crear una persona; para más, nos escribe (el
+ *  superadmin le sube `owners/{uid}.max`). Las reglas usan el mismo 3. */
 export const MAX_OWNED = 3;
 export const SUPPORT_EMAIL = 'soporte@giftkbol.com';
 
@@ -164,8 +165,11 @@ export class Store {
   }
 
   /** ¿Es mío este comercio? uid del creador o memberEmails[0] (el dueño va primero). */
-  /** Comercios que esta persona creó (no los que ve como empleada). */
-  readonly ownedCount = computed(() => this.tenants().filter(t => this.owns(t)).length);
+  /** Cupo de comercios de esta persona (`owners/{uid}`): cuántos creó y cuántos puede. */
+  readonly quota = toSignal(toObservable$(() => this.auth.uid()).pipe(
+    switchMap(uid => uid ? docData(doc(this.db, 'owners', uid)) : of(undefined)),
+    map(d => ({ count: (d?.['count'] as number) ?? 0, max: (d?.['max'] as number) ?? MAX_OWNED })),
+  ), { initialValue: { count: 0, max: MAX_OWNED } });
 
   owns(t: Tenant) {
     const u = this.auth.user();
@@ -374,7 +378,16 @@ export class Store {
   async deleteTenant(id = this.currentId()) {
     if (!id) return;
     await deleteDoc(doc(this.db, 'pages', id));    // primero la página: deja de verse
-    await deleteDoc(doc(this.db, 'tenants', id));
+    // Quien lo creó recupera el cupo: el contador baja en la misma escritura.
+    const uid = this.auth.uid();
+    const tenant = await getDoc(doc(this.db, 'tenants', id));
+    const counter = uid ? await getDoc(doc(this.db, 'owners', uid)) : null;
+    const batch = writeBatch(this.db);
+    batch.delete(tenant.ref);
+    if (counter && tenant.get('ownerUid') === uid && (counter.get('count') ?? 0) > 0) {
+      batch.update(counter.ref, { count: counter.get('count') - 1, deleted: id });
+    }
+    await batch.commit();
   }
 
   /** Alta de comercio: lo que produce el wizard. Devuelve el id del tenant.
@@ -386,7 +399,12 @@ export class Store {
 
     const id = business.slug;
     const ownerEmail = user.email ?? user.uid;
-    await setDoc(doc(this.db, 'tenants', id), { ownerUid: user.uid, memberEmails: [ownerEmail], bank });
+    // El tenant y el contador de comercios del dueño van juntos: las reglas lo exigen.
+    const counter = await getDoc(doc(this.db, 'owners', user.uid));
+    const first = writeBatch(this.db);
+    first.set(doc(this.db, 'tenants', id), { ownerUid: user.uid, memberEmails: [ownerEmail], bank });
+    first.set(counter.ref, { count: (counter.get('count') ?? 0) + 1, created: id }, { merge: true });
+    await first.commit();
     const batch = writeBatch(this.db);
     batch.set(doc(this.db, 'tenants', id, 'staff', ownerEmail), {
       email: ownerEmail, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS,

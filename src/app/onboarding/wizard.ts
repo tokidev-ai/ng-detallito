@@ -1,7 +1,7 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, MAX_OWNED, SUPPORT_EMAIL, Store, logoDataUrl } from '../data';
+import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, SUPPORT_EMAIL, Store, logoDataUrl } from '../data';
 import { BrandDesign } from '../merchant/brand-design';
 import { BsPipe } from '../ui';
 import { Storefront } from '../storefront';
@@ -28,7 +28,7 @@ export const slugify = (s: string) =>
     <div class="p-4 sm:p-6">
     @if (limitReached()) {
       <div class="mx-auto max-w-xl rounded-box border border-base-300 bg-base-100 p-6 text-center sm:p-8">
-        <h1 class="text-xl font-semibold">Llegaste al máximo de {{ maxOwned }} comercios</h1>
+        <h1 class="text-xl font-semibold">Llegaste al máximo de {{ store.quota().max }} comercios</h1>
         <p class="mt-2 text-base-content/65">
           Para crear más, escríbenos a
           <a class="link link-primary" [href]="'mailto:' + supportEmail + '?subject=Quiero%20crear%20m%C3%A1s%20comercios'">{{ supportEmail }}</a>
@@ -63,9 +63,9 @@ export const slugify = (s: string) =>
       <div class="grid lg:grid-cols-[1fr_380px]">
         <!-- formulario -->
         <section class="p-4 sm:p-6">
-          @if (store.ownedCount() === maxOwned - 1) {
+          @if (store.quota().count === store.quota().max - 1) {
             <p class="mb-4 rounded-field bg-base-200 p-3 text-sm text-base-content/70">
-              Este será tu último comercio: puedes tener hasta {{ maxOwned }}. Para más, escríbenos a {{ supportEmail }}.
+              Este será tu último comercio: puedes tener hasta {{ store.quota().max }}. Para más, escríbenos a {{ supportEmail }}.
             </p>
           }
           @switch (step()) {
@@ -221,11 +221,10 @@ export class Onboarding {
 
   readonly steps = STEPS;
   readonly limits = LIMITS;
-  readonly maxOwned = MAX_OWNED;
   readonly supportEmail = SUPPORT_EMAIL;
-  /** ponytail: tope solo en la app; las reglas no cuentan comercios (haría falta un contador). */
+  /** El tope lo exigen las reglas con `owners/{uid}`; esto solo avisa antes. */
   readonly limitReached = computed(() =>
-    this.store.tenantsLoaded() && this.store.ownedCount() >= MAX_OWNED && !this.publishing());
+    this.store.quota().count >= this.store.quota().max && !this.publishing());
   readonly bankFields = [
     { key: 'bank' as const, label: 'Banco', placeholder: 'BNB' },
     { key: 'account' as const, label: 'Cuenta', placeholder: '10-2345678' },
