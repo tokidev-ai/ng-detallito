@@ -164,49 +164,58 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
           <ul class="mt-12 flex flex-wrap justify-center gap-5 *:w-full sm:*:w-[calc(50%-0.625rem)] lg:*:w-[calc((100%-2.5rem)/3)]">
             @if (catalog.isLoading()) {
               @for (i of [1, 2, 3]; track i) {
-                <li class="h-80 animate-pulse rounded-3xl bg-base-200"></li>
+                <li class="aspect-[4/5] animate-pulse rounded-[2rem] bg-base-200"></li>
               }
             }
             @for (t of filtrados(); track t.id; let i = $index) {
               <li [reveal]="(i % 3) + 1">
-                <a [routerLink]="'/' + t.id"
-                   class="group flex h-full flex-col overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl">
-                  <!-- su gift card, con el diseño que eligió el negocio -->
-                  <div class="storefront p-4 pb-0" [style.--c1]="t.business.color">
-                    <div class="relative flex h-40 flex-col justify-between overflow-hidden rounded-2xl p-4 shadow-lg transition duration-500 group-hover:-rotate-1 group-hover:scale-[1.02]"
-                         [style.background]="surface(t).bg" [style.color]="surface(t).ink">
-                      <span class="pointer-events-none absolute -right-10 -top-10 size-36 rounded-full bg-current opacity-10" aria-hidden="true"></span>
-                      <div class="relative flex items-center gap-2.5">
-                        <span class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-current/15 text-sm font-bold">
-                          @if (t.business.logoUrl) { <img [src]="t.business.logoUrl" alt="" class="size-full object-cover" loading="lazy"> }
-                          @else { {{ t.business.name[0] }} }
-                        </span>
-                        <span class="min-w-0 flex-1 truncate text-sm font-semibold">{{ t.business.name }}</span>
-                        <span class="rounded-full bg-current/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em]">Gift card</span>
-                      </div>
-                      @if (desde(t); as d) {
-                        <p class="relative text-3xl font-extrabold tracking-[-0.03em] tabular-nums">
-                          <span class="text-sm font-semibold opacity-70">desde</span> {{ d | bs }}
-                        </p>
-                      }
-                    </div>
+                <!-- vitrina del negocio: la tarjeta entera es su marca (su diseño de gift card),
+                     con sus gift cards apiladas que se abren en abanico al pasar el mouse -->
+                <a [routerLink]="'/' + t.id" [attr.aria-label]="'Regalar en ' + t.business.name"
+                   class="storefront biz-card group relative isolate flex aspect-[4/5] flex-col overflow-hidden rounded-[2rem] p-6 shadow-xl shadow-black/10 ring-1 ring-black/5 transition duration-500 ease-out hover:-translate-y-2 hover:shadow-2xl"
+                   [style.--c1]="t.business.color" [style.background]="surface(t).bg" [style.color]="surface(t).ink">
+                  <span class="dotgrid-light pointer-events-none absolute inset-0 -z-10 opacity-60" aria-hidden="true"></span>
+                  <span class="pointer-events-none absolute -bottom-24 -right-20 -z-10 size-72 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-125"
+                        style="background: var(--c2)" aria-hidden="true"></span>
+
+                  <!-- marca -->
+                  <div class="flex items-center gap-3">
+                    <span class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-current/15 text-xl font-extrabold shadow-lg ring-2 ring-current/20">
+                      @if (t.business.logoUrl) { <img [src]="t.business.logoUrl" alt="" class="size-full object-cover" loading="lazy"> }
+                      @else { {{ t.business.name[0] }} }
+                    </span>
+                    @if (t.business.address) {
+                      <span class="ms-auto flex min-w-0 items-center gap-1 rounded-full bg-current/10 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="size-3 shrink-0"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+                        <span class="truncate">{{ zona(t) }}</span>
+                      </span>
+                    }
                   </div>
 
-                  <div class="flex flex-1 flex-col p-5">
-                    <h3 class="truncate text-lg font-bold tracking-tight">{{ t.business.name }}</h3>
+                  <!-- sus gift cards, apiladas -->
+                  <div class="relative my-auto h-28" aria-hidden="true">
+                    @for (m of montos(t); track m; let j = $index) {
+                      <span class="biz-chip absolute left-1/2 top-1/2 flex h-20 w-36 flex-col justify-between rounded-xl border border-current/20 bg-current/10 p-2.5 shadow-xl backdrop-blur-md"
+                            [style.--i]="j - (montos(t).length - 1) / 2">
+                        <span class="text-[8px] font-semibold uppercase tracking-[0.2em] opacity-70">Gift card</span>
+                        <span class="text-lg font-extrabold tabular-nums">{{ m | bs }}</span>
+                      </span>
+                    }
+                  </div>
+
+                  <!-- nombre y acción -->
+                  <div>
+                    <h3 class="truncate text-2xl font-extrabold tracking-[-0.03em]">{{ t.business.name }}</h3>
                     @if (t.business.description) {
-                      <p class="mt-1 line-clamp-2 text-sm text-base-content/60">{{ t.business.description }}</p>
+                      <p class="mt-1 line-clamp-2 text-sm opacity-75">{{ t.business.description }}</p>
                     }
-                    @if (t.business.address) {
-                      <p class="mt-3 flex items-center gap-1.5 text-xs text-base-content/50">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-3.5 shrink-0"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-                        <span class="truncate">{{ t.business.address }}</span>
-                      </p>
-                    }
-                    <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-[#c2410c]">
-                      Regalar aquí
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-4 transition-transform group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
+                    <div class="mt-5 flex items-center justify-between gap-3">
+                      <p class="text-sm"><span class="opacity-70">desde</span> <span class="text-lg font-extrabold tabular-nums">{{ desde(t) | bs }}</span></p>
+                      <span class="flex h-11 items-center gap-2 overflow-hidden rounded-full bg-white px-3.5 text-sm font-bold text-neutral-900 shadow-lg transition-all duration-300">
+                        <span class="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:max-w-24">Regalar</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="size-4 shrink-0 transition-transform group-hover:translate-x-0.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                    </div>
                   </div>
                 </a>
               </li>
@@ -373,6 +382,13 @@ export class Landing {
   });
   surface(t: PublicTenant) { return cardSurface(t.business.cardStyle, t.business.color, t.business.logoUrl); }
   desde(t: PublicTenant) { return Math.min(...t.business.suggestedAmounts); }
+  /** Hasta 3 montos para la pila de tarjetas. */
+  montos(t: PublicTenant) { return [...t.business.suggestedAmounts].sort((x, y) => x - y).slice(0, 3); }
+  /** La zona, no la dirección entera: lo que va después de la primera coma ("Sopocachi, La Paz"). */
+  zona(t: PublicTenant) {
+    const parts = (t.business.address ?? '').split(',').map(p => p.trim()).filter(Boolean);
+    return parts.length > 1 ? parts.slice(1, 3).join(', ') : parts[0] ?? '';
+  }
   /** Duplicada: la marquesina se desplaza la mitad y vuelve a empezar sin salto. */
   readonly rubrosX2 = [...RUBROS, ...RUBROS];
   readonly verificados = ['Sin instalar nada', 'Tu propio link', 'Cobras por QR'];

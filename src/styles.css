@@ -321,3 +321,16 @@ body {
   rotate: -45deg;
   box-shadow: 0 2px 6px rgb(0 0 0 / .35);
 }
+
+/* Catálogo de la landing: las gift cards apiladas de cada negocio se abren en
+   abanico al pasar el mouse. --i va de -1 a 1 (posición en la pila). */
+.biz-chip {
+  translate: calc(-50% + var(--i) * 10px) calc(-50% + var(--i) * -4px);
+  rotate: calc(var(--i) * 6deg);
+  transition: translate .5s cubic-bezier(.22,.8,.3,1), rotate .5s cubic-bezier(.22,.8,.3,1);
+}
+.biz-card:hover .biz-chip, .biz-card:focus-visible .biz-chip {
+  translate: calc(-50% + var(--i) * 58px) calc(-50% + var(--i) * var(--i) * 10px);
+  rotate: calc(var(--i) * 12deg);
+}
+@media (prefers-reduced-motion: reduce) { .biz-chip { transition: none; } }
