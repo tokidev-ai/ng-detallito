@@ -55,6 +55,7 @@ export function cardSurface(style: CardStyle | undefined, color: string, logo?: 
               @else { <span class="text-[9rem] font-extrabold leading-none">{{ initial() }}</span> }
             </div>
           }
+          @case ('cubierta') { <!-- el logo ya es el fondo: nada encima --> }
           @case ('claro') {
             <span class="pointer-events-none absolute inset-y-0 left-0 w-2" style="background:linear-gradient(var(--c1),var(--c2))" aria-hidden="true"></span>
             <span class="pointer-events-none absolute -right-14 -top-14 size-48 rounded-full opacity-15" style="background:var(--c1)" aria-hidden="true"></span>
