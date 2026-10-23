@@ -2,7 +2,7 @@ import { Component, DestroyRef, computed, inject, input, resource, signal } from
 import { FormsModule } from '@angular/forms';
 import QRCode from 'qrcode';
 import { BsPipe, onBrand } from './ui';
-import { Business, GiftCard, Store } from './data';
+import { Business, GiftCard, LIMITS, Store } from './data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from './card';
 import { GiftcardArt } from './giftcard';
 import { Wordmark } from './brand';
@@ -203,8 +203,9 @@ import { Wordmark } from './brand';
                       @case (1) {
                         <h2 class="mt-6 text-2xl font-extrabold tracking-tight">¿Para quién es?</h2>
                         <p class="mt-1 text-sm text-base-content/55">Su nombre aparece en la gift card.</p>
-                        <input class="field mt-4" [(ngModel)]="to" name="to" maxlength="80" placeholder="Nombre de quien la recibe">
-                        <input class="field mt-2" [(ngModel)]="from" name="from" maxlength="80" placeholder="De parte de… (opcional)">
+                        <input class="field mt-4" [(ngModel)]="to" name="to" [maxlength]="limits.person" placeholder="Nombre de quien la recibe">
+                        <input class="field mt-2" [(ngModel)]="from" name="from" [maxlength]="limits.person" placeholder="De parte de… (opcional)">
+                        <p class="mt-1.5 px-1 text-xs text-base-content/50">Hasta {{ limits.person }} caracteres cada uno.</p>
                         <p class="mt-2 text-xs text-base-content/50">Déjalo vacío si quieres que el regalo sea anónimo.</p>
                         <div class="mt-5 flex gap-2">
                           <button type="button" class="grid size-14 shrink-0 place-items-center rounded-2xl bg-base-200 transition active:scale-95" aria-label="Atrás" (click)="back()">
@@ -360,6 +361,7 @@ export class Storefront {
 
   readonly b = computed(() => this.business() ?? this.store.business());
   readonly amounts = computed(() => this.b().suggestedAmounts ?? []);
+  readonly limits = LIMITS;
   /** Columnas de los montos: hasta 3, sin huecos si hay menos. */
   readonly cols = computed(() => Math.min(this.amounts().length, 3) || 1);
   readonly onBrand = computed(() => onBrand(this.b().color));

@@ -77,7 +77,9 @@ export interface GeoPoint { lat: number; lng: number }
 export interface Bank { bank: string; account: string; holder: string; nit: string }
 /** Topes de los campos que escribe el comercio (se muestran en el placeholder). */
 export const LIMITS = {
-  name: 60, slug: 40, description: 160, address: 160, amountMax: 10_000,
+  name: 60, slug: 40, description: 160, address: 160,
+  /** Destinatario y "de parte de" de una gift card. Las reglas exigen lo mismo en la compra pública. */
+  person: 40, email: 100, amountMax: 10_000,
   bank: 40, account: 30, holder: 80, nit: 20,
 } as const;
 

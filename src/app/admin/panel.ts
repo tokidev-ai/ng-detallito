@@ -506,7 +506,7 @@ const PAD = 6;
             @if (!rateValid()) { <p class="mt-2 text-xs text-error">Entre 0% y 50%.</p> }
             @else {
               <p class="mt-2 text-xs text-base-content/55">
-                Con {{ rateInput }}%, de lo vendido este mes nos quedaríamos {{ preview(d) | bs:2 }}.
+                Entre 0% y 50%. Con {{ rateInput }}%, de lo vendido este mes nos quedaríamos {{ preview(d) | bs:2 }}.
               </p>
             }
             @if (rateSaved()) { <p class="mt-2 text-xs font-semibold text-success">✓ Comisión actualizada</p> }

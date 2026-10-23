@@ -238,13 +238,18 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   cliente puede comprar** (también lo exige la regla de `cards`). Sin montos, la página no
   vende. El panel sí acepta otro monto, para la venta en mostrador. Código autogenerado
   (`newCode`) y saldo derivado del valor: el form no los pide.
-  El dueño los edita en "Gift cards → Montos sugeridos"; el onboarding son 4 pasos (Marca,
+  El dueño los edita en "Editar página → Montos sugeridos" (shared `amounts-editor.ts`; el tab se ve con manageBranding o manageProducts); el onboarding son 4 pasos (Marca,
   Montos, Datos bancarios, Publicar) y arranca con 100/200/500.
 - **El alta muestra las mismas opciones que la edición.** Color + diseño de la gift card es un
   solo componente (`merchant/brand-design.ts`) que usan el wizard y "Editar página": una
   opción nueva se agrega ahí y aparece en los dos. Topes de los campos en `LIMITS` (data.ts),
   como `maxlength` y un texto bajo el campo ("Hasta 60 caracteres."); el placeholder es
   solo un ejemplo ("Ej: Spa Aurora").
+  **Todo input donde se escribe un dato lleva su tope y el aviso** (montos: "Entre Bs 1 y
+  Bs 10.000."); los buscadores no. Destinatario y "de parte de": 40 (`LIMITS.person`, igual
+  que la regla de compra pública).
+- **Listas con texto del usuario: se corta (`truncate` + `title`) y hay un botón "ver"**
+  con el detalle completo en un modal; nunca scroll horizontal por un nombre largo.
 - **Máximo 3 comercios propios por persona** (`MAX_OWNED`). Al llegar, el wizard muestra un
   aviso con `SUPPORT_EMAIL` en vez del formulario; con 2, avisa que es el último. Lo exigen
   las reglas: `owners/{uid}` = { count, max? } sube/baja en el mismo batch que crea/borra el

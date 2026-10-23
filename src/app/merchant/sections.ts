@@ -7,6 +7,7 @@ import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
 import { BrandDesign } from './brand-design';
 import { LocationPicker } from './location-picker';
+import { AmountsEditor } from './amounts-editor';
 import { RedeemDialog } from './redeem';
 import { BsPipe, FechaPipe, Status } from '../ui';
 
@@ -30,44 +31,13 @@ const TABS: { id: CardState; label: string }[] = [
         <button type="button" role="tab" class="tab" [class.tab-active]="section() === t.id"
                 (click)="section.set(t.id)">{{ t.label }} ({{ count(t.id) }})</button>
       }
-      <button type="button" role="tab" class="tab" [class.tab-active]="section() === 'montos'"
-              (click)="section.set('montos')">Montos sugeridos</button>
     </div>
-    @if (section() !== 'montos') {
-      <div class="flex items-center gap-2">
-        <app-redeem />
-        <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
-      </div>
-    }
+    <div class="flex items-center gap-2">
+      <app-redeem />
+      <button type="button" class="btn btn-primary btn-sm" (click)="openNew()">+ Nueva gift card</button>
+    </div>
   </div>
 
-  <!-- ── Montos sugeridos ── -->
-  @if (section() === 'montos') {
-    <div class="mt-5 max-w-xl rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
-      <h2 class="text-lg font-medium">Montos sugeridos</h2>
-      <p class="mt-1 text-sm text-base-content/55">
-        Son los montos que tus clientes pueden comprar en tu página. Sin al menos uno, la
-        página no vende. Un monto distinto lo cargas tú desde "+ Nueva gift card".
-      </p>
-      <div class="mt-4 flex flex-wrap gap-2">
-        @for (a of s.business().suggestedAmounts; track a) {
-          <span class="badge badge-lg gap-2 py-3">
-            {{ a | bs }}
-            <button type="button" class="text-base-content/50 hover:text-error" aria-label="Quitar"
-                    (click)="removeAmount(a)">✕</button>
-          </span>
-        } @empty {
-          <span class="text-sm text-base-content/45">Sin montos sugeridos todavía.</span>
-        }
-      </div>
-      <div class="mt-3 flex gap-2">
-        <input type="number" min="1" [max]="limits.amountMax" class="input input-bordered input-sm w-40" [(ngModel)]="newAmount"
-               name="newAmount" placeholder="Ej: 150" (keyup.enter)="addAmount()">
-        <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
-      </div>
-      <p class="mt-1 text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}.</p>
-    </div>
-  } @else {
 
   <!-- buscador: aplica a las tres pestañas de estado -->
   <label class="relative mt-4 block">
@@ -109,11 +79,13 @@ const TABS: { id: CardState; label: string }[] = [
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
         <label class="form-control sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">Destinatario</span>
-          <input class="input input-bordered w-full" [(ngModel)]="fTo" name="to" maxlength="80" placeholder="Nombre">
+          <input class="input input-bordered w-full" [(ngModel)]="fTo" name="to" [maxlength]="limits.person" placeholder="Ej: Lucía Rojas">
+          <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.person }} caracteres.</span>
         </label>
         <label class="form-control sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">De parte de <span class="text-base-content/40">(opcional)</span></span>
-          <input class="input input-bordered w-full" [(ngModel)]="fFrom" name="from" maxlength="80" placeholder="Quién regala — vacío = anónimo">
+          <input class="input input-bordered w-full" [(ngModel)]="fFrom" name="from" [maxlength]="limits.person" placeholder="Ej: Diego">
+          <span class="mt-1 block text-xs text-base-content/50">Vacío = anónimo. Hasta {{ limits.person }} caracteres.</span>
         </label>
         <div class="sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">Valor</span>
@@ -121,9 +93,10 @@ const TABS: { id: CardState; label: string }[] = [
             @for (a of s.business().suggestedAmounts; track a) {
               <button type="button" class="btn btn-sm" [class.btn-neutral]="fValue === a" (click)="fValue = a">{{ a | bs }}</button>
             }
-            <input type="number" min="1" class="input input-bordered input-sm w-32" [(ngModel)]="fValue" name="value"
-                   [placeholder]="s.business().suggestedAmounts.length ? 'Otro monto' : 'Bs'">
+            <input type="number" min="1" [max]="limits.amountMax" class="input input-bordered input-sm w-32" [(ngModel)]="fValue" name="value"
+                   [placeholder]="s.business().suggestedAmounts.length ? 'Otro monto' : 'Ej: 150'">
           </div>
+          <span class="mt-1 block text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}.</span>
         </div>
         <label class="form-control sm:col-span-2">
           <span class="mb-1 block text-sm text-base-content/60">Vence</span>
@@ -149,12 +122,13 @@ const TABS: { id: CardState; label: string }[] = [
         @for (c of visible(); track c.code) {
           <tr>
             <td class="font-mono">{{ c.code }}</td>
-            <td>{{ c.to }}</td>
+            <td class="max-w-56"><p class="truncate" [title]="c.to">{{ c.to }}</p></td>
             <td class="tabular-nums">{{ c.value | bs }}</td>
             <td class="tabular-nums font-medium">{{ c.balance | bs }}</td>
             <td class="text-base-content/60">{{ c.expires | fecha }}</td>
             <td><app-status [status]="state(c)" /></td>
             <td class="text-right whitespace-nowrap">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="viewing.set(c)">ver</button>
               <button type="button" class="btn btn-ghost btn-xs" (click)="sending.set(c)">enviar</button>
               <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
               <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
@@ -183,6 +157,7 @@ const TABS: { id: CardState; label: string }[] = [
           <p class="text-sm text-base-content/50">de {{ c.value | bs }} · vence {{ c.expires | fecha }}</p>
         </div>
         <div class="mt-3 flex flex-wrap items-center gap-2">
+          <button type="button" class="btn btn-ghost btn-xs" (click)="viewing.set(c)">ver</button>
           <button type="button" class="btn btn-outline btn-xs" (click)="sending.set(c)">enviar</button>
           <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(c)">editar</button>
           <button type="button" class="btn btn-ghost btn-xs text-error" (click)="del(c)">borrar</button>
@@ -192,6 +167,33 @@ const TABS: { id: CardState; label: string }[] = [
       <li class="py-8 text-center text-base-content/50">Nada aquí.</li>
     }
   </ul>
+
+  <!-- ver: todos los datos completos (en la lista se cortan los textos largos) -->
+  @if (viewing(); as c) {
+    <div class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" (click)="viewing.set(null)">
+      <div class="w-full max-w-sm rounded-box bg-base-100 p-5 shadow-xl" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="font-mono text-lg font-medium">{{ c.code }}</h3>
+          <app-status [status]="state(c)" />
+          <button type="button" class="btn btn-ghost btn-sm btn-square ms-auto" (click)="viewing.set(null)" aria-label="Cerrar">✕</button>
+        </div>
+        <dl class="mt-4 divide-y divide-base-200 text-sm">
+          <div class="py-2"><dt class="text-base-content/55">Destinatario</dt><dd class="break-words font-medium">{{ c.to }}</dd></div>
+          <div class="py-2"><dt class="text-base-content/55">De parte de</dt><dd class="break-words">{{ c.from || 'Anónimo' }}</dd></div>
+          <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Valor</dt><dd class="tabular-nums">{{ c.value | bs }}</dd></div>
+          <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Saldo</dt><dd class="font-medium tabular-nums">{{ c.balance | bs }}</dd></div>
+          <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Vence</dt><dd>{{ c.expires | fecha }}</dd></div>
+          @if (c.soldAt) {
+            <div class="flex justify-between gap-4 py-2"><dt class="text-base-content/55">Vendida</dt><dd>{{ c.soldAt.slice(0, 10) | fecha }}</dd></div>
+          }
+        </dl>
+        <div class="mt-4 flex gap-2">
+          <button type="button" class="btn btn-outline btn-sm flex-1" (click)="viewing.set(null); sending.set(c)">Enviar</button>
+          <button type="button" class="btn btn-ghost btn-sm flex-1" (click)="viewing.set(null); openEdit(c)">Editar</button>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- enviar: overlay fijo (no lo recorta el scroll de la tabla) con el diseño -->
   @if (sending(); as c) {
@@ -213,15 +215,13 @@ const TABS: { id: CardState; label: string }[] = [
       </div>
     </div>
   }
-  }
   `,
 })
 export class Emitidas {
   readonly limits = LIMITS;
   readonly s = inject(Store);
   readonly tabs = TABS;
-  /** Las 3 pestañas de estado + una de configuración (montos sugeridos). */
-  readonly section = signal<CardState | 'montos'>('activa');
+  readonly section = signal<CardState>('activa');
   readonly state = (c: GiftCard) => cardState(c);
   count(t: CardState) { return this.s.cards().filter(c => cardState(c) === t).length; }
 
@@ -241,19 +241,6 @@ export class Emitidas {
     const q = this.search.trim().toLowerCase();
     if (q) list = list.filter(c => c.code.toLowerCase().includes(q) || c.to.toLowerCase().includes(q));
     return list;
-  }
-
-  // ── montos sugeridos (se reflejan en la página del cliente) ──────────────────
-  newAmount: number | null = null;
-  addAmount() {
-    const a = this.newAmount;
-    if (!a || a <= 0 || a > LIMITS.amountMax) return;
-    const list = this.s.business().suggestedAmounts;
-    if (!list.includes(a)) this.s.saveBusiness({ suggestedAmounts: [...list, a].sort((x, y) => x - y) });
-    this.newAmount = null;
-  }
-  removeAmount(a: number) {
-    this.s.saveBusiness({ suggestedAmounts: this.s.business().suggestedAmounts.filter(x => x !== a) });
   }
 
   // ── formulario ─────────────────────────────────────────────────────────────
@@ -281,7 +268,7 @@ export class Emitidas {
   }
 
   async save() {
-    if (!this.fValue || this.fValue < 1 || !this.fExpires) return;
+    if (!this.fValue || this.fValue < 1 || this.fValue > LIMITS.amountMax || !this.fExpires) return;
     // setDoc reemplaza la carta entera: al editar conservamos cuándo y por dónde se vendió
     const prev = this.editingCode ? this.s.cards().find(c => c.code === this.editingCode) : undefined;
     // el código lo generamos nosotros; repetimos si choca con una carta del comercio
@@ -303,6 +290,8 @@ export class Emitidas {
     if (confirm(`¿Borrar la gift card ${c.code} de ${c.to}?`)) await this.s.removeCard(c.code);
   }
 
+  readonly viewing = signal<GiftCard | null>(null);
+
   // ── enviar la gift card ─────────────────────────────────────────────────────
   readonly sending = signal<GiftCard | null>(null);
   readonly copiedCode = signal<string | null>(null);
@@ -318,7 +307,7 @@ export class Emitidas {
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule, Storefront, BrandDesign, LocationPicker],
+  imports: [FormsModule, Storefront, BrandDesign, LocationPicker, AmountsEditor],
   // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta.
   // Ojo: un handler que devuelve `false` hace que Angular llame preventDefault()
   // solo; por eso es un método sin retorno y no `dirty() && …`.
@@ -362,6 +351,17 @@ export class Emitidas {
 
         <app-brand-design [business]="v()" (change)="edit($event)" />
       </section>
+
+      @if (s.can('manageProducts')) {
+        <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
+          <h2 class="text-lg font-medium">Montos sugeridos</h2>
+          <p class="mt-1 text-sm text-base-content/55">
+            Son los montos que tus clientes pueden comprar en tu página. Sin al menos uno, la
+            página no vende. Un monto distinto lo cargas tú desde "Gift cards → Nueva gift card".
+          </p>
+          <div class="mt-4"><app-amounts-editor [amounts]="v().suggestedAmounts" (change)="edit({ suggestedAmounts: $event })" /></div>
+        </section>
+      }
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
         <h2 class="text-lg font-medium">Dónde canjear</h2>
@@ -557,12 +557,13 @@ const CASHIER: Record<Perm, boolean> = {
     <p class="text-xs uppercase tracking-wider text-base-content/50">Agregar al equipo</p>
     <div class="mt-3 flex flex-wrap gap-2">
       <input type="email" class="input input-bordered input-sm w-full sm:w-80" [(ngModel)]="email" name="newEmail"
-             placeholder="correo@empleado.com" (keyup.enter)="add()">
+             [maxlength]="limits.email" placeholder="Ej: correo@empleado.com" (keyup.enter)="add()">
       <button type="button" class="btn btn-primary btn-sm" (click)="add()">+ Agregar</button>
     </div>
     @if (error()) { <p class="mt-2 text-sm text-error">{{ error() }}</p> }
     <p class="mt-2 text-sm text-base-content/55">
       Entra con ese correo (Google) y ve solo los tabs que le habilites. Arranca como cajero.
+      Hasta {{ limits.email }} caracteres.
     </p>
   </div>
 
@@ -622,6 +623,7 @@ const CASHIER: Record<Perm, boolean> = {
   `,
 })
 export class Equipo {
+  readonly limits = LIMITS;
   readonly s = inject(Store);
   readonly groups = PERM_GROUPS;
   email = '';

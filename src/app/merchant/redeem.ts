@@ -62,6 +62,7 @@ const BD: any = (globalThis as any).BarcodeDetector;
               <input type="number" class="input input-bordered w-full" [(ngModel)]="amount" name="amount"
                      min="1" [max]="found()!.balance">
             </label>
+            <span class="mt-1 block text-xs text-base-content/50">Entre Bs 1 y el saldo ({{ found()!.balance | bs }}).</span>
             <button type="button" class="btn btn-outline btn-xs mt-2" (click)="amount = found()!.balance">
               usar todo ({{ found()!.balance | bs }})
             </button>

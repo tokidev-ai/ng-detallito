@@ -8,14 +8,14 @@ import { AuthService } from '../auth';
 import { Wordmark } from '../brand';
 import { onBrand } from '../ui';
 
-interface Tab { path: string; label: string; short: string; icon: string; perm: Perm }
+interface Tab { path: string; label: string; short: string; icon: string; perm: Perm | Perm[] }
 
-/** Cada tab necesita un permiso; el owner los tiene todos. Los 3 primeros
+/** Cada tab necesita un permiso (o alguno de una lista); el owner los tiene todos. Los 3 primeros
  *  visibles van a la barra inferior en móvil; el resto cae en "Más". */
 const TABS: Tab[] = [
   { path: 'resumen',    label: 'Dashboard',      short: 'Dashboard', perm: 'viewSales',      icon: 'M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-4H4zM14 4v4h6V4z' },
   { path: 'gift-cards', label: 'Gift cards',     short: 'Cards',     perm: 'viewCards',      icon: 'M3 7h18v10H3zM3 11h18M8 15h3' },
-  { path: 'marca',      label: 'Editar página',  short: 'Página',    perm: 'manageBranding', icon: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z' },
+  { path: 'marca',      label: 'Editar página',  short: 'Página',    perm: ['manageBranding', 'manageProducts'], icon: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z' },
   { path: 'equipo',     label: 'Equipo',         short: 'Equipo',    perm: 'manageStaff',    icon: 'M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 20v-1.5a3.5 3.5 0 0 0-2.5-3.3M4 20v-1.5a3.5 3.5 0 0 1 2.5-3.3' },
 ];
 
@@ -194,7 +194,7 @@ export class MerchantShell {
   readonly tenant = input<string>();
 
   /** Solo los tabs que el usuario puede ver, según su rol/permisos. */
-  readonly tabs = computed(() => TABS.filter(t => this.store.can(t.perm)));
+  readonly tabs = computed(() => TABS.filter(t => [t.perm].flat().some(p => this.store.can(p))));
   readonly moreOpen = signal(false);
   readonly b = this.store.business;
   readonly ink = computed(() => onBrand(this.b().color));

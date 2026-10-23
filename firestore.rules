@@ -192,8 +192,8 @@ service cloud.firestore {
         allow create: if page(tenantId).business.published == true
                       && request.resource.data.keys().hasOnly(['code', 'to', 'from', 'value', 'balance', 'expires', 'soldAt', 'channel'])
                       && request.resource.data.channel == 'qr'
-                      && request.resource.data.to is string && request.resource.data.to.size() <= 80
-                      && (!('from' in request.resource.data) || (request.resource.data.from is string && request.resource.data.from.size() <= 80))
+                      && request.resource.data.to is string && request.resource.data.to.size() <= 40
+                      && (!('from' in request.resource.data) || (request.resource.data.from is string && request.resource.data.from.size() <= 40))
                       && request.resource.data.expires is string && request.resource.data.expires.size() == 10
                       && request.resource.data.code == code
                       && request.resource.data.value is number

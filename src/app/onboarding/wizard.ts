@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, SUPPORT_EMAIL, Store, logoDataUrl } from '../data';
 import { BrandDesign } from '../merchant/brand-design';
 import { LocationPicker } from '../merchant/location-picker';
+import { AmountsEditor } from '../merchant/amounts-editor';
 import { BsPipe } from '../ui';
 import { Storefront } from '../storefront';
 import { Wordmark } from '../brand';
@@ -16,7 +17,7 @@ export const slugify = (s: string) =>
 
 @Component({
   selector: 'app-onboarding',
-  imports: [FormsModule, RouterLink, Storefront, Wordmark, BrandDesign, BsPipe, LocationPicker],
+  imports: [FormsModule, RouterLink, Storefront, Wordmark, BrandDesign, LocationPicker, AmountsEditor],
   template: `
   <div class="min-h-dvh bg-base-200 text-base-content">
     <header class="border-b border-base-300 bg-base-100">
@@ -131,25 +132,9 @@ export const slugify = (s: string) =>
             @case (1) {
               <p class="text-sm text-base-content/60">
                 Son los montos que tus clientes pueden comprar en tu página. Un monto distinto lo
-                cargas tú desde el panel. Los puedes cambiar después en "Gift cards → Montos sugeridos".
+                cargas tú desde el panel. Los puedes cambiar después en "Editar página".
               </p>
-              <div class="mt-4 flex flex-wrap gap-2">
-                @for (a of draft().suggestedAmounts; track a) {
-                  <span class="badge badge-lg gap-2 py-3">
-                    {{ a | bs }}
-                    <button type="button" class="text-base-content/50 hover:text-error" aria-label="Quitar"
-                            (click)="removeAmount(a)">✕</button>
-                  </span>
-                } @empty {
-                  <span class="text-sm text-base-content/45">Sin montos todavía.</span>
-                }
-              </div>
-              <div class="mt-3 flex gap-2">
-                <input type="number" min="1" [max]="limits.amountMax" class="input input-bordered input-sm w-40" [(ngModel)]="newAmount"
-                       name="newAmount" placeholder="Ej: 150" (keyup.enter)="addAmount()">
-                <button type="button" class="btn btn-outline btn-sm" (click)="addAmount()">+ Agregar</button>
-              </div>
-              <p class="mt-1 text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}.</p>
+              <div class="mt-4"><app-amounts-editor [amounts]="draft().suggestedAmounts" (change)="patch({ suggestedAmounts: $event })" /></div>
             }
 
             @case (2) {
@@ -277,18 +262,6 @@ export class Onboarding {
   readonly bank = signal<Bank>({ ...EMPTY_BANK });
   patchBank(key: keyof Bank, value: string) {
     this.bank.update(b => ({ ...b, [key]: value }));
-  }
-
-  newAmount: number | null = null;
-  addAmount() {
-    const a = this.newAmount;
-    if (!a || a <= 0 || a > LIMITS.amountMax) return;
-    const list = this.draft().suggestedAmounts;
-    if (!list.includes(a)) this.patch({ suggestedAmounts: [...list, a].sort((x, y) => x - y) });
-    this.newAmount = null;
-  }
-  removeAmount(a: number) {
-    this.patch({ suggestedAmounts: this.draft().suggestedAmounts.filter(x => x !== a) });
   }
 
   onName(name: string) {
