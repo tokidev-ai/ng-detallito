@@ -14,7 +14,7 @@ import { BsPipe } from '../ui';
       <span class="badge badge-lg gap-2 py-3">
         {{ a | bs }}
         <button type="button" class="text-base-content/50 hover:text-error" aria-label="Quitar"
-                (click)="change.emit(without(a))">✕</button>
+                (click)="edited.emit(without(a))">✕</button>
       </span>
     } @empty {
       <span class="text-sm text-base-content/45">Sin montos todavía.</span>
@@ -36,7 +36,7 @@ import { BsPipe } from '../ui';
 })
 export class AmountsEditor {
   readonly amounts = input.required<number[]>();
-  readonly change = output<number[]>();
+  readonly edited = output<number[]>();
   readonly limits = LIMITS;
   /** Las reglas no aceptan más (suggestedAmounts.size() <= 20). */
   readonly max = 20;
@@ -55,7 +55,7 @@ export class AmountsEditor {
       : '';
     this.error.set(err);
     if (err) return;
-    this.change.emit([...this.amounts(), a!].sort((x, y) => x - y));
+    this.edited.emit([...this.amounts(), a!].sort((x, y) => x - y));
     this.newAmount = null;
   }
   without(a: number) { return this.amounts().filter(x => x !== a); }

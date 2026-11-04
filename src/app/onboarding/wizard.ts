@@ -124,9 +124,9 @@ export const slugify = (s: string) =>
                 <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.description }} caracteres.</span>
               </label>
 
-              <div class="mt-4"><app-branches-editor [business]="draft()" (change)="patch($event)" /></div>
+              <div class="mt-4"><app-branches-editor [business]="draft()" (edited)="patch($event)" /></div>
 
-              <app-brand-design [business]="draft()" (change)="patch($event)" />
+              <app-brand-design [business]="draft()" (edited)="patch($event)" />
             }
 
             @case (1) {
@@ -134,7 +134,7 @@ export const slugify = (s: string) =>
                 Son los montos que tus clientes pueden comprar en tu página. Un monto distinto lo
                 cargas tú desde el panel. Los puedes cambiar después en "Editar página".
               </p>
-              <div class="mt-4"><app-amounts-editor [amounts]="draft().suggestedAmounts" (change)="patch({ suggestedAmounts: $event })" /></div>
+              <div class="mt-4"><app-amounts-editor [amounts]="draft().suggestedAmounts" (edited)="patch({ suggestedAmounts: $event })" /></div>
             }
 
             @case (2) {

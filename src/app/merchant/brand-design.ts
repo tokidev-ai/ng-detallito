@@ -13,7 +13,7 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
     <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Color de marca</legend>
     <div class="flex flex-wrap items-center gap-2">
       @for (c of swatches; track c) {
-        <button type="button" (click)="change.emit({ color: c })" [style.background-color]="c"
+        <button type="button" (click)="edited.emit({ color: c })" [style.background-color]="c"
                 [attr.aria-label]="'Color ' + c" [attr.aria-pressed]="b().color === c"
                 class="grid size-10 place-items-center rounded-xl text-white ring-offset-2 transition hover:scale-105"
                 [class.ring-2]="b().color === c" [class.ring-base-content]="b().color === c">
@@ -25,7 +25,7 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
       <label class="grid size-10 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-base-300 text-lg leading-none transition hover:border-base-content/30"
              title="Otro color">
         +<input type="color" class="sr-only" [ngModel]="b().color" name="color"
-                (ngModelChange)="change.emit({ color: $event })">
+                (ngModelChange)="edited.emit({ color: $event })">
       </label>
     </div>
   </fieldset>
@@ -40,7 +40,7 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
           <p class="mb-1.5 truncate text-sm font-medium text-base-content/70">{{ g.label }}</p>
           <div class="grid gap-2 sm:gap-3" [style.grid-template-columns]="'repeat(' + g.styles.length + ', minmax(0, 1fr))'">
             @for (st of g.styles; track st.id) {
-              <button type="button" (click)="change.emit({ cardStyle: st.id })" [attr.aria-pressed]="style() === st.id"
+              <button type="button" (click)="edited.emit({ cardStyle: st.id })" [attr.aria-pressed]="style() === st.id"
                       class="min-w-0 rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
                       [class.ring-2]="style() === st.id" [class.ring-base-content]="style() === st.id">
                 <span class="relative flex aspect-[8/5] items-end overflow-hidden rounded-lg p-2 text-xs font-bold shadow sm:p-3 sm:text-sm"
@@ -77,7 +77,7 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
                   <input type="file" accept="image/*" class="sr-only" (change)="onPhoto($event)">
                 </label>
                 @if (b().cardPhoto) {
-                  <button type="button" class="btn btn-ghost btn-sm rounded-full" (click)="change.emit({ cardPhoto: null })">Quitar</button>
+                  <button type="button" class="btn btn-ghost btn-sm rounded-full" (click)="edited.emit({ cardPhoto: null })">Quitar</button>
                 }
               </div>
             </div>
@@ -93,7 +93,7 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
 })
 export class BrandDesign {
   readonly b = input.required<Business>({ alias: 'business' });
-  readonly change = output<Partial<Business>>();
+  readonly edited = output<Partial<Business>>();
 
   readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
   readonly cardStyles = CARD_STYLES;
@@ -107,7 +107,7 @@ export class BrandDesign {
     el.value = '';  // que elegir la misma foto otra vez vuelva a disparar
     if (!file) return;
     this.photoBusy.set(true); this.photoError.set('');
-    try { this.change.emit({ cardPhoto: await cardPhotoDataUrl(file), cardStyle: 'foto' }); }
+    try { this.edited.emit({ cardPhoto: await cardPhotoDataUrl(file), cardStyle: 'foto' }); }
     catch (err) { this.photoError.set((err as Error).message); }
     finally { this.photoBusy.set(false); }
   }

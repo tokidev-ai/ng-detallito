@@ -216,6 +216,10 @@ qué gana espanta a quien recién llega. Esa conversación va después.
 
 ## 9. Trampas que ya nos costaron
 
+- **Un `output()` nunca se llama como un evento del DOM (`change`, `input`, `click`…).** El
+  `change` nativo de un `<input>` de adentro burbujea hasta el host y Angular lo entrega en
+  el mismo `(change)`: los montos sugeridos pasaban a ser un `Event` y no se podía agregar
+  ninguno. Los editores emiten `(edited)`.
 - **`[class.a b]` con espacio revienta en runtime** y aborta el render sin dar error de
   compilación. Una vez dejó el wizard sin pasos ni colores. Cada clase, su binding.
 - **Un handler de evento que devuelve `false` hace que Angular llame `preventDefault()`.**

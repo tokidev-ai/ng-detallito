@@ -350,7 +350,7 @@ export class Emitidas {
           </div>
         </div>
 
-        <app-brand-design [business]="v()" (change)="edit($event)" />
+        <app-brand-design [business]="v()" (edited)="edit($event)" />
       </section>
 
       @if (s.can('manageProducts')) {
@@ -360,14 +360,14 @@ export class Emitidas {
             Son los montos que tus clientes pueden comprar en tu página. Sin al menos uno, la
             página no vende. Un monto distinto lo cargas tú desde "Gift cards → Nueva gift card".
           </p>
-          <div class="mt-4"><app-amounts-editor [amounts]="v().suggestedAmounts" (change)="edit({ suggestedAmounts: $event })" /></div>
+          <div class="mt-4"><app-amounts-editor [amounts]="v().suggestedAmounts" (edited)="edit({ suggestedAmounts: $event })" /></div>
         </section>
       }
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
         <h2 class="text-lg font-medium">Dónde canjear</h2>
         <p class="mt-1 text-sm text-base-content/55">Tus locales. Se muestran en la gift card que recibe tu cliente y en el mensaje con que se comparte, con mapa y botón para llegar.</p>
-        <div class="mt-4"><app-branches-editor [business]="v()" (change)="edit($event)" /></div>
+        <div class="mt-4"><app-branches-editor [business]="v()" (edited)="edit($event)" /></div>
       </section>
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">

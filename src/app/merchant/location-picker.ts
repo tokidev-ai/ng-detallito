@@ -16,7 +16,7 @@ const LA_PAZ: GeoPoint = { lat: -16.4955, lng: -68.1336 };
   <label class="form-control block">
     <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Dirección</span>
     <input class="input input-bordered w-full" [ngModel]="b().address" name="address" [maxlength]="limits.address"
-           placeholder="Ej: Av. 20 de Octubre 2045, Sopocachi, La Paz" (ngModelChange)="change.emit({ address: $event })">
+           placeholder="Ej: Av. 20 de Octubre 2045, Sopocachi, La Paz" (ngModelChange)="edited.emit({ address: $event })">
     <span class="mt-1 block text-xs text-base-content/50">
       Donde tus clientes canjean la gift card. Hasta {{ limits.address }} caracteres.
     </span>
@@ -39,7 +39,7 @@ const LA_PAZ: GeoPoint = { lat: -16.4955, lng: -68.1336 };
 })
 export class LocationPicker implements OnDestroy {
   readonly b = input.required<Pick<Branch, 'address' | 'location'>>({ alias: 'branch' });
-  readonly change = output<Partial<Branch>>();
+  readonly edited = output<Partial<Branch>>();
   readonly limits = LIMITS;
 
   private readonly el = viewChild.required<ElementRef<HTMLElement>>('map');
@@ -72,7 +72,7 @@ export class LocationPicker implements OnDestroy {
 
   private set(lat: number, lng: number) {
     this.error.set('');
-    this.change.emit({ location: { lat: +lat.toFixed(6), lng: +lng.toFixed(6) } });
+    this.edited.emit({ location: { lat: +lat.toFixed(6), lng: +lng.toFixed(6) } });
   }
 
   private syncPin() {

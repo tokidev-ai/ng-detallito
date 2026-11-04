@@ -28,7 +28,7 @@ const EMPTY: Branch = { name: '', address: '', location: null };
               <input class="input input-bordered w-full" [ngModel]="x.name" [name]="'branch-name-' + i" [maxlength]="limits.branchName"
                      placeholder="Ej: Sucursal Centro" (ngModelChange)="update(i, { name: $event })">
             </label>
-            <app-location-picker [branch]="x" (change)="update(i, $event)" />
+            <app-location-picker [branch]="x" (edited)="update(i, $event)" />
             @if (list().length > 1) {
               <button type="button" class="btn btn-sm mt-3 rounded-full" (click)="editing.set(-1)">Listo</button>
             }
@@ -61,7 +61,7 @@ const EMPTY: Branch = { name: '', address: '', location: null };
 })
 export class BranchesEditor {
   readonly b = input.required<Business>({ alias: 'business' });
-  readonly change = output<Partial<Business>>();
+  readonly edited = output<Partial<Business>>();
   readonly limits = LIMITS;
   readonly max = MAX_BRANCHES;
 
@@ -87,5 +87,5 @@ export class BranchesEditor {
     this.editing.set(l.length <= 1 ? 0 : -1);
   }
   // `address`/`location` viejos se quitan al pasar a sucursales: una sola fuente
-  private emit(branches: Branch[]) { this.change.emit({ branches, address: '', location: null }); }
+  private emit(branches: Branch[]) { this.edited.emit({ branches, address: '', location: null }); }
 }
