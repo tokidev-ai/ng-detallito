@@ -94,7 +94,9 @@ service cloud.firestore {
           && (!('cardStyle' in keys) || b.cardStyle in ['degradado', 'logo', 'cubierta', 'foto', 'claro', 'oscuro'])
           && (!('published' in keys) || b.published is bool)
           && (!('validityMonths' in keys) || (b.validityMonths is int && b.validityMonths > 0 && b.validityMonths <= 60))
-          && (!('suggestedAmounts' in keys) || (b.suggestedAmounts is list && b.suggestedAmounts.size() <= 20))
+          // hasta 6 montos (MAX_AMOUNTS); una página que ya tenía más solo puede ir achicando
+          && (!('suggestedAmounts' in keys) || (b.suggestedAmounts is list && (b.suggestedAmounts.size() <= 6
+              || (resource != null && b.suggestedAmounts.size() < resource.data.business.suggestedAmounts.size()))))
           && (!('location' in keys) || okGeo(b.location))
           && (!('branches' in keys) || okBranches(b.branches));
     }

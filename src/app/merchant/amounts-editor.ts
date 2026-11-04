@@ -1,6 +1,6 @@
 import { Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LIMITS } from '../data';
+import { LIMITS, MAX_AMOUNTS } from '../data';
 import { BsPipe } from '../ui';
 
 /** Los montos que el cliente puede comprar en la página. Lo usan el alta y
@@ -20,17 +20,21 @@ import { BsPipe } from '../ui';
       <span class="text-sm text-base-content/45">Sin montos todavía.</span>
     }
   </div>
-  <div class="mt-3 flex gap-2">
-    <input type="number" min="1" step="1" inputmode="numeric" [max]="limits.amountMax" class="input input-bordered input-sm w-40"
-           [class.input-error]="error()" [(ngModel)]="newAmount" (ngModelChange)="error.set('')"
-           name="newAmount" placeholder="Ej: 150" (keyup.enter)="add()" [attr.aria-invalid]="!!error()">
-    <button type="button" class="btn btn-outline btn-sm" (click)="add()">+ Agregar</button>
-  </div>
-  <!-- antes rechazaba en silencio (repetido, fuera de rango, "1.000"): parecía que el botón no andaba -->
-  @if (error()) {
-    <p class="mt-1 text-xs text-error" role="alert">{{ error() }}</p>
+  @if (amounts().length < max) {
+    <div class="mt-3 flex gap-2">
+      <input type="number" min="1" step="1" inputmode="numeric" [max]="limits.amountMax" class="input input-bordered input-sm w-40"
+             [class.input-error]="error()" [(ngModel)]="newAmount" (ngModelChange)="error.set('')"
+             name="newAmount" placeholder="Ej: 150" (keyup.enter)="add()" [attr.aria-invalid]="!!error()">
+      <button type="button" class="btn btn-outline btn-sm" (click)="add()">+ Agregar</button>
+    </div>
+    <!-- antes rechazaba en silencio (repetido, fuera de rango, "1.000"): parecía que el botón no andaba -->
+    @if (error()) {
+      <p class="mt-1 text-xs text-error" role="alert">{{ error() }}</p>
+    } @else {
+      <p class="mt-1 text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}, sin decimales. Hasta {{ max }} montos.</p>
+    }
   } @else {
-    <p class="mt-1 text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}, sin decimales. Hasta {{ max }} montos.</p>
+    <p class="mt-3 text-xs text-base-content/50">Llegaste al máximo de {{ max }} montos. Quita uno para agregar otro.</p>
   }
   `,
 })
@@ -38,8 +42,7 @@ export class AmountsEditor {
   readonly amounts = input.required<number[]>();
   readonly edited = output<number[]>();
   readonly limits = LIMITS;
-  /** Las reglas no aceptan más (suggestedAmounts.size() <= 20). */
-  readonly max = 20;
+  readonly max = MAX_AMOUNTS;
   newAmount: number | null = null;
   readonly error = signal('');
 

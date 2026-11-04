@@ -84,6 +84,8 @@ export interface Business {
 export interface GeoPoint { lat: number; lng: number }
 /** Un local donde se canjea: nombre opcional ("Sucursal Centro"), dirección y punto en el mapa. */
 export interface Branch { name: string; address: string; location: GeoPoint | null }
+/** Tope de montos sugeridos; las reglas exigen lo mismo. */
+export const MAX_AMOUNTS = 6;
 /** Tope de sucursales: las reglas validan una por una y no tienen bucles. */
 export const MAX_BRANCHES = 8;
 
