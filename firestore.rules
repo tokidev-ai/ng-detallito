@@ -77,7 +77,7 @@ service cloud.firestore {
     function okBusiness(b, keys) {
       return keys.hasOnly(['name', 'slug', 'description', 'logoUrl', 'color', 'published',
                            'validityMonths', 'terms', 'suggestedAmounts', 'cardStyle', 'cardPhoto',
-                           'address', 'location'])
+                           'address', 'location', 'branches'])
           && (!('name' in keys) || (okText(b.name, 60) && b.name.size() > 0))
           && (!('slug' in keys) || (b.slug is string && b.slug.matches('[a-z0-9-]{1,40}')))
           && (!('description' in keys) || okText(b.description, 160))
@@ -95,9 +95,24 @@ service cloud.firestore {
           && (!('published' in keys) || b.published is bool)
           && (!('validityMonths' in keys) || (b.validityMonths is int && b.validityMonths > 0 && b.validityMonths <= 60))
           && (!('suggestedAmounts' in keys) || (b.suggestedAmounts is list && b.suggestedAmounts.size() <= 20))
-          && (!('location' in keys) || b.location == null
-              || (b.location is map && b.location.keys().hasOnly(['lat', 'lng'])
-                  && b.location.lat is number && b.location.lng is number));
+          && (!('location' in keys) || okGeo(b.location))
+          && (!('branches' in keys) || okBranches(b.branches));
+    }
+
+    function okGeo(g) {
+      return g == null || (g is map && g.keys().hasOnly(['lat', 'lng']) && g.lat is number && g.lng is number);
+    }
+    function okBranch(x) {
+      return x is map && x.keys().hasOnly(['name', 'address', 'location'])
+          && okText(x.get('name', ''), 60) && okText(x.get('address', ''), 160) && okGeo(x.get('location', null));
+    }
+    // Las reglas no tienen bucles: hasta 8 sucursales (MAX_BRANCHES), una por una.
+    function okBranches(l) {
+      return l is list && l.size() <= 8
+          && (l.size() < 1 || okBranch(l[0])) && (l.size() < 2 || okBranch(l[1]))
+          && (l.size() < 3 || okBranch(l[2])) && (l.size() < 4 || okBranch(l[3]))
+          && (l.size() < 5 || okBranch(l[4])) && (l.size() < 6 || okBranch(l[5]))
+          && (l.size() < 7 || okBranch(l[6])) && (l.size() < 8 || okBranch(l[7]));
     }
 
     function okBank(b) {

@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Wordmark } from './brand';
 import { Reveal } from './reveal';
-import { PublicTenant, Store } from './data';
+import { PublicTenant, Store, branchLabel, branchesOf } from './data';
 import { cardSurface } from './card-style';
 import { BsPipe } from './ui';
 
@@ -184,7 +184,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
                       @if (t.business.logoUrl) { <img [src]="t.business.logoUrl" alt="" class="size-full object-cover" loading="lazy"> }
                       @else { {{ t.business.name[0] }} }
                     </span>
-                    @if (t.business.address) {
+                    @if (zona(t)) {
                       <span class="ms-auto flex min-w-0 items-center gap-1 rounded-full bg-current/10 px-2.5 py-1 text-[11px] font-medium">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="size-3 shrink-0"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5"/></svg>
                         <span class="truncate">{{ zona(t) }}</span>
@@ -379,7 +379,7 @@ export class Landing {
   readonly filtrados = computed(() => {
     const q = this.q().trim().toLowerCase();
     return q ? this.negocios().filter(t =>
-      `${t.business.name} ${t.business.description} ${t.business.address ?? ''}`.toLowerCase().includes(q)) : this.negocios();
+      `${t.business.name} ${t.business.description} ${branchesOf(t.business).map(branchLabel).join(' ')}`.toLowerCase().includes(q)) : this.negocios();
   });
   surface(t: PublicTenant) { return cardSurface(t.business.cardStyle, t.business.color, t.business.logoUrl, t.business.cardPhoto); }
   desde(t: PublicTenant) { return Math.min(...t.business.suggestedAmounts); }
@@ -393,7 +393,9 @@ export class Landing {
   readonly abs = Math.abs;
   /** La zona, no la dirección entera: lo que va después de la primera coma ("Sopocachi, La Paz"). */
   zona(t: PublicTenant) {
-    const parts = (t.business.address ?? '').split(',').map(p => p.trim()).filter(Boolean);
+    const l = branchesOf(t.business);
+    if (l.length > 1) return `${l.length} sucursales`;
+    const parts = (l[0]?.address ?? '').split(',').map(p => p.trim()).filter(Boolean);
     return parts.length > 1 ? parts.slice(1, 3).join(', ') : parts[0] ?? '';
   }
   /** Duplicada: la marquesina se desplaza la mitad y vuelve a empezar sin salto. */

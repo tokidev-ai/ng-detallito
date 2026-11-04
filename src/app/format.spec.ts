@@ -67,6 +67,9 @@ describe('compartir', () => {
   });
   it('el mensaje omite para/de cuando faltan (regalo anónimo)', () => {
     expect(giftMessage('Barbería Nor', 'http://x/g/1', {})).not.toContain('parte de');
+    expect(giftMessage('Barbería Nor', 'http://x/g/1', {})).not.toContain('Dónde');
+    expect(giftMessage('Barbería Nor', 'http://x/g/1', {}, ['Centro: Av. 6 de Agosto', 'Calle 21']))
+      .toContain('Dónde canjearla:\n📍 Centro: Av. 6 de Agosto\n📍 Calle 21');
     expect(giftMessage('Barbería Nor', 'http://x/g/1', { to: 'Ana', from: 'Luis' }))
       .toContain('para Ana, de parte de Luis');
   });

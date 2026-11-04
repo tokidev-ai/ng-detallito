@@ -1,12 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Business, CardState, GiftCard, LIMITS, Perm, Store, cardState, isEmail, logoDataUrl } from '../data';
+import { Business, CardState, GiftCard, LIMITS, Perm, Store, branchLabel, branchesOf, cardState, isEmail, logoDataUrl } from '../data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from '../card';
 import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
 import { BrandDesign } from './brand-design';
-import { LocationPicker } from './location-picker';
+import { BranchesEditor } from './branches-editor';
 import { AmountsEditor } from './amounts-editor';
 import { RedeemDialog } from './redeem';
 import { BsPipe, FechaPipe, Status } from '../ui';
@@ -295,10 +295,11 @@ export class Emitidas {
   // ── enviar la gift card ─────────────────────────────────────────────────────
   readonly sending = signal<GiftCard | null>(null);
   readonly copiedCode = signal<string | null>(null);
+  private places() { return branchesOf(this.s.business()).map(branchLabel).filter(Boolean); }
   private shareUrl(c: GiftCard) { return `${location.origin}${giftPath(this.s.business().slug, c.code)}`; }
-  waHref(c: GiftCard) { return waLink(giftMessage(this.s.business().name, this.shareUrl(c), c)); }
+  waHref(c: GiftCard) { return waLink(giftMessage(this.s.business().name, this.shareUrl(c), c, this.places())); }
   mailHref(c: GiftCard) {
-    return mailtoLink(`Tu gift card de ${this.s.business().name}`, giftMessage(this.s.business().name, this.shareUrl(c), c));
+    return mailtoLink(`Tu gift card de ${this.s.business().name}`, giftMessage(this.s.business().name, this.shareUrl(c), c, this.places()));
   }
   async copy(c: GiftCard) {
     try { await navigator.clipboard.writeText(this.shareUrl(c)); this.copiedCode.set(c.code); } catch { /* sin clipboard */ }
@@ -307,7 +308,7 @@ export class Emitidas {
 
 @Component({
   selector: 'app-marca',
-  imports: [FormsModule, Storefront, BrandDesign, LocationPicker, AmountsEditor],
+  imports: [FormsModule, Storefront, BrandDesign, BranchesEditor, AmountsEditor],
   // cerrar/recargar la pestaña con cambios sin guardar: el navegador pregunta.
   // Ojo: un handler que devuelve `false` hace que Angular llame preventDefault()
   // solo; por eso es un método sin retorno y no `dirty() && …`.
@@ -365,8 +366,8 @@ export class Emitidas {
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">
         <h2 class="text-lg font-medium">Dónde canjear</h2>
-        <p class="mt-1 text-sm text-base-content/55">Se muestra en la gift card de tus clientes, con el mapa y un botón para llegar.</p>
-        <div class="mt-4"><app-location-picker [business]="v()" (change)="edit($event)" /></div>
+        <p class="mt-1 text-sm text-base-content/55">Tus locales. Se muestran en la gift card que recibe tu cliente y en el mensaje con que se comparte, con mapa y botón para llegar.</p>
+        <div class="mt-4"><app-branches-editor [business]="v()" (change)="edit($event)" /></div>
       </section>
 
       <section class="rounded-box border border-base-300 bg-base-100 p-5 sm:p-6">

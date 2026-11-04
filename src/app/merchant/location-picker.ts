@@ -1,21 +1,21 @@
 import { Component, ElementRef, OnDestroy, afterNextRender, effect, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type * as Leaflet from 'leaflet';
-import { Business, GeoPoint, LIMITS } from '../data';
+import { Branch, GeoPoint, LIMITS } from '../data';
 
 /** Centro de La Paz: dónde arranca el mapa si el comercio aún no marcó su punto. */
 const LA_PAZ: GeoPoint = { lat: -16.4955, lng: -68.1336 };
 
 /** Dirección escrita + punto en el mapa (OpenStreetMap con Leaflet, gratis y sin
  *  API key). El punto se marca tocando el mapa, arrastrando el pin, buscando la
- *  dirección o con "Usar mi ubicación". Lo usan el alta y "Editar página". */
+ *  dirección o con "Usar mi ubicación". Edita una sucursal (ver BranchesEditor). */
 @Component({
   selector: 'app-location-picker',
   imports: [FormsModule],
   template: `
   <label class="form-control block">
-    <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Dirección del local</span>
-    <input class="input input-bordered w-full" [ngModel]="b().address ?? ''" name="address" [maxlength]="limits.address"
+    <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Dirección</span>
+    <input class="input input-bordered w-full" [ngModel]="b().address" name="address" [maxlength]="limits.address"
            placeholder="Ej: Av. 20 de Octubre 2045, Sopocachi, La Paz" (ngModelChange)="change.emit({ address: $event })">
     <span class="mt-1 block text-xs text-base-content/50">
       Donde tus clientes canjean la gift card. Hasta {{ limits.address }} caracteres.
@@ -38,8 +38,8 @@ const LA_PAZ: GeoPoint = { lat: -16.4955, lng: -68.1336 };
   `,
 })
 export class LocationPicker implements OnDestroy {
-  readonly b = input.required<Business>({ alias: 'business' });
-  readonly change = output<Partial<Business>>();
+  readonly b = input.required<Pick<Branch, 'address' | 'location'>>({ alias: 'branch' });
+  readonly change = output<Partial<Branch>>();
   readonly limits = LIMITS;
 
   private readonly el = viewChild.required<ElementRef<HTMLElement>>('map');

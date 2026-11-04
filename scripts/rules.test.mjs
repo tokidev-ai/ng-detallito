@@ -128,6 +128,11 @@ test('textos sin < > y página con forma válida', async () => {
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.cardPhoto': 'https://otro.com/foto.jpg' }));
   await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), { 'business.cardPhoto': 'data:image/webp;base64,UklGRg==', 'business.cardStyle': 'foto' }));
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.hack': true }));
+  const suc = (n) => ({ name: 'Sucursal ' + n, address: 'Av. ' + n, location: { lat: -16.5, lng: -68.1 } });
+  await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), { 'business.branches': [suc(1), { name: '', address: 'Calle 21', location: null }] }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.branches': [{ ...suc(1), address: '<script>' }] }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.branches': [suc(1), { ...suc(2), hack: 1 }] }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.branches': [1, 2, 3, 4, 5, 6, 7, 8, 9].map(suc) }));
   await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), {
     'business.description': 'Masajes\ny faciales', 'business.color': '#0f766e',
     'business.logoUrl': 'data:image/webp;base64,UklGRg==', 'business.location': { lat: -16.5, lng: -68.1 },

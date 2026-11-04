@@ -2,7 +2,7 @@ import { Component, DestroyRef, computed, inject, input, resource, signal } from
 import { FormsModule } from '@angular/forms';
 import QRCode from 'qrcode';
 import { BsPipe, onBrand } from './ui';
-import { Business, GiftCard, LIMITS, Store } from './data';
+import { Business, GiftCard, LIMITS, Store, branchLabel, branchesOf } from './data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from './card';
 import { GiftcardArt } from './giftcard';
 import { Wordmark } from './brand';
@@ -465,10 +465,11 @@ export class Storefront {
     }
   }
 
+  private places() { return branchesOf(this.b()).map(branchLabel).filter(Boolean); }
   private shareUrl() { return `${location.origin}${giftPath(this.b().slug, this.issuedCard()!.code)}`; }
-  waHref() { return waLink(giftMessage(this.b().name, this.shareUrl(), this.issuedCard()!)); }
+  waHref() { return waLink(giftMessage(this.b().name, this.shareUrl(), this.issuedCard()!, this.places())); }
   mailHref() {
-    return mailtoLink(`Tu gift card de ${this.b().name}`, giftMessage(this.b().name, this.shareUrl(), this.issuedCard()!));
+    return mailtoLink(`Tu gift card de ${this.b().name}`, giftMessage(this.b().name, this.shareUrl(), this.issuedCard()!, this.places()));
   }
   async copy() {
     try { await navigator.clipboard.writeText(this.shareUrl()); this.copied.set(true); } catch { /* sin clipboard */ }

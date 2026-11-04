@@ -40,10 +40,11 @@ export function expiryFrom(months: number, from = new Date()): string {
 export const giftPath = (slug: string, code: string) => `/${slug}/g/${code}`;
 
 /** Mensaje que acompaña el link al mandarla por WhatsApp o correo. */
-export function giftMessage(businessName: string, url: string, c: { to?: string; from?: string }): string {
+export function giftMessage(businessName: string, url: string, c: { to?: string; from?: string }, places: string[] = []): string {
   const para = c.to ? ` para ${c.to}` : '';
   const de = c.from ? `, de parte de ${c.from}` : '';
-  return `¡Tienes una gift card de ${businessName}${para}${de}! 🎁\nÁbrela aquí: ${url}`;
+  const donde = places.length ? `\n\nDónde canjearla:\n${places.map(p => `📍 ${p}`).join('\n')}` : '';
+  return `¡Tienes una gift card de ${businessName}${para}${de}! 🎁\nÁbrela aquí: ${url}${donde}`;
 }
 
 export const waLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;

@@ -74,18 +74,33 @@ export interface Business {
   cardStyle?: CardStyle;
   /** La foto de fondo del diseño 'foto' (ver cardPhotoDataUrl). */
   cardPhoto?: string | null;
-  /** Dónde se canjean las gift cards: la dirección escrita y el punto en el mapa. */
+  /** Dónde se canjean las gift cards: una o más sucursales. Leer con `branchesOf`. */
+  branches?: Branch[];
+  /** De antes de las sucursales (un solo local). `branchesOf` lo convierte. */
   address?: string;
   location?: GeoPoint | null;
 }
 
 export interface GeoPoint { lat: number; lng: number }
+/** Un local donde se canjea: nombre opcional ("Sucursal Centro"), dirección y punto en el mapa. */
+export interface Branch { name: string; address: string; location: GeoPoint | null }
+/** Tope de sucursales: las reglas validan una por una y no tienen bucles. */
+export const MAX_BRANCHES = 8;
+
+/** Las sucursales del comercio. Las páginas de antes guardaban un solo local en
+ *  `address`/`location`: se leen como una sucursal sin nombre. */
+export function branchesOf(b: Pick<Business, 'branches' | 'address' | 'location'>): Branch[] {
+  if (b.branches) return b.branches;
+  return b.address || b.location ? [{ name: '', address: b.address ?? '', location: b.location ?? null }] : [];
+}
+/** "Sucursal Centro: Av. 6 de Agosto 123", o solo la dirección si no tiene nombre. */
+export const branchLabel = (x: Branch) => [x.name.trim(), x.address.trim()].filter(Boolean).join(': ');
 
 /** Cuenta donde liquidamos al comercio. Privada: vive en `tenants/{id}`, nunca en la página. */
 export interface Bank { bank: string; account: string; holder: string; nit: string }
 /** Topes de los campos que escribe el comercio (se muestran en el placeholder). */
 export const LIMITS = {
-  name: 60, slug: 40, description: 160, address: 160,
+  name: 60, slug: 40, description: 160, address: 160, branchName: 60,
   /** Destinatario y "de parte de" de una gift card. Las reglas exigen lo mismo en la compra pública. */
   person: 40, email: 100, amountMax: 10_000,
   bank: 40, account: 30, holder: 80, nit: 20,

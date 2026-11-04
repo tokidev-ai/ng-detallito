@@ -270,8 +270,12 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   aviso con `SUPPORT_EMAIL` en vez del formulario; con 2, avisa que es el último. Lo exigen
   las reglas: `owners/{uid}` = { count, max? } sube/baja en el mismo batch que crea/borra el
   tenant. Recontar: `npm run cupo`; dar más: `npm run cupo -- correo 5`.
-- **Dirección y mapa del local** (`business.address` + `business.location {lat,lng}`):
-  obligatorios en el alta, editables en "Editar página → Dónde canjear". Para marcar el punto
+- **Sucursales** (`business.branches`: `{name, address, location}`, hasta 8 por `MAX_BRANCHES`;
+  leer siempre con `branchesOf`, que convierte el `address`/`location` de antes en una sucursal):
+  al menos una obligatoria en el alta, CRUD en "Editar página → Dónde canjear"
+  (`branches-editor.ts`, se edita una a la vez: un solo mapa abierto). La página del regalo
+  las lista con su "Cómo llegar" y el mapa de la elegida, y el mensaje de WhatsApp/correo
+  agrega "Dónde canjearla" con cada una. Para marcar el punto
   se usa Leaflet + teselas de OpenStreetMap (gratis, sin API key, carga diferida solo en el
   panel), con búsqueda en Nominatim y "Usar mi ubicación". Para mostrarlo, la gift card usa
   un iframe de OSM sin librería y un botón "Cómo llegar" a Google Maps (abre la app en el
