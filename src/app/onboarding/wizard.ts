@@ -1,7 +1,7 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Bank, Business, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, SUPPORT_EMAIL, Store, branchesOf, logoDataUrl } from '../data';
+import { Bank, Business, CATEGORIES, EMPTY_BANK, EMPTY_BUSINESS, LIMITS, SUPPORT_EMAIL, Store, branchesOf, logoDataUrl } from '../data';
 import { BrandDesign } from '../merchant/brand-design';
 import { BranchesEditor } from '../merchant/branches-editor';
 import { AmountsEditor } from '../merchant/amounts-editor';
@@ -124,6 +124,15 @@ export const slugify = (s: string) =>
                 <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.description }} caracteres.</span>
               </label>
 
+              <label class="form-control block">
+                <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Categoría</span>
+                <select class="select select-bordered w-full" [ngModel]="draft().category ?? ''" name="category" (ngModelChange)="patch({ category: $event })">
+                  <option value="" disabled>Elige el rubro de tu negocio</option>
+                  @for (c of categories; track c.id) { <option [value]="c.id">{{ c.label }}</option> }
+                </select>
+                <span class="mt-1 block text-xs text-base-content/50">Así te encuentran en "Ver todos los negocios".</span>
+              </label>
+
               <div class="mt-4"><app-branches-editor [business]="draft()" (edited)="patch($event)" /></div>
 
               <app-brand-design [business]="draft()" (edited)="patch($event)" />
@@ -227,6 +236,7 @@ export class Onboarding {
   readonly slugify = slugify;
 
   readonly step = signal(0);
+  readonly categories = CATEGORIES;
   readonly furthest = signal(0);
   /** Arranca con montos típicos: sin al menos uno la página no vende. */
   readonly draft = signal<Business>({ ...EMPTY_BUSINESS, suggestedAmounts: [100, 200, 500] });
@@ -236,6 +246,7 @@ export class Onboarding {
 
   readonly checklist = computed(() => [
     { label: 'Nombre y link público', ok: !!this.draft().name && this.slugFree(), step: 0 },
+    { label: 'Categoría del negocio', ok: !!this.draft().category, step: 0 },
     { label: 'Dirección y ubicación del local', ok: branchesOf(this.draft()).some(x => !!x.address.trim() && !!x.location), step: 0 },
     { label: 'Al menos un monto para vender', ok: this.draft().suggestedAmounts.length > 0, step: 1 },
     { label: 'Datos bancarios completos', ok: Object.values(this.bank()).every(Boolean), step: 2 },

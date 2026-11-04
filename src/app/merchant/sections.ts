@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Business, CardState, GiftCard, LIMITS, Perm, Store, branchLabel, branchesOf, cardState, isEmail, logoDataUrl } from '../data';
+import { Business, CATEGORIES, CardState, GiftCard, LIMITS, Perm, Store, branchLabel, branchesOf, cardState, isEmail, logoDataUrl } from '../data';
 import { expiryFrom, giftMessage, giftPath, mailtoLink, newCode, waLink } from '../card';
 import { Storefront } from '../storefront';
 import { GiftcardArt } from '../giftcard';
@@ -347,6 +347,15 @@ export class Emitidas {
                         (ngModelChange)="edit({ description: $event })"></textarea>
               <span class="mt-1 block text-xs text-base-content/50">Hasta {{ limits.description }} caracteres.</span>
             </label>
+
+            <label class="form-control block">
+              <span class="mb-1 block text-xs font-medium uppercase tracking-wider text-base-content/50">Categoría</span>
+              <select class="select select-bordered w-full" [ngModel]="v().category ?? ''" name="category" (ngModelChange)="edit({ category: $event })">
+                <option value="" disabled>Elige el rubro de tu negocio</option>
+                @for (c of categories; track c.id) { <option [value]="c.id">{{ c.label }}</option> }
+              </select>
+              <span class="mt-1 block text-xs text-base-content/50">Así te encuentran en "Ver todos los negocios".</span>
+            </label>
           </div>
         </div>
 
@@ -471,6 +480,7 @@ export class Marca {
 
   // ── borrador: nada se guarda hasta "Guardar cambios" ─────────────────────────
   /** Cambios pendientes sobre lo guardado. La vista previa y los campos muestran `v()`. */
+  readonly categories = CATEGORIES;
   readonly draft = signal<Partial<Business>>({});
   readonly v = computed<Business>(() => ({ ...this.b(), ...this.draft() }));
   /** Solo lo que de verdad difiere de lo guardado (volver al valor original no cuenta). */

@@ -2,7 +2,7 @@ import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   Firestore, arrayRemove, arrayUnion, collection, collectionData, deleteDoc, doc, docData, getDoc, getDocs,
-  query, runTransaction, setDoc, updateDoc, where, writeBatch,
+  Timestamp, increment, query, runTransaction, serverTimestamp, setDoc, updateDoc, where, writeBatch,
 } from '@angular/fire/firestore';
 import { Observable, combineLatest, map, of, startWith, switchMap } from 'rxjs';
 import { lastMonths, soldDate } from './admin/ledger';
@@ -55,11 +55,41 @@ export async function logoDataUrl(file: File, max = 256, budget = 40_000, ratio 
  *  800px de ancho como máximo y ~100 KB. Va en el mismo doc que el logo. */
 export const cardPhotoDataUrl = (file: File) => logoDataUrl(file, 800, 100_000, 1.6);
 
+/** Rubros para el filtro de /negocios. El id es lo que se guarda: no cambiarlo
+ *  (las reglas tienen la misma lista); la etiqueta sí se puede retocar. */
+export const CATEGORIES = [
+  { id: 'restaurantes', label: '🍽️ Restaurantes' },
+  { id: 'cafes', label: '☕ Cafés y pastelerías' },
+  { id: 'bares', label: '🍹 Bares y discotecas' },
+  { id: 'belleza', label: '💅 Salones de belleza' },
+  { id: 'barberias', label: '💈 Barberías' },
+  { id: 'spa', label: '💆 Spas y masajes' },
+  { id: 'gimnasios', label: '🏋️ Gimnasios y deportes' },
+  { id: 'salud', label: '🩺 Salud y bienestar' },
+  { id: 'ropa', label: '👗 Ropa y calzado' },
+  { id: 'joyerias', label: '💍 Joyerías y accesorios' },
+  { id: 'tecnologia', label: '📱 Tecnología' },
+  { id: 'hogar', label: '🛋️ Hogar y decoración' },
+  { id: 'librerias', label: '📚 Librerías y papelerías' },
+  { id: 'flores', label: '🌸 Florerías y regalos' },
+  { id: 'ninos', label: '🧸 Juguetes y niños' },
+  { id: 'mascotas', label: '🐾 Mascotas' },
+  { id: 'entretenimiento', label: '🎬 Entretenimiento' },
+  { id: 'turismo', label: '✈️ Turismo y hoteles' },
+  { id: 'cursos', label: '🎨 Cursos y talleres' },
+  { id: 'tiendas', label: '🛒 Supermercados y tiendas' },
+  { id: 'otros', label: '✨ Otros' },
+] as const;
+export type Category = typeof CATEGORIES[number]['id'];
+export const categoryLabel = (id?: string) => CATEGORIES.find(c => c.id === id)?.label ?? '';
+
 /** Diseño de la gift card, a elección del comercio. Ver `cardSurface` en giftcard.ts. */
 export type CardStyle = 'degradado' | 'logo' | 'cubierta' | 'foto' | 'claro' | 'oscuro';
 
 export interface Business {
   name: string;
+  /** Rubro, para el filtro de /negocios. Sin valor en páginas de antes. */
+  category?: Category;
   slug: string;
   description: string;
   logoUrl: string | null;
@@ -160,7 +190,12 @@ export interface Tenant {
   commissionRate?: number;
 }
 /** Lo que ve cualquiera: la página, sin nada de `tenants/{id}`. */
-export type PublicTenant = Pick<Tenant, 'id' | 'business'>;
+export type PublicTenant = Pick<Tenant, 'id' | 'business'> & {
+  /** Lo sella el servidor al crear la página (para "Más nuevos"). */
+  createdAt?: Timestamp;
+  /** Gift cards vendidas por la página (para "Más vendidos"). */
+  stats?: { sold: number };
+};
 
 export interface MonthPoint { sold: number; redeemed: number }
 
@@ -391,8 +426,12 @@ export class Store {
    *  producción, esto va detrás de la pasarela de pago y de reglas que solo
    *  dejen crear `cards` a una función/servidor, no a cualquier visitante. */
   async issueCard(tenantId: string, card: GiftCard) {
-    await setDoc(doc(this.db, 'tenants', tenantId, 'cards', card.code),
+    // la carta y el contador público de vendidas, juntos
+    const batch = writeBatch(this.db);
+    batch.set(doc(this.db, 'tenants', tenantId, 'cards', card.code),
       { ...cleanStrings(card), soldAt: new Date().toISOString(), channel: 'qr' });
+    batch.update(doc(this.db, 'pages', tenantId), { 'stats.sold': increment(1) });
+    await batch.commit();
   }
 
   async togglePerm(email: string, perm: Perm) {
@@ -456,7 +495,7 @@ export class Store {
     batch.set(doc(this.db, 'tenants', id, 'staff', ownerEmail), {
       email: ownerEmail, role: 'owner', lastSeen: 'hoy', perms: ALL_PERMS,
     });
-    batch.set(doc(this.db, 'pages', id), { business });
+    batch.set(doc(this.db, 'pages', id), { business, createdAt: serverTimestamp() });
     await batch.commit();
     return id;
   }

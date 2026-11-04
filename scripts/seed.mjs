@@ -89,7 +89,7 @@ const TENANTS = [
   {
     id: 'spa-aurora',
     business: {
-      name: 'Spa Aurora', slug: 'spa-aurora',
+      name: 'Spa Aurora', slug: 'spa-aurora', category: 'spa',
       description: 'Masajes, faciales y estética en Sopocachi.',
       logoUrl: null, color: '#3b7d6e', published: true, validityMonths: 12,
       terms: 'No reembolsable. Válida en Sopocachi. Presentar código al momento de la atención.',
@@ -119,7 +119,7 @@ const TENANTS = [
   {
     id: 'barberia-nor',
     business: {
-      name: 'Barbería Nor', slug: 'barberia-nor',
+      name: 'Barbería Nor', slug: 'barberia-nor', category: 'barberias',
       description: 'Cortes clásicos y barba en Miraflores.',
       logoUrl: null, color: '#a94434', published: true, validityMonths: 6,
       terms: 'Válida solo en el local de Miraflores. No acumulable con promociones.',

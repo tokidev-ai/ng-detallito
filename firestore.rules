@@ -77,7 +77,7 @@ service cloud.firestore {
     function okBusiness(b, keys) {
       return keys.hasOnly(['name', 'slug', 'description', 'logoUrl', 'color', 'published',
                            'validityMonths', 'terms', 'suggestedAmounts', 'cardStyle', 'cardPhoto',
-                           'address', 'location', 'branches'])
+                           'address', 'location', 'branches', 'category'])
           && (!('name' in keys) || (okText(b.name, 60) && b.name.size() > 0))
           && (!('slug' in keys) || (b.slug is string && b.slug.matches('[a-z0-9-]{1,40}')))
           && (!('description' in keys) || okText(b.description, 160))
@@ -98,7 +98,11 @@ service cloud.firestore {
           && (!('suggestedAmounts' in keys) || (b.suggestedAmounts is list && (b.suggestedAmounts.size() <= 6
               || (resource != null && b.suggestedAmounts.size() < resource.data.business.suggestedAmounts.size()))))
           && (!('location' in keys) || okGeo(b.location))
-          && (!('branches' in keys) || okBranches(b.branches));
+          && (!('branches' in keys) || okBranches(b.branches))
+          // misma lista que CATEGORIES en data.ts
+          && (!('category' in keys) || b.category in ['restaurantes', 'cafes', 'bares', 'belleza', 'barberias', 'spa',
+                'gimnasios', 'salud', 'ropa', 'joyerias', 'tecnologia', 'hogar', 'librerias', 'flores', 'ninos',
+                'mascotas', 'entretenimiento', 'turismo', 'cursos', 'tiendas', 'otros']);
     }
 
     function okGeo(g) {
@@ -186,15 +190,23 @@ service cloud.firestore {
       allow list: if resource.data.business.published == true || isSuperadmin();
       // la crea el dueño junto con su tenant; el id es el slug y no cambia
       allow create: if isOwner(tenantId)
-                    && request.resource.data.keys().hasOnly(['business'])
+                    && request.resource.data.keys().hasOnly(['business', 'createdAt'])
+                    && request.resource.data.get('createdAt', request.time) == request.time
                     && request.resource.data.business.slug == tenantId
                     && okBusiness(request.resource.data.business, request.resource.data.business.keys());
       allow update: if (isOwner(tenantId)
                         || hasPerm(tenantId, 'manageBranding') || hasPerm(tenantId, 'manageProducts'))
-                    && request.resource.data.keys().hasOnly(['business'])
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['business'])
                     && request.resource.data.business.slug == resource.data.business.slug
                     && okBusiness(request.resource.data.business,
-                                  request.resource.data.business.diff(resource.data.business).affectedKeys());
+                                  request.resource.data.business.diff(resource.data.business).affectedKeys())
+                 // la compra pública suma 1 a las vendidas (junto con la carta, ver issueCard).
+                 // ponytail: igual que crear la carta, sin pago no hay cómo atarlo a una venta real;
+                 // pasa a la Cloud Function de la pasarela cuando exista.
+                 || (resource.data.business.published == true
+                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats'])
+                     && request.resource.data.stats.keys().hasOnly(['sold'])
+                     && request.resource.data.stats.sold == resource.data.get('stats', {}).get('sold', 0) + 1);
       allow delete: if isOwner(tenantId);
     }
 

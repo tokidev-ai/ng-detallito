@@ -5,6 +5,9 @@ export const routes: Routes = [
   // la landing: la primera pantalla de un comercio que todavía no es cliente
   { path: '', pathMatch: 'full', loadComponent: () => import('./landing').then(m => m.Landing) },
 
+  // el catálogo de comercios publicados ("Ver todos los negocios")
+  { path: 'negocios', loadComponent: () => import('./negocios').then(m => m.Negocios) },
+
   { path: 'login', loadComponent: () => import('./login').then(m => m.Login) },
 
   // lista de comercios: el punto de entrada multitenant

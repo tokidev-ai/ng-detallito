@@ -130,6 +130,14 @@ test('textos sin < > y página con forma válida', async () => {
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.hack': true }));
   await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), { 'business.suggestedAmounts': [1, 2, 3, 4, 5, 6] }));
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.suggestedAmounts': [1, 2, 3, 4, 5, 6, 7] }));
+  await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), { 'business.category': 'spa' }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.category': 'inventada' }));
+  await assertSucceeds(updateDoc(doc(pub, 'pages/t1'), { 'stats.sold': 1 }));
+  await assertSucceeds(updateDoc(doc(pub, 'pages/t1'), { 'stats.sold': 2 }));
+  await assertFails(updateDoc(doc(pub, 'pages/t1'), { 'stats.sold': 10 }));
+  await assertFails(updateDoc(doc(pub, 'pages/t1'), { 'stats.sold': 3, 'business.name': 'Hack' }));
+  await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), { 'business.name': 'Spa Aurora' }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'stats.sold': 99 }));
   const suc = (n) => ({ name: 'Sucursal ' + n, address: 'Av. ' + n, location: { lat: -16.5, lng: -68.1 } });
   await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), { 'business.branches': [suc(1), { name: '', address: 'Calle 21', location: null }] }));
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.branches': [{ ...suc(1), address: '<script>' }] }));
