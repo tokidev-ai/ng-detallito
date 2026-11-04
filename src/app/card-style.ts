@@ -3,13 +3,17 @@ import { onBrand } from './ui';
 
 /** Diseños de gift card y su fondo. Aparte de giftcard.ts para que la landing los
  *  use sin cargar el QR. */
-export const CARD_STYLES: { id: CardStyle; label: string }[] = [
-  { id: 'degradado', label: 'Degradado' },
-  { id: 'logo', label: 'Tu logo' },
-  { id: 'cubierta', label: 'Logo completo' },
-  { id: 'foto', label: 'Tu foto' },
-  { id: 'claro', label: 'Claro' },
-  { id: 'oscuro', label: 'Oscuro' },
+export const CARD_STYLES: { label: string; styles: { id: CardStyle; label: string }[] }[] = [
+  { label: 'Tu foto o logo', styles: [
+    { id: 'foto', label: 'Tu foto' },
+    { id: 'logo', label: 'Tu logo' },
+    { id: 'cubierta', label: 'Logo completo' },
+  ] },
+  { label: 'Degradado', styles: [{ id: 'degradado', label: 'Degradado' }] },
+  { label: 'Claro u oscuro', styles: [
+    { id: 'claro', label: 'Claro' },
+    { id: 'oscuro', label: 'Oscuro' },
+  ] },
 ];
 
 /** Fondo y tinta de cada diseño, a partir del color del comercio. Va dentro de

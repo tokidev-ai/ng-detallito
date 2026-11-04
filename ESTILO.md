@@ -316,7 +316,8 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   (el logo de fondo en toda la tarjeta, con velo oscuro para leer), foto (una foto que sube
   el comercio, `business.cardPhoto`: se le pide 1600 × 1000 px, se recorta a 8:5 y se guarda
   a 800px / ~100 KB con `cardPhotoDataUrl`, mismo velo), claro, oscuro; salen de su color,
-  su logo y su foto (`cardSurface`). Tinta con `bg-current/10`, no
+  su logo y su foto (`cardSurface`). El selector los agrupa (`CARD_STYLES`): "Tu foto o logo"
+  (foto primero), "Degradado", "Claro u oscuro"; 3 por fila en web y móvil, con proporción de tarjeta. Tinta con `bg-current/10`, no
   `bg-white/20`, para que sirva sobre fondo claro y oscuro.
 - **Compartir la gift card = link, no imagen adjunta.** Cada carta tiene su página
   pública `/{slug}/g/{code}` (`giftcard.ts`) con diseño de marca (logo, color, QR que

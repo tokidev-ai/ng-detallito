@@ -32,47 +32,58 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
 
   <fieldset class="mt-6">
     <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Diseño de la gift card</legend>
-    <div class="storefront grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" [style.--c1]="b().color">
-      @for (st of cardStyles; track st.id) {
-        <button type="button" (click)="change.emit({ cardStyle: st.id })" [attr.aria-pressed]="style() === st.id"
-                class="rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
-                [class.ring-2]="style() === st.id" [class.ring-base-content]="style() === st.id">
-          <span class="relative flex h-16 items-end overflow-hidden rounded-lg p-2 text-xs font-bold shadow"
-                [style.background]="surfaceOf(st.id).bg" [style.color]="surfaceOf(st.id).ink">
-            @if (st.id === 'logo') {
-              <span class="absolute -right-2 -top-2 grid size-14 rotate-[-12deg] place-items-center overflow-hidden rounded-xl opacity-25">
-                @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> }
-                @else { <span class="text-3xl">{{ (b().name || '?')[0] }}</span> }
-              </span>
+    <!-- por grupos, 3 por fila también en móvil: la proporción de tarjeta los deja legibles -->
+    <div class="storefront space-y-4" [style.--c1]="b().color">
+      @for (g of cardStyles; track g.label) {
+        <div>
+          <p class="mb-1.5 text-sm font-medium text-base-content/70">{{ g.label }}</p>
+          <div class="grid grid-cols-3 gap-2 sm:gap-3">
+            @for (st of g.styles; track st.id) {
+              <button type="button" (click)="change.emit({ cardStyle: st.id })" [attr.aria-pressed]="style() === st.id"
+                      class="min-w-0 rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
+                      [class.ring-2]="style() === st.id" [class.ring-base-content]="style() === st.id">
+                <span class="relative flex aspect-[8/5] items-end overflow-hidden rounded-lg p-2 text-xs font-bold shadow sm:p-3 sm:text-sm"
+                      [style.background]="surfaceOf(st.id).bg" [style.color]="surfaceOf(st.id).ink">
+                  @if (st.id === 'foto' && !b().cardPhoto) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute right-2 top-2 size-5 opacity-60 sm:size-6" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5"/></svg>
+                  }
+                  @if (st.id === 'logo') {
+                    <span class="absolute -right-2 -top-2 grid size-14 rotate-[-12deg] place-items-center overflow-hidden rounded-xl opacity-25">
+                      @if (b().logoUrl) { <img [src]="b().logoUrl" alt="" class="size-full object-cover"> }
+                      @else { <span class="text-3xl">{{ (b().name || '?')[0] }}</span> }
+                    </span>
+                  }
+                  Bs 100
+                </span>
+                <span class="mt-1 block truncate px-1 text-xs sm:text-sm">{{ st.label }}</span>
+              </button>
             }
-            Bs 100
-          </span>
-          <span class="mt-1 block px-1 text-sm">{{ st.label }}</span>
-        </button>
-      }
-    </div>
-    @if (style() === 'foto') {
-      <div class="mt-3 flex flex-col gap-3 rounded-box border border-base-300 bg-base-100 p-4 sm:flex-row sm:items-center">
-        <div class="min-w-0 flex-1 text-sm">
-          <p class="font-medium">Foto de fondo de la tarjeta</p>
-          <p class="mt-1 text-base-content/60">
-            Horizontal, de <b>1600 × 1000 px</b> (mínimo 800 × 500), proporción 8:5. JPG, PNG o WebP.
-            Se recorta al centro: deja lo importante en el medio y evita textos en los bordes.
-          </p>
-          @if (photoError()) { <p class="mt-1 text-error" role="alert">{{ photoError() }}</p> }
-        </div>
-        <div class="flex shrink-0 gap-2">
-          <label class="btn btn-sm rounded-full" [class.btn-disabled]="photoBusy()">
-            @if (photoBusy()) { <span class="loading loading-spinner loading-xs"></span> }
-            {{ b().cardPhoto ? 'Cambiar foto' : 'Subir foto' }}
-            <input type="file" accept="image/*" class="sr-only" (change)="onPhoto($event)">
-          </label>
-          @if (b().cardPhoto) {
-            <button type="button" class="btn btn-ghost btn-sm rounded-full" (click)="change.emit({ cardPhoto: null })">Quitar</button>
+          </div>
+          @if (g.styles[0].id === 'foto' && style() === 'foto') {
+            <div class="mt-3 flex flex-col gap-3 rounded-box border border-base-300 bg-base-100 p-4 sm:flex-row sm:items-center">
+              <div class="min-w-0 flex-1 text-sm">
+                <p class="font-medium">Foto de fondo de la tarjeta</p>
+                <p class="mt-1 text-base-content/60">
+                  Horizontal, de <b>1600 × 1000 px</b> (mínimo 800 × 500), proporción 8:5. JPG, PNG o WebP.
+                  Se recorta al centro: deja lo importante en el medio y evita textos en los bordes.
+                </p>
+                @if (photoError()) { <p class="mt-1 text-error" role="alert">{{ photoError() }}</p> }
+              </div>
+              <div class="flex shrink-0 gap-2">
+                <label class="btn btn-sm rounded-full" [class.btn-disabled]="photoBusy()">
+                  @if (photoBusy()) { <span class="loading loading-spinner loading-xs"></span> }
+                  {{ b().cardPhoto ? 'Cambiar foto' : 'Subir foto' }}
+                  <input type="file" accept="image/*" class="sr-only" (change)="onPhoto($event)">
+                </label>
+                @if (b().cardPhoto) {
+                  <button type="button" class="btn btn-ghost btn-sm rounded-full" (click)="change.emit({ cardPhoto: null })">Quitar</button>
+                }
+              </div>
+            </div>
           }
         </div>
-      </div>
-    }
+      }
+    </div>
     <div class="mx-auto mt-4 max-w-sm">
       <app-giftcard-art [card]="sampleCard" [business]="b()" />
     </div>
