@@ -23,7 +23,11 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
     <header class="sticky top-0 z-40 border-b border-base-300/70 bg-base-100/95">
       <nav class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
         <a routerLink="/" class="flex-1"><app-wordmark /></a>
-        <a routerLink="/negocios" class="btn btn-ghost btn-sm"><span class="sm:hidden">Negocios</span><span class="hidden sm:inline">Ver todos los negocios</span></a>
+        <!-- en móvil no entra el texto junto a Entrar y el CTA: ícono de tienda -->
+        <a routerLink="/negocios" class="btn btn-ghost btn-sm max-sm:btn-square" aria-label="Ver todos los negocios">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-5 sm:hidden" aria-hidden="true"><path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9M3 4h18l-1.5 5a2.5 2.5 0 0 1-4.5.5 2.5 2.5 0 0 1-4.5 0 2.5 2.5 0 0 1-4.5-.5zM10 20v-5h4v5" stroke-linejoin="round"/></svg>
+          <span class="hidden sm:inline">Ver todos los negocios</span>
+        </a>
         <a href="#como-funciona" class="btn btn-ghost btn-sm hidden md:inline-flex">Cómo funciona</a>
         <a href="#beneficios" class="btn btn-ghost btn-sm hidden md:inline-flex">Beneficios</a>
         <a routerLink="/login" class="btn btn-ghost btn-sm">Entrar</a>
