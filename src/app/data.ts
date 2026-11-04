@@ -325,7 +325,8 @@ export class Store {
    *  distinguir "cargando" de "no existe" sin inventar un estado extra. */
   publicTenant(slug: () => string) {
     return resource({
-      params: slug,
+      // sin slug todavía (la ruta aún no lo pasó): en reposo, no "no existe"
+      params: () => slug() || undefined,
       loader: async ({ params }) => {
         if (!params) return null;
         const snap = await getDocs(query(
@@ -344,7 +345,7 @@ export class Store {
    *  producción, las reglas deben permitir get de una `cards` solo por id, no list. */
   publicCard(key: () => string) {
     return resource({
-      params: key,
+      params: () => key() || undefined,
       loader: async ({ params }) => {
         const [slug, code] = (params ?? '').split('|');
         if (!slug || !code) return null;

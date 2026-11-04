@@ -488,7 +488,8 @@ export class Storefront {
   selector: 'app-storefront-page',
   imports: [Storefront],
   template: `
-    @if (page.isLoading()) {
+    <!-- sin respuesta todavía (cargando o antes de arrancar): loader; recién null es "no existe" -->
+    @if (page.status() !== 'error' && page.value() === undefined) {
       <div class="grid min-h-dvh place-items-center"><span class="loading loading-spinner loading-lg text-primary"></span></div>
     } @else if (page.hasValue() && page.value(); as p) {
       <div class="storefront min-h-dvh">

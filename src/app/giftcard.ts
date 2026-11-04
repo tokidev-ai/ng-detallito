@@ -155,7 +155,8 @@ export class GiftcardArt {
   selector: 'app-giftcard-view',
   imports: [GiftcardArt, BsPipe, FechaPipe, Wordmark, BusinessLocation],
   template: `
-    @if (page.isLoading()) {
+    <!-- sin respuesta todavía (cargando o antes de arrancar): loader; recién null es "no existe" -->
+    @if (page.status() !== 'error' && page.value() === undefined) {
       <div class="grid min-h-dvh place-items-center bg-base-200"><span class="loading loading-spinner loading-lg"></span></div>
     } @else if (page.hasValue() && page.value(); as p) {
       <div class="storefront sf-hero relative min-h-dvh overflow-hidden text-white" [style.--c1]="p.business.color">
