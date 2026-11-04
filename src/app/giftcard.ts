@@ -159,9 +159,9 @@ export class GiftcardArt {
     } @else if (page.hasValue() && page.value(); as p) {
       <div class="storefront sf-hero relative min-h-dvh overflow-hidden text-white" [style.--c1]="p.business.color">
         <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-          <span class="blob blob-1" style="background:var(--c1)"></span>
-          <span class="blob blob-2" style="background:var(--c2)"></span>
-          <span class="blob blob-3" style="background:var(--c3)"></span>
+          <span class="blob blob-1" style="--g:var(--c1)"></span>
+          <span class="blob blob-2" style="--g:var(--c2)"></span>
+          <span class="blob blob-3" style="--g:var(--c3)"></span>
           <div class="dotgrid-light absolute inset-0"></div>
         </div>
 

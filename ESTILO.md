@@ -109,6 +109,9 @@ Lo medido hasta ahora:
 - **Red de seguridad obligatoria:** en una pestaña de fondo el `IntersectionObserver` no
   dispara. Sin el timeout de respaldo, quien abre el link en otra pestaña se encuentra
   una página en blanco. Ya pasó una vez.
+- **Sin `blur` de filtro ni `backdrop-blur`.** Las manchas difusas son `.blob` / `.glow`
+  (gradiente radial con `--g`), y los headers sticky van en `bg-base-100/95` sin vidrio. Con
+  `blur-3xl` y `backdrop-blur-xl` toda la web se trababa en hovers y al escribir.
 
 ---
 

@@ -23,7 +23,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
   template: `
   <div class="min-h-dvh overflow-x-clip bg-base-100">
 
-    <header class="sticky top-0 z-40 border-b border-base-300/70 bg-base-100/75 backdrop-blur-xl">
+    <header class="sticky top-0 z-40 border-b border-base-300/70 bg-base-100/95">
       <nav class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
         <a routerLink="/" class="flex-1"><app-wordmark /></a>
         <a href="#como-funciona" class="btn btn-ghost btn-sm hidden md:inline-flex">Cómo funciona</a>
@@ -38,9 +38,9 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
     <section class="relative overflow-hidden">
       <!-- aurora cálida y tenue: naranja, ámbar, rosa -->
       <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-        <span class="blob blob-1" style="background:#fb923c;opacity:.28"></span>
-        <span class="blob blob-2" style="background:#fbbf24;opacity:.22"></span>
-        <span class="blob blob-3" style="background:#fb7185;opacity:.18"></span>
+        <span class="blob blob-1" style="--g:#fb923c;opacity:.28"></span>
+        <span class="blob blob-2" style="--g:#fbbf24;opacity:.22"></span>
+        <span class="blob blob-3" style="--g:#fb7185;opacity:.18"></span>
         <div class="dotgrid absolute inset-0"></div>
       </div>
 
@@ -117,7 +117,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
           }
 
           <!-- lo que pasa del otro lado: una venta que entra -->
-          <div class="toast-loop absolute -top-3 right-0 z-10 flex items-center gap-3 rounded-2xl border border-base-300 bg-base-100/95 p-3 pr-4 shadow-xl backdrop-blur sm:right-4 lg:-right-4 lg:top-2">
+          <div class="toast-loop absolute -top-3 right-0 z-10 flex items-center gap-3 rounded-2xl border border-base-300 bg-base-100/95 p-3 pr-4 shadow-xl sm:right-4 lg:-right-4 lg:top-2">
             <span class="grid size-9 place-items-center rounded-xl bg-success/15 text-lg">💸</span>
             <div>
               <p class="text-sm font-bold">Nueva venta · Bs 250</p>
@@ -137,8 +137,8 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
     <!-- ── catálogo: los negocios donde ya se puede regalar ───── -->
     @if (catalog.isLoading() || negocios().length) {
       <section id="negocios" class="relative scroll-mt-20 overflow-hidden border-t border-base-300 bg-gradient-to-b from-primary/5 to-transparent py-20 lg:py-28">
-        <div class="pointer-events-none absolute -right-40 top-10 size-[30rem] rounded-full bg-primary/15 blur-3xl" aria-hidden="true"></div>
-        <div class="pointer-events-none absolute -left-40 bottom-0 size-[26rem] rounded-full bg-[#f59e0b]/10 blur-3xl" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -right-40 top-10 size-[30rem] glow" style="--g: color-mix(in oklab, var(--color-primary) 15%, transparent)" aria-hidden="true"></div>
+        <div class="pointer-events-none absolute -left-40 bottom-0 size-[26rem] glow" style="--g: rgb(245 158 11 / .1)" aria-hidden="true"></div>
         <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
           <div class="flex flex-col items-center gap-6 text-center">
             <div reveal class="min-w-0">
@@ -175,8 +175,8 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
                    class="storefront biz-card group relative isolate flex aspect-[4/5] flex-col overflow-hidden rounded-[2rem] p-6 shadow-xl shadow-black/10 ring-1 ring-black/5 transition duration-500 ease-out hover:-translate-y-2 hover:shadow-2xl"
                    [style.--c1]="t.business.color" [style.background]="surface(t).bg" [style.color]="surface(t).ink">
                   <span class="dotgrid-light pointer-events-none absolute inset-0 -z-10 opacity-60" aria-hidden="true"></span>
-                  <span class="pointer-events-none absolute -bottom-24 -right-20 -z-10 size-72 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-125"
-                        style="background: var(--c2)" aria-hidden="true"></span>
+                  <span class="pointer-events-none absolute -bottom-24 -right-20 -z-10 size-72 glow transition-transform duration-700 group-hover:scale-125"
+                        style="--g: var(--c2)" aria-hidden="true"></span>
 
                   <!-- marca -->
                   <div class="flex items-center gap-3">
@@ -185,7 +185,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
                       @else { {{ t.business.name[0] }} }
                     </span>
                     @if (t.business.address) {
-                      <span class="ms-auto flex min-w-0 items-center gap-1 rounded-full bg-current/10 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                      <span class="ms-auto flex min-w-0 items-center gap-1 rounded-full bg-current/10 px-2.5 py-1 text-[11px] font-medium">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="size-3 shrink-0"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5"/></svg>
                         <span class="truncate">{{ zona(t) }}</span>
                       </span>
@@ -339,7 +339,7 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
 
     <!-- ── cierre ──────────────────────────────────────────── -->
     <section class="relative overflow-hidden">
-      <div class="pointer-events-none absolute left-1/2 top-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-3xl" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute left-1/2 top-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 glow" style="--g: color-mix(in oklab, var(--color-primary) 15%, transparent)" aria-hidden="true"></div>
       <div reveal class="relative mx-auto max-w-3xl px-4 py-24 text-center sm:px-6">
         <h2 class="text-4xl font-extrabold tracking-[-0.04em] text-balance sm:text-6xl">
           ¿Arrancamos? <span class="text-primary">Son diez minutos.</span>

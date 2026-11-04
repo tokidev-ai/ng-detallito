@@ -63,7 +63,7 @@ const PAD = 6;
 
     <div class="min-w-0 flex-1">
       <!-- ── barra superior ── -->
-      <header class="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur-xl">
+      <header class="sticky top-0 z-30 border-b border-base-300 bg-base-100/95">
         <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 md:px-8 md:py-4">
           <div class="flex items-center gap-2 md:hidden">
             <app-wordmark />

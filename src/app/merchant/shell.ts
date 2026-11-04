@@ -97,7 +97,7 @@ const TABS: Tab[] = [
 
     <!-- ── contenido ── -->
     <div class="min-w-0 flex-1">
-      <header class="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur-xl">
+      <header class="sticky top-0 z-30 border-b border-base-300 bg-base-100/95">
         <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 md:px-8 md:py-4">
           <!-- móvil: el selector va arriba; escritorio: el título de la sección -->
           <div class="min-w-0 flex-1 md:hidden"><ng-container *ngTemplateOutlet="switcher" /></div>
@@ -129,7 +129,7 @@ const TABS: Tab[] = [
 
   <!-- bottom nav: móvil -->
   @if (store.current()) {
-    <nav class="fixed inset-x-0 bottom-0 z-40 flex h-[4.5rem] items-stretch border-t border-base-300 bg-base-100/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+    <nav class="fixed inset-x-0 bottom-0 z-40 flex h-[4.5rem] items-stretch border-t border-base-300 bg-base-100/95 pb-[env(safe-area-inset-bottom)] md:hidden">
       @for (t of tabs().slice(0, 3); track t.path) {
         <a class="flex flex-1 flex-col items-center justify-center gap-1 text-xs text-base-content/55"
            [routerLink]="t.path" routerLinkActive="!text-[#c2410c] font-semibold">

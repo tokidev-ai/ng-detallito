@@ -25,9 +25,9 @@ import { Wordmark } from './brand';
       <div class="sf-hero relative flex flex-1 flex-col overflow-hidden text-white">
         <!-- aurora: tres manchas de la paleta que derivan lento -->
         <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-          <span class="blob blob-1" style="background:var(--c1)"></span>
-          <span class="blob blob-2" style="background:var(--c2)"></span>
-          <span class="blob blob-3" style="background:var(--c3)"></span>
+          <span class="blob blob-1" style="--g:var(--c1)"></span>
+          <span class="blob blob-2" style="--g:var(--c2)"></span>
+          <span class="blob blob-3" style="--g:var(--c3)"></span>
           <div class="dotgrid-light absolute inset-0"></div>
         </div>
 
