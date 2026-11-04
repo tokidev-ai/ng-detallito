@@ -76,7 +76,7 @@ service cloud.firestore {
     // Los campos de la página que cambian en esta escritura (o todos, al crearla).
     function okBusiness(b, keys) {
       return keys.hasOnly(['name', 'slug', 'description', 'logoUrl', 'color', 'published',
-                           'validityMonths', 'terms', 'suggestedAmounts', 'cardStyle',
+                           'validityMonths', 'terms', 'suggestedAmounts', 'cardStyle', 'cardPhoto',
                            'address', 'location'])
           && (!('name' in keys) || (okText(b.name, 60) && b.name.size() > 0))
           && (!('slug' in keys) || (b.slug is string && b.slug.matches('[a-z0-9-]{1,40}')))
@@ -88,7 +88,10 @@ service cloud.firestore {
           && (!('logoUrl' in keys) || b.logoUrl == null
               || (b.logoUrl is string && b.logoUrl.size() <= 60000
                   && b.logoUrl.matches('data:image/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+')))
-          && (!('cardStyle' in keys) || b.cardStyle in ['degradado', 'logo', 'cubierta', 'claro', 'oscuro'])
+          && (!('cardPhoto' in keys) || b.cardPhoto == null
+              || (b.cardPhoto is string && b.cardPhoto.size() <= 140000
+                  && b.cardPhoto.matches('data:image/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+')))
+          && (!('cardStyle' in keys) || b.cardStyle in ['degradado', 'logo', 'cubierta', 'foto', 'claro', 'oscuro'])
           && (!('published' in keys) || b.published is bool)
           && (!('validityMonths' in keys) || (b.validityMonths is int && b.validityMonths > 0 && b.validityMonths <= 60))
           && (!('suggestedAmounts' in keys) || (b.suggestedAmounts is list && b.suggestedAmounts.size() <= 20))

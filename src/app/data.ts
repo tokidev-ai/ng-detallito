@@ -20,7 +20,7 @@ export type Perm = 'redeem' | 'viewCards' | 'viewSales' | 'manageProducts' | 'ma
  *  Safari viejo no codifica WebP y devuelve PNG: ahí entra achicando. Lanza un Error
  *  con un mensaje para mostrar si el archivo no es una imagen que el navegador lea.
  *  ponytail: data URL en Firestore, no Storage; pasar a Storage si hacen falta imágenes grandes. */
-export async function logoDataUrl(file: File, max = 256, budget = 40_000): Promise<string> {
+export async function logoDataUrl(file: File, max = 256, budget = 40_000, ratio = 1): Promise<string> {
   if (!file.type.startsWith('image/')) throw new Error('Ese archivo no es una imagen.');
   if (file.size > 30_000_000) throw new Error('La imagen pesa más de 30 MB. Prueba con una más liviana.');
 
@@ -33,24 +33,30 @@ export async function logoDataUrl(file: File, max = 256, budget = 40_000): Promi
   finally { URL.revokeObjectURL(src); }
 
   const w = img.naturalWidth || 512, h = img.naturalHeight || 512;  // SVG sin tamaño propio
-  const side = Math.min(w, h);
+  // el recorte más grande con proporción `ratio` (ancho / alto), al centro
+  const cw = Math.min(w, h * ratio), ch = cw / ratio;
   let url = '';
-  for (let size = Math.min(max, side); ; size = Math.round(size * 0.75)) {
+  for (let size = Math.min(max, cw); ; size = Math.round(size * 0.75)) {
     const c = document.createElement('canvas');
-    c.width = c.height = size;
+    c.width = size;
+    c.height = Math.round(size / ratio);
     const ctx = c.getContext('2d')!;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, (w - side) / 2, (h - side) / 2, side, side, 0, 0, size, size);
+    ctx.drawImage(img, (w - cw) / 2, (h - ch) / 2, cw, ch, 0, 0, c.width, c.height);
     for (const q of [0.85, 0.7, 0.55]) {
       url = c.toDataURL('image/webp', q);
       if (url.length <= budget) return url;
     }
-    if (size <= 96) return url;  // piso: más chico ya no se reconoce el logo
+    if (size <= max * 0.375) return url;  // piso: más chico ya no se reconoce (96px en el logo)
   }
 }
 
+/** La foto de fondo de la gift card: horizontal, con la proporción de una tarjeta (8:5),
+ *  800px de ancho como máximo y ~100 KB. Va en el mismo doc que el logo. */
+export const cardPhotoDataUrl = (file: File) => logoDataUrl(file, 800, 100_000, 1.6);
+
 /** Diseño de la gift card, a elección del comercio. Ver `cardSurface` en giftcard.ts. */
-export type CardStyle = 'degradado' | 'logo' | 'cubierta' | 'claro' | 'oscuro';
+export type CardStyle = 'degradado' | 'logo' | 'cubierta' | 'foto' | 'claro' | 'oscuro';
 
 export interface Business {
   name: string;
@@ -66,6 +72,8 @@ export interface Business {
   suggestedAmounts: number[];
   /** Sin valor = 'degradado' (el diseño de siempre). */
   cardStyle?: CardStyle;
+  /** La foto de fondo del diseño 'foto' (ver cardPhotoDataUrl). */
+  cardPhoto?: string | null;
   /** Dónde se canjean las gift cards: la dirección escrita y el punto en el mapa. */
   address?: string;
   location?: GeoPoint | null;

@@ -125,6 +125,8 @@ test('textos sin < > y página con forma válida', async () => {
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.name': '<b>Spa</b>' }));
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.color': 'red;background:url(//x)' }));
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.logoUrl': 'https://otro.com/logo.png' }));
+  await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.cardPhoto': 'https://otro.com/foto.jpg' }));
+  await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), { 'business.cardPhoto': 'data:image/webp;base64,UklGRg==', 'business.cardStyle': 'foto' }));
   await assertFails(updateDoc(doc(dueña, 'pages/t1'), { 'business.hack': true }));
   await assertSucceeds(updateDoc(doc(dueña, 'pages/t1'), {
     'business.description': 'Masajes\ny faciales', 'business.color': '#0f766e',

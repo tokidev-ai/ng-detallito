@@ -313,8 +313,10 @@ qué gana espanta a quien recién llega. Esa conversación va después.
   un ojito que los difumina. Se gira tocando la tarjeta o con el botón de abajo (CSS 3D:
   `.flip*` en styles.css, caras apiladas en la misma celda de grid). Diseño a elección del
   comercio en Editar página, `business.cardStyle`: degradado (default), logo, cubierta
-  (el logo de fondo en toda la tarjeta, con velo oscuro para leer), claro, oscuro; salen de
-  su color y su logo (`cardSurface`). Tinta con `bg-current/10`, no
+  (el logo de fondo en toda la tarjeta, con velo oscuro para leer), foto (una foto que sube
+  el comercio, `business.cardPhoto`: se le pide 1600 × 1000 px, se recorta a 8:5 y se guarda
+  a 800px / ~100 KB con `cardPhotoDataUrl`, mismo velo), claro, oscuro; salen de su color,
+  su logo y su foto (`cardSurface`). Tinta con `bg-current/10`, no
   `bg-white/20`, para que sirva sobre fondo claro y oscuro.
 - **Compartir la gift card = link, no imagen adjunta.** Cada carta tiene su página
   pública `/{slug}/g/{code}` (`giftcard.ts`) con diseño de marca (logo, color, QR que

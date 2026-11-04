@@ -7,14 +7,20 @@ export const CARD_STYLES: { id: CardStyle; label: string }[] = [
   { id: 'degradado', label: 'Degradado' },
   { id: 'logo', label: 'Tu logo' },
   { id: 'cubierta', label: 'Logo completo' },
+  { id: 'foto', label: 'Tu foto' },
   { id: 'claro', label: 'Claro' },
   { id: 'oscuro', label: 'Oscuro' },
 ];
 
 /** Fondo y tinta de cada diseño, a partir del color del comercio. Va dentro de
  *  un `.storefront` con `--c1`, que deriva `--c2` (el segundo tono del degradado). */
-export function cardSurface(style: CardStyle | undefined, color: string, logo?: string | null): { bg: string; ink: string } {
+export function cardSurface(style: CardStyle | undefined, color: string, logo?: string | null, photo?: string | null): { bg: string; ink: string } {
   switch (style) {
+    // la foto del comercio de fondo, con el mismo velo que 'cubierta'
+    case 'foto': return {
+      bg: `linear-gradient(rgba(0,0,0,.4), rgba(0,0,0,.05) 40%, rgba(0,0,0,.6))${photo ? `, url("${photo}") center / cover` : ''}, var(--c1)`,
+      ink: photo ? '#ffffff' : onBrand(color),
+    };
     // el logo cubre toda la tarjeta; un velo oscuro arriba y abajo deja leer el texto.
     // Sin logo, el color de marca.
     case 'cubierta': return {

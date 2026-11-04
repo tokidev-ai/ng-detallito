@@ -1,6 +1,6 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Business, GiftCard } from '../data';
+import { Business, GiftCard, cardPhotoDataUrl } from '../data';
 import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
 
 /** Color de marca + diseño de la gift card. Lo usan el alta y "Editar página",
@@ -32,7 +32,7 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
 
   <fieldset class="mt-6">
     <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Diseño de la gift card</legend>
-    <div class="storefront grid grid-cols-2 gap-2 sm:grid-cols-5" [style.--c1]="b().color">
+    <div class="storefront grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" [style.--c1]="b().color">
       @for (st of cardStyles; track st.id) {
         <button type="button" (click)="change.emit({ cardStyle: st.id })" [attr.aria-pressed]="style() === st.id"
                 class="rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
@@ -51,6 +51,28 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
         </button>
       }
     </div>
+    @if (style() === 'foto') {
+      <div class="mt-3 flex flex-col gap-3 rounded-box border border-base-300 bg-base-100 p-4 sm:flex-row sm:items-center">
+        <div class="min-w-0 flex-1 text-sm">
+          <p class="font-medium">Foto de fondo de la tarjeta</p>
+          <p class="mt-1 text-base-content/60">
+            Horizontal, de <b>1600 × 1000 px</b> (mínimo 800 × 500), proporción 8:5. JPG, PNG o WebP.
+            Se recorta al centro: deja lo importante en el medio y evita textos en los bordes.
+          </p>
+          @if (photoError()) { <p class="mt-1 text-error" role="alert">{{ photoError() }}</p> }
+        </div>
+        <div class="flex shrink-0 gap-2">
+          <label class="btn btn-sm rounded-full" [class.btn-disabled]="photoBusy()">
+            @if (photoBusy()) { <span class="loading loading-spinner loading-xs"></span> }
+            {{ b().cardPhoto ? 'Cambiar foto' : 'Subir foto' }}
+            <input type="file" accept="image/*" class="sr-only" (change)="onPhoto($event)">
+          </label>
+          @if (b().cardPhoto) {
+            <button type="button" class="btn btn-ghost btn-sm rounded-full" (click)="change.emit({ cardPhoto: null })">Quitar</button>
+          }
+        </div>
+      </div>
+    }
     <div class="mx-auto mt-4 max-w-sm">
       <app-giftcard-art [card]="sampleCard" [business]="b()" />
     </div>
@@ -64,7 +86,19 @@ export class BrandDesign {
   readonly swatches = ['#18181b', '#0f766e', '#b91c1c', '#1d4ed8', '#a16207', '#7e22ce'];
   readonly cardStyles = CARD_STYLES;
   style() { return this.b().cardStyle ?? 'degradado'; }
-  surfaceOf(id: Business['cardStyle']) { return cardSurface(id, this.b().color, this.b().logoUrl); }
+  surfaceOf(id: Business['cardStyle']) { return cardSurface(id, this.b().color, this.b().logoUrl, this.b().cardPhoto); }
+
+  readonly photoBusy = signal(false);
+  readonly photoError = signal('');
+  async onPhoto(e: Event) {
+    const el = e.target as HTMLInputElement, file = el.files?.[0];
+    el.value = '';  // que elegir la misma foto otra vez vuelva a disparar
+    if (!file) return;
+    this.photoBusy.set(true); this.photoError.set('');
+    try { this.change.emit({ cardPhoto: await cardPhotoDataUrl(file), cardStyle: 'foto' }); }
+    catch (err) { this.photoError.set((err as Error).message); }
+    finally { this.photoBusy.set(false); }
+  }
   /** Una carta de ejemplo para la vista previa del diseño. */
   readonly sampleCard: GiftCard = { code: 'K7QM-3XPA', to: 'Lucía', from: 'Diego', value: 100, balance: 100, expires: '2027-12-31' };
 }

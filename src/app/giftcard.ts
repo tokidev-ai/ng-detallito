@@ -32,6 +32,7 @@ import { cardSurface } from './card-style';
             </div>
           }
           @case ('cubierta') { <!-- el logo ya es el fondo: nada encima --> }
+          @case ('foto') { <!-- la foto ya es el fondo --> }
           @case ('claro') {
             <span class="pointer-events-none absolute inset-y-0 left-0 w-2" style="background:linear-gradient(var(--c1),var(--c2))" aria-hidden="true"></span>
             <span class="pointer-events-none absolute -right-14 -top-14 size-48 rounded-full opacity-15" style="background:var(--c1)" aria-hidden="true"></span>
@@ -132,7 +133,7 @@ export class GiftcardArt {
   readonly hidden = model(false);
 
   readonly style = computed(() => this.business().cardStyle ?? 'degradado');
-  readonly surface = computed(() => cardSurface(this.style(), this.business().color, this.business().logoUrl));
+  readonly surface = computed(() => cardSurface(this.style(), this.business().color, this.business().logoUrl, this.business().cardPhoto));
   readonly initial = computed(() => (this.business().name || '?')[0].toUpperCase());
 
   /** El QR codifica el link público de la carta, así el que la recibe la abre y

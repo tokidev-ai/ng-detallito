@@ -381,7 +381,7 @@ export class Landing {
     return q ? this.negocios().filter(t =>
       `${t.business.name} ${t.business.description} ${t.business.address ?? ''}`.toLowerCase().includes(q)) : this.negocios();
   });
-  surface(t: PublicTenant) { return cardSurface(t.business.cardStyle, t.business.color, t.business.logoUrl); }
+  surface(t: PublicTenant) { return cardSurface(t.business.cardStyle, t.business.color, t.business.logoUrl, t.business.cardPhoto); }
   desde(t: PublicTenant) { return Math.min(...t.business.suggestedAmounts); }
   /** Hasta 3 montos para la pila: el más bajo al centro y arriba; los otros a los
    *  costados (i = -1 izquierda, 1 derecha), que se abren al pasar el mouse. */
