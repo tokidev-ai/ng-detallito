@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LIMITS } from '../data';
 import { BsPipe } from '../ui';
@@ -21,23 +21,41 @@ import { BsPipe } from '../ui';
     }
   </div>
   <div class="mt-3 flex gap-2">
-    <input type="number" min="1" [max]="limits.amountMax" class="input input-bordered input-sm w-40" [(ngModel)]="newAmount"
-           name="newAmount" placeholder="Ej: 150" (keyup.enter)="add()">
+    <input type="number" min="1" step="1" inputmode="numeric" [max]="limits.amountMax" class="input input-bordered input-sm w-40"
+           [class.input-error]="error()" [(ngModel)]="newAmount" (ngModelChange)="error.set('')"
+           name="newAmount" placeholder="Ej: 150" (keyup.enter)="add()" [attr.aria-invalid]="!!error()">
     <button type="button" class="btn btn-outline btn-sm" (click)="add()">+ Agregar</button>
   </div>
-  <p class="mt-1 text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}.</p>
+  <!-- antes rechazaba en silencio (repetido, fuera de rango, "1.000"): parecía que el botón no andaba -->
+  @if (error()) {
+    <p class="mt-1 text-xs text-error" role="alert">{{ error() }}</p>
+  } @else {
+    <p class="mt-1 text-xs text-base-content/50">Entre Bs 1 y Bs {{ limits.amountMax.toLocaleString('es-BO') }}, sin decimales. Hasta {{ max }} montos.</p>
+  }
   `,
 })
 export class AmountsEditor {
   readonly amounts = input.required<number[]>();
   readonly change = output<number[]>();
   readonly limits = LIMITS;
+  /** Las reglas no aceptan más (suggestedAmounts.size() <= 20). */
+  readonly max = 20;
   newAmount: number | null = null;
+  readonly error = signal('');
 
   add() {
     const a = this.newAmount;
-    if (!a || a <= 0 || a > LIMITS.amountMax) return;
-    if (!this.amounts().includes(a)) this.change.emit([...this.amounts(), a].sort((x, y) => x - y));
+    const err =
+      a == null ? 'Escribe el monto solo con números, sin puntos ni comas (ej: 1500).'
+      : !Number.isInteger(a) ? 'Usa un monto entero, sin decimales.'
+      : a < 1 ? 'El monto mínimo es Bs 1.'
+      : a > LIMITS.amountMax ? `El máximo es Bs ${LIMITS.amountMax.toLocaleString('es-BO')}.`
+      : this.amounts().includes(a) ? `Bs ${a} ya está en la lista.`
+      : this.amounts().length >= this.max ? `Puedes tener hasta ${this.max} montos. Quita uno para agregar otro.`
+      : '';
+    this.error.set(err);
+    if (err) return;
+    this.change.emit([...this.amounts(), a!].sort((x, y) => x - y));
     this.newAmount = null;
   }
   without(a: number) { return this.amounts().filter(x => x !== a); }

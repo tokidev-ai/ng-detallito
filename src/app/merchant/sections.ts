@@ -422,7 +422,9 @@ export class Emitidas {
             <span class="absolute inline-flex size-full animate-ping rounded-full bg-warning opacity-75"></span>
             <span class="relative inline-flex size-2.5 rounded-full bg-warning"></span>
           </span>
-          <p class="min-w-0 flex-1 truncate text-sm font-medium">Cambios sin guardar</p>
+          <p class="min-w-0 flex-1 truncate text-sm font-medium" [class.text-red-300]="saveError()" [attr.role]="saveError() ? 'alert' : null">
+            {{ saveError() || 'Cambios sin guardar' }}
+          </p>
           <button type="button" class="btn btn-ghost btn-sm text-neutral-content" (click)="discard()" [disabled]="saving()">Descartar</button>
           <button type="button" class="btn btn-primary btn-sm" (click)="save()" [disabled]="saving()">
             @if (saving()) { <span class="loading loading-spinner loading-xs"></span> } Guardar cambios
@@ -477,9 +479,10 @@ export class Marca {
   readonly dirty = computed(() => Object.keys(this.changes()).length > 0);
   readonly saving = signal(false);
   readonly justSaved = signal(false);
+  readonly saveError = signal('');
 
-  edit(patch: Partial<Business>) { this.draft.update(d => ({ ...d, ...patch })); }
-  discard() { this.draft.set({}); }
+  edit(patch: Partial<Business>) { this.saveError.set(''); this.draft.update(d => ({ ...d, ...patch })); }
+  discard() { this.saveError.set(''); this.draft.set({}); }
   warnUnsaved(e: BeforeUnloadEvent) { if (this.dirty()) e.preventDefault(); }
 
   async save() {
@@ -490,6 +493,10 @@ export class Marca {
       this.draft.set({});
       this.justSaved.set(true);
       setTimeout(() => this.justSaved.set(false), 2200);
+    } catch (e) {
+      // antes un rechazo de las reglas no avisaba: los cambios quedaban sin guardar sin que se notara
+      console.error(e);
+      this.saveError.set('No se pudo guardar. Revisa los datos e intenta de nuevo.');
     } finally {
       this.saving.set(false);
     }
