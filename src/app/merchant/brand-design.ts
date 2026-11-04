@@ -32,12 +32,13 @@ import { CARD_STYLES, GiftcardArt, cardSurface } from '../giftcard';
 
   <fieldset class="mt-6">
     <legend class="mb-2 text-xs font-medium uppercase tracking-wider text-base-content/50">Diseño de la gift card</legend>
-    <!-- por grupos, 3 por fila también en móvil: la proporción de tarjeta los deja legibles -->
-    <div class="storefront space-y-4" [style.--c1]="b().color">
+    <!-- por grupos en una grilla de 3 (también en móvil): cada grupo ocupa una columna por
+         opción, así "Degradado" y "Claro u oscuro" comparten fila y no queda hueco -->
+    <div class="storefront grid grid-cols-3 gap-x-2 gap-y-4 sm:gap-x-3" [style.--c1]="b().color">
       @for (g of cardStyles; track g.label) {
-        <div>
-          <p class="mb-1.5 text-sm font-medium text-base-content/70">{{ g.label }}</p>
-          <div class="grid grid-cols-3 gap-2 sm:gap-3">
+        <div class="min-w-0" [style.grid-column]="'span ' + g.styles.length">
+          <p class="mb-1.5 truncate text-sm font-medium text-base-content/70">{{ g.label }}</p>
+          <div class="grid gap-2 sm:gap-3" [style.grid-template-columns]="'repeat(' + g.styles.length + ', minmax(0, 1fr))'">
             @for (st of g.styles; track st.id) {
               <button type="button" (click)="change.emit({ cardStyle: st.id })" [attr.aria-pressed]="style() === st.id"
                       class="min-w-0 rounded-box p-1 text-left ring-offset-2 transition hover:scale-[1.02]"
