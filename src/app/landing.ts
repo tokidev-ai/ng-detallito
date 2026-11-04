@@ -151,13 +151,13 @@ const RUBROS = ['💈 Barberías', '💆 Spas', '☕ Cafés', '🏋️ Gimnasios
     </section>
 
     <!-- ── cómo funciona ───────────────────────────────────── -->
-    <section id="como-funciona" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6 lg:py-28">
+    <section id="como-funciona" class="mx-auto max-w-6xl scroll-mt-20 px-4 pb-20 pt-12 sm:px-6 lg:pb-28 lg:pt-16">
       <div reveal class="mx-auto max-w-2xl text-center">
         <p class="text-sm font-semibold text-[#c2410c]">Cómo funciona</p>
         <h2 class="mt-2 text-4xl font-extrabold tracking-[-0.04em] text-balance sm:text-5xl">De cero a vender en tres pasos</h2>
       </div>
 
-      <ol class="relative mt-14 grid gap-5 md:grid-cols-3">
+      <ol class="relative mt-10 grid gap-5 md:grid-cols-3">
         <!-- la línea que une los pasos, solo en escritorio -->
         <span class="absolute left-[16%] right-[16%] top-9 hidden border-t-2 border-dashed border-primary/30 md:block" aria-hidden="true"></span>
         @for (p of pasos; track p.t; let i = $index) {
